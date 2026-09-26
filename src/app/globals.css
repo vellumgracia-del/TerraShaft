@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* ========================================================
+   NASA-GRADE MISSION-CRITICAL AGRONOMIC TELEMETRY THEME
+   Functional Color System (60-30-10 Rule)
+   Zero-Slop Standard
+   ======================================================== */
+
+:root {
+  --bg-space: #0B0F17;
+  --bg-card: #131B2E;
+  --border-tech: #1E293B;
+  --text-primary: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+  
+  /* Telemetri Satelit */
+  --smap-cyan: #06B6D4;
+  --smap-amber: #F59E0B;
+  --smap-red: #EF4444;
+  --gpm-sky: #38BDF8;
+  --ceres-ochre: #EAB308;
+  --nasa-blue: #2563EB;
+}
+
+/* Field / High-Glare Outdoor Mode (Sunlight Adaptive) */
+[data-field-mode="true"] {
+  --bg-space: #FFFFFF;
+  --bg-card: #F8FAFC;
+  --border-tech: #000000;
+  --text-primary: #000000;
+  --text-muted: #1E293B;
+  --text-dim: #475569;
+  
+  --smap-cyan: #0284C7;
+  --smap-amber: #D97706;
+  --smap-red: #DC2626;
+  --gpm-sky: #0369A1;
+  --ceres-ochre: #B45309;
+  --nasa-blue: #1D4ED8;
+}
+
+body {
+  background-color: var(--bg-space);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Font Monospaced & Tabular Numbers untuk Presisi Data */
+.font-mono,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Base leaflet adjustments */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  background-color: #0B0F17 !important;
+}
+
+.custom-map-pin {
+  background: transparent;
+  border: none;
+}
+
+/* Technical Precision Rack Container */
+.telemetry-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-tech);
+}
+
+[data-field-mode="true"] .telemetry-card {
+  border: 1.5px solid #000000 !important;
+  box-shadow: none !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0F17;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 2px;
+}
+
+[data-field-mode="true"] ::-webkit-scrollbar-track {
+  background: #FFFFFF;
+}
+
+[data-field-mode="true"] ::-webkit-scrollbar-thumb {
+  background: #000000;
+}

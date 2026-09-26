@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#022c22" />
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="40" fill="url(#bgGrad)" />
+  <circle cx="96" cy="96" r="64" fill="#020617" opacity="0.4" />
+  <!-- Sprout & Battery Symbol -->
+  <path d="M96 140 V85" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
+  <path d="M96 85 C80 60 50 65 50 85 C50 105 85 105 96 85 Z" fill="url(#leafGrad)" />
+  <path d="M96 95 C112 75 142 80 142 98 C142 116 107 114 96 95 Z" fill="#6ee7b7" />
+  <circle cx="96" cy="50" r="8" fill="#fbbf24" />
+</svg>
