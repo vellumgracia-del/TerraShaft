@@ -1,5 +1,3 @@
-import { SoilData } from '@/types/agronomy';
-
 /**
  * Menghitung Available Water Capacity (AWC) menggunakan fungsi transfer pedologis (pedotransfer).
  * Satuan input:

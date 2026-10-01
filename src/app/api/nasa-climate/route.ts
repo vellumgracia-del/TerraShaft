@@ -8,11 +8,25 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Jam
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const latStr = searchParams.get('lat') || '-10.1542'; // Default: Kupang Timur, NTT
-  const lonStr = searchParams.get('lon') || '123.8210';
+  const latStr = searchParams.get('lat');
+  const lonStr = searchParams.get('lon');
+
+  if (latStr === null || lonStr === null || latStr.trim() === '' || lonStr.trim() === '') {
+    return NextResponse.json(
+      { error: 'Parameter koordinat tidak lengkap: lat dan lon wajib diisi' },
+      { status: 400 }
+    );
+  }
 
   const lat = parseFloat(latStr);
   const lon = parseFloat(lonStr);
+
+  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json(
+      { error: 'Koordinat latitude (-90 hingga 90) atau longitude (-180 hingga 180) tidak valid' },
+      { status: 400 }
+    );
+  }
 
   const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
   const now = Date.now();
@@ -128,6 +142,7 @@ export async function GET(request: Request) {
     else if (avgRootZoneMoisture < 0.45) wetnessCat = 'Deficit';
     else if (avgRootZoneMoisture > 0.85) wetnessCat = 'Saturated';
 
+    const nowIso = new Date().toISOString();
     const climateResult: ClimateData = {
       annualRainfall_mm: annualRain,
       monthlyData,
@@ -135,22 +150,31 @@ export async function GET(request: Request) {
       soilWetnessCategory: wetnessCat,
       avgTemp_c: avgTemp,
       source: 'NASA_POWER_LIVE',
-      lastUpdated: new Date().toISOString()
+      lastUpdated: nowIso,
+      fetchedAt: nowIso,
+      cached: false,
+      fallbackReason: null,
+      observationPeriod: 'Historical 1-Year Baseline (NASA POWER Agroclimatology v2.0)'
     };
 
     climateCache.set(cacheKey, { data: climateResult, timestamp: now });
     return NextResponse.json(climateResult);
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'NASA POWER API error / timeout';
     console.warn('NASA POWER API fetch error, using robust Indonesian agro-climate fallback:', error);
     // Fallback data terkalibrasi Nusa Tenggara / lahan kering Indonesia
-    const fallback = generateFallbackClimate(lat, lon);
+    const fallback = generateFallbackClimate(lat, lon, errorMsg);
     return NextResponse.json(fallback);
   }
 }
 
-function generateFallbackClimate(lat: number, lon: number): ClimateData {
-  // Kalibrasi realistis: NTT / Jawa Timur bagian selatan memiliki curah hujan 800 - 1400 mm
-  const isSouthernDryzone = lat < -8.0;
+function generateFallbackClimate(
+  lat: number,
+  lon: number,
+  fallbackReason: string | null = 'Koneksi NASA POWER tidak tersedia / timeout (failover model regional)'
+): ClimateData {
+  // Kalibrasi realistis: NTT / kawasan Indonesia bagian timur (lon > 115) memiliki curah hujan 800 - 1400 mm
+  const isSouthernDryzone = lat < -7.0 && lon > 110.0;
   const baseRain = isSouthernDryzone
     ? [210, 190, 140, 75, 30, 15, 10, 5, 8, 35, 110, 185]
     : [280, 260, 210, 130, 70, 45, 35, 25, 40, 95, 180, 245];
@@ -181,6 +205,7 @@ function generateFallbackClimate(lat: number, lon: number): ClimateData {
 
   const totalRain = baseRain.reduce((a, b) => a + b, 0);
   const rootZone = isSouthernDryzone ? 0.28 : 0.48;
+  const nowIso = new Date().toISOString();
 
   return {
     annualRainfall_mm: totalRain,
@@ -189,6 +214,10 @@ function generateFallbackClimate(lat: number, lon: number): ClimateData {
     soilWetnessCategory: isSouthernDryzone ? 'Deficit' : 'Adequate',
     avgTemp_c: 27.2,
     source: 'FALLBACK_CLIMATOLOGY',
-    lastUpdated: new Date().toISOString()
+    lastUpdated: nowIso,
+    fetchedAt: nowIso,
+    cached: false,
+    fallbackReason,
+    observationPeriod: 'Regional Agroclimatic Normal Baseline (Nusa Tenggara)'
   };
 }

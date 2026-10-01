@@ -1,3 +1,5 @@
+export type ClimateSource = 'NASA_POWER_LIVE' | 'FALLBACK_CLIMATOLOGY';
+
 export interface MonthlyClimate {
   month: number;
   monthName: string;
@@ -15,8 +17,12 @@ export interface ClimateData {
   rootZoneSoilMoisture: number; // 0.0 - 1.0 (GWETROOT / SMAP proxy)
   soilWetnessCategory: 'Very Dry' | 'Deficit' | 'Adequate' | 'Saturated';
   avgTemp_c: number;
-  source: 'NASA_POWER_LIVE' | 'FALLBACK_CLIMATOLOGY';
+  source: ClimateSource;
   lastUpdated: string;
+  fetchedAt: string;
+  cached: boolean;
+  fallbackReason: string | null;
+  observationPeriod: string;
 }
 
 export interface LocationCoordinates {
@@ -26,3 +32,4 @@ export interface LocationCoordinates {
   district?: string;
   province?: string;
 }
+

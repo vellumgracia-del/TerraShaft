@@ -3,21 +3,34 @@
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import Navbar from '@/components/dashboard/Navbar';
-import SatelliteTelemetryRack from '@/components/dashboard/SatelliteTelemetryRack';
-import RotationDecisionCenter from '@/components/dashboard/RotationDecisionCenter';
-import RadarComparison from '@/components/dashboard/RadarComparison';
-import CropLibraryModal from '@/components/dashboard/CropLibraryModal';
-import ActionSheetModal from '@/components/export/ActionSheetModal';
-import { AlertCircle, Satellite, Share2, Layers } from 'lucide-react';
+import AppShell from '@/components/shell/AppShell';
+import SummaryMetricCards from '@/components/overview/SummaryMetricCards';
+import FourSeasonRotationCard from '@/components/rotation/FourSeasonRotationCard';
+import SoilBatteryCard from '@/components/soil/SoilBatteryCard';
+import DataSourceProvenanceCard from '@/components/provenance/DataSourceProvenanceCard';
+import CropLibraryModal from '@/components/modals/CropLibraryModal';
+import ActionSheetModal from '@/components/modals/ActionSheetModal';
+import { AlertCircle, LayoutDashboard } from 'lucide-react';
 
-const WaterBalanceCenter = dynamic(() => import('@/components/dashboard/WaterBalanceCenter'), {
+const FieldOverviewCard = dynamic(() => import('@/components/overview/FieldOverviewCard'), {
   ssr: false,
   loading: () => (
-    <div className="telemetry-card rounded border border-[#1E293B] bg-[#131B2E] p-8 flex items-center justify-center font-mono text-xs text-slate-400">
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-[#06B6D4] border-t-transparent rounded-full animate-spin" />
-        <span>MEMUAT TELEMETRI SPASIAL & NERACA AIR...</span>
+    <div className="agri-card p-12 flex items-center justify-center text-xs text-[#7B8681] bg-white">
+      <div className="flex items-center gap-2.5">
+        <div className="w-5 h-5 border-2 border-[#12A875] border-t-transparent rounded-full animate-spin" />
+        <span>Memuat Peta & Telemetri Spasial Lahan...</span>
+      </div>
+    </div>
+  )
+});
+
+const WaterBalanceCard = dynamic(() => import('@/components/water/WaterBalanceCard'), {
+  ssr: false,
+  loading: () => (
+    <div className="agri-card p-12 flex items-center justify-center text-xs text-[#7B8681] bg-white">
+      <div className="flex items-center gap-2.5">
+        <div className="w-5 h-5 border-2 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
+        <span>Memuat Analisis Neraca Air Lahan...</span>
       </div>
     </div>
   )
@@ -30,140 +43,162 @@ export default function Home() {
     isLoadingBioData,
     errorBioData,
     fetchBioPhysicalData,
-    isFieldMode,
     isExportModalOpen,
-    closeExportModal,
-    openExportModal
+    openExportModal,
+    closeExportModal
   } = useTerraShaftStore();
 
+  const [activeSection, setActiveSection] = useState('overview');
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-  const [showRadarDrawer, setShowRadarDrawer] = useState(false);
+  const isManualScrollRef = React.useRef(false);
+  const manualScrollTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  // Initial fetch data biofisik saat pertama kali aplikasi dibuka
+  // Initial fetch upon mounting if data has not been fetched yet
   useEffect(() => {
     if (!soilData && !isLoadingBioData) {
       fetchBioPhysicalData(location.lat, location.lon);
     }
+  }, [fetchBioPhysicalData, isLoadingBioData, location.lat, location.lon, soilData]);
+
+  // Track active section automatically on scroll using IntersectionObserver
+  useEffect(() => {
+    const sectionIds = [
+      'overview',
+      'field-map',
+      'soil-battery',
+      'rotation-planner',
+      'water-balance',
+      'data-sources'
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isManualScrollRef.current) return;
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length > 0) {
+          const topEntry = visible.reduce((prev, curr) => {
+            const prevDist = Math.abs(prev.boundingClientRect.top - 88);
+            const currDist = Math.abs(curr.boundingClientRect.top - 88);
+            return currDist < prevDist ? curr : prev;
+          });
+          if (topEntry.target.id) {
+            setActiveSection(topEntry.target.id);
+          }
+        }
+      },
+      {
+        rootMargin: '-88px 0px -40% 0px',
+        threshold: [0, 0.15, 0.4]
+      }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      observer.disconnect();
+      if (manualScrollTimerRef.current) {
+        clearTimeout(manualScrollTimerRef.current);
+      }
+    };
   }, []);
 
-  return (
-    <div
-      data-field-mode={isFieldMode ? 'true' : 'false'}
-      className="min-h-screen flex flex-col bg-[#0B0F17] text-slate-100 transition-colors"
-    >
-      {/* 1. Header Mission Control Navbar */}
-      <Navbar
-        onOpenCropLibrary={() => setIsCropModalOpen(true)}
-        onOpenExportModal={openExportModal}
-      />
+  // Smooth scroll handler for sidebar navigation
+  const handleNavigate = (sectionId: string) => {
+    setActiveSection(sectionId);
+    isManualScrollRef.current = true;
+    if (manualScrollTimerRef.current) {
+      clearTimeout(manualScrollTimerRef.current);
+    }
 
-      {/* Main Mission Control Layout (3-Zone Architecture) */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 lg:px-6 py-4 flex flex-col gap-4">
-        {/* Banner Alert Notifikasi Jaringan Telemetri */}
+    if (sectionId === 'overview') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const elem = document.getElementById(sectionId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    manualScrollTimerRef.current = setTimeout(() => {
+      isManualScrollRef.current = false;
+    }, 850);
+  };
+
+  return (
+    <AppShell
+      activeSection={activeSection}
+      onNavigate={handleNavigate}
+      onOpenCropLibrary={() => setIsCropModalOpen(true)}
+      onOpenExportModal={openExportModal}
+      isCropLibraryOpen={isCropModalOpen}
+      isExportModalOpen={isExportModalOpen}
+    >
+      <div className="flex flex-col gap-6">
+        {/* Controlled Error Alert Banner */}
         {errorBioData && (
-          <div className="p-2.5 bg-red-950/40 border border-red-800 rounded flex items-center gap-2 text-xs text-red-300 font-mono">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-            <span>ALERT: {errorBioData}. Failover mengaktifkan model regional Nusa Tenggara.</span>
+          <div className="p-3.5 bg-[#FDEAEA] border border-[#FECDD3] rounded-2xl flex items-center gap-2.5 text-xs text-[#E11D48] animate-in fade-in">
+            <AlertCircle className="w-4 h-4 shrink-0 text-[#E11D48]" />
+            <span>
+              <strong>Peringatan Validasi/Jaringan:</strong> {errorBioData}
+            </span>
           </div>
         )}
 
-        {/* ========================================================
-            TIGA ZONA OPERASIONAL TELEMETRI (12-COLUMN GRID)
-            Zona 1 (3 Col): Telemetri Biofisik Satelit
-            Zona 2 (6 Col): Neraca Air & The Soil Battery
-            Zona 3 (3 Col): Engine Rotasi & Audit Logika
-           ======================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          {/* ZONA 1 (Kiri - 3 Col): Telemetri Satelit Riil */}
-          <section className="lg:col-span-3 flex flex-col gap-3">
-            <SatelliteTelemetryRack />
-          </section>
-
-          {/* ZONA 2 (Tengah - 6 Col): Neraca Air & Peta Minimalis */}
-          <section className="lg:col-span-6 flex flex-col gap-3">
-            <WaterBalanceCenter />
-          </section>
-
-          {/* ZONA 3 (Kanan - 3 Col): Engine Rotasi & Audit Logika Eliminasi */}
-          <section className="lg:col-span-3 flex flex-col gap-3">
-            <RotationDecisionCenter />
-          </section>
-        </div>
-
-        {/* Collapsible Analisis Multi-Dimensi: Radar Trade-off Chart */}
-        <div className="telemetry-card rounded border border-[#1E293B] bg-[#131B2E] p-3 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-300 font-mono">
-                ANALISIS KOMPARATIF TRADE-OFF (SPIDER RADAR METRIK)
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono">
-                [5 Sumbu Evaluasi]
-              </span>
+        {/* 1. Ringkasan Lahan (#overview) */}
+        <section id="overview" className="scroll-section flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div>
+              <h2 className="text-sm font-bold text-[#17231F] flex items-center gap-1.5 uppercase tracking-wider">
+                <LayoutDashboard className="w-4 h-4 text-[#12A875]" />
+                Ringkasan Indikator Biofisik & Rekomendasi
+              </h2>
+              <p className="text-xs text-[#7B8681]">
+                Metrik agro-klimatologi satelit NASA SMAP dan profil tanah ISRIC SoilGrids
+              </p>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowRadarDrawer(!showRadarDrawer)}
-              className="text-xs font-mono text-[#06B6D4] hover:underline"
-            >
-              {showRadarDrawer ? 'Sembunyikan Grafik [-]' : 'Tampilkan Grafik [+]'}
-            </button>
           </div>
-
-          {showRadarDrawer && (
-            <div className="pt-2 border-t border-slate-800">
-              <RadarComparison />
-            </div>
-          )}
-        </div>
-
-        {/* Bottom Operational Action Bar */}
-        <section className="bg-[#131B2E] border border-[#1E293B] rounded p-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-          <div className="flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full bg-[#06B6D4]" />
-            <span className="text-slate-300">
-              SISTEM ROTASI ADAPTIF AKTIF: Validasi batas SMAP & GPM diterapkan pada 4 siklus musim.
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={openExportModal}
-            className="px-4 py-1.5 rounded bg-[#2563EB] hover:bg-blue-600 text-white font-semibold transition-colors flex items-center gap-1.5 shrink-0"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>Generate Action Sheet WhatsApp (1080×1350)</span>
-          </button>
+          <SummaryMetricCards />
         </section>
-      </main>
 
-      {/* Footer Citations Standar NASA */}
-      <footer className="border-t border-[#1E293B] bg-[#0B0F17] py-3 text-center text-[11px] font-mono text-slate-500">
-        <div className="max-w-[1600px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© 2026 TerraRotate Engine — Telemetri Asimilasi NASA POWER (SMAP L4, GPM IMERG, CERES, MERRA-2) & ISRIC SoilGrids v2.0.</p>
-          <div className="flex items-center gap-2 text-slate-400">
-            <span className="flex items-center gap-1">
-              <Satellite className="w-3 h-3 text-[#06B6D4]" />
-              NASA Earth Data Cloud
-            </span>
-            <span>•</span>
-            <span>Hargreaves-Samani Bio-Deficit Model</span>
-          </div>
-        </div>
-      </footer>
+        {/* 2. Peta Lahan & Observasi Spasial (#field-map) */}
+        <section id="field-map" className="scroll-section">
+          <FieldOverviewCard />
+        </section>
 
-      {/* Modal Pustaka Komoditas Tanaman */}
+        {/* 3. Baterai Tanah (#soil-battery) */}
+        <section id="soil-battery" className="scroll-section">
+          <SoilBatteryCard onExploreRotation={() => handleNavigate('rotation-planner')} />
+        </section>
+
+        {/* 4. Rencana Rotasi Pola Tanam 4 Musim (#rotation-planner) */}
+        <section id="rotation-planner" className="scroll-section">
+          <FourSeasonRotationCard />
+        </section>
+
+        {/* 5. Neraca Air (#water-balance) */}
+        <section id="water-balance" className="scroll-section">
+          <WaterBalanceCard />
+        </section>
+
+        {/* 6. Sumber Data & Provenance (#data-sources) */}
+        <section id="data-sources" className="scroll-section">
+          <DataSourceProvenanceCard />
+        </section>
+      </div>
+
+      {/* Modals */}
       <CropLibraryModal
         isOpen={isCropModalOpen}
         onClose={() => setIsCropModalOpen(false)}
       />
 
-      {/* Modal Action Sheet WhatsApp / PDF Export (1080x1350 px) */}
       <ActionSheetModal
         isOpen={isExportModalOpen}
         onClose={closeExportModal}
       />
-    </div>
+    </AppShell>
   );
 }

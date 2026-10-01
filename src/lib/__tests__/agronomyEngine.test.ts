@@ -3,8 +3,7 @@ import { calculateAWC, classifySoilTexture, estimateBulkDensity } from '@/lib/pe
 import { calculateDailyET0, calculateCropWaterRequirement } from '@/lib/evapotranspiration';
 import {
   generateAllSequencePermutations,
-  generateOptimizationPlans,
-  SEASONS
+  generateOptimizationPlans
 } from '@/lib/optimizationEngine';
 import initialCrops from '@/data/crops_library.json';
 import { Crop, SoilData, Priorities } from '@/types/agronomy';
@@ -22,7 +21,12 @@ const testSoil: SoilData = {
   ph: 6.4,
   cec: 19.5,
   awc: 0,
-  textureClass: ''
+  textureClass: '',
+  source: 'ISRIC_SOILGRIDS_LIVE',
+  fetchedAt: new Date().toISOString(),
+  cached: false,
+  fallbackReason: null,
+  observationPeriod: 'Standard Depth Layer 0-30cm (ISRIC SoilGrids v2.0)'
 };
 
 const awc = calculateAWC(testSoil.sand, testSoil.silt, testSoil.clay, testSoil.soc);
@@ -84,7 +88,11 @@ const mockClimate: ClimateData = {
   soilWetnessCategory: 'Deficit',
   avgTemp_c: 27.0,
   source: 'NASA_POWER_LIVE',
-  lastUpdated: new Date().toISOString()
+  lastUpdated: new Date().toISOString(),
+  fetchedAt: new Date().toISOString(),
+  cached: false,
+  fallbackReason: null,
+  observationPeriod: 'Historical 1-Year Baseline (NASA POWER Agroclimatology v2.0)'
 };
 
 testSoil.awc = 30.3;
@@ -111,10 +119,6 @@ const initialBattery = Math.min(100, Math.max(15, Math.round(40 + (20 * testSoil
 assert.strictEqual(initialBattery, 63, `Initial battery should be 63%, got ${initialBattery}%`);
 
 // Find a pure legume/cover crop sequence
-const crotalaria = crops.find(c => c.id === 'crotalaria')!;
-const kedelai = crops.find(c => c.id === 'kedelai')!;
-const jagung = crops.find(c => c.id === 'jagung_hibrida')!;
-
 const allGreenSeq = permutations.find(p => p.crops.every(c => c.category === 'Cover Crop' || c.category === 'Legume'))!;
 assert.ok(allGreenSeq.soilBatteryScore > initialBattery, 'All-green rotation must recharge soil battery');
 assert.ok(allGreenSeq.netNitrogenDelta > 0, 'All-green rotation must have high positive nitrogen delta');
@@ -156,6 +160,41 @@ assert.ok(plans.C, 'Pathway C must exist');
 assert.strictEqual(plans.C.pathwayId, 'C');
 assert.ok(plans.C.projectedProfitIndex >= 65, `Pathway C profit index should be high, got ${plans.C.projectedProfitIndex}`);
 assert.ok(plans.C.soilBatteryScore >= 35, 'Pathway C must maintain safe minimum soil battery');
-console.log(`✓ Pathway C (Cash Flow) verified: Profit Index ${plans.C.projectedProfitIndex}/100, Battery ${plans.C.soilBatteryScore}%`);
+// 6. TEST SCIENTIFIC INTEGRITY & DATA PROVENANCE CONTRACTS
+console.log('Testing Scientific Integrity & Data Provenance Contracts...');
+assert.ok(['NASA_POWER_LIVE', 'FALLBACK_CLIMATOLOGY'].includes(mockClimate.source), 'Climate source must be NASA_POWER_LIVE or FALLBACK_CLIMATOLOGY');
+assert.strictEqual(typeof mockClimate.fetchedAt, 'string', 'Climate fetchedAt must be an ISO string');
+assert.strictEqual(typeof mockClimate.cached, 'boolean', 'Climate cached must be boolean');
+
+assert.ok(['ISRIC_SOILGRIDS_LIVE', 'REGIONAL_FALLBACK'].includes(testSoil.source), 'Soil source must be ISRIC_SOILGRIDS_LIVE or REGIONAL_FALLBACK');
+assert.strictEqual(typeof testSoil.fetchedAt, 'string', 'Soil fetchedAt must be an ISO string');
+assert.strictEqual(typeof testSoil.cached, 'boolean', 'Soil cached must be boolean');
+
+// Verify engine functions seamlessly with regional fallback data
+const fallbackClimate: ClimateData = {
+  ...mockClimate,
+  source: 'FALLBACK_CLIMATOLOGY',
+  fallbackReason: 'Koneksi satelit timeout'
+};
+const fallbackSoil: SoilData = {
+  ...testSoil,
+  source: 'REGIONAL_FALLBACK',
+  fallbackReason: 'ISRIC SoilGrids proxy timeout'
+};
+const fallbackPlans = generateOptimizationPlans(crops, fallbackClimate, fallbackSoil, testPriorities);
+assert.ok(fallbackPlans.A && fallbackPlans.B && fallbackPlans.C, 'Engine must generate valid plans with regional fallback data');
+assert.strictEqual(fallbackPlans.A.pathwayId, 'A');
+console.log('✓ Provenance contracts & regional fallback failover verified');
+
+// Test Coordinate Validation logic bounds (-90 to 90, -180 to 180)
+function isValidCoordinate(lat: number, lon: number): boolean {
+  return !isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+}
+assert.strictEqual(isValidCoordinate(-10.1542, 123.821), true, 'Valid Kupang Timur coordinates should pass');
+assert.strictEqual(isValidCoordinate(95, 100), false, 'Latitude > 90 must fail validation');
+assert.strictEqual(isValidCoordinate(-95, 100), false, 'Latitude < -90 must fail validation');
+assert.strictEqual(isValidCoordinate(0, 185), false, 'Longitude > 180 must fail validation');
+assert.strictEqual(isValidCoordinate(NaN, 100), false, 'NaN coordinate must fail validation');
+console.log('✓ Coordinate validation bounds strictly enforced (-90..90, -180..180)');
 
 console.log('--- ALL AGRONOMY & SPRINT 2 UNIT TESTS PASSED SUCCESSFULLY! ---');

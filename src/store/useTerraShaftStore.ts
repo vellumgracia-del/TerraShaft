@@ -84,6 +84,13 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   },
 
   setLocation: async (lat: number, lon: number, placeName?: string, elevation?: number) => {
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      set({
+        errorBioData: `Koordinat tidak valid (${lat}, ${lon}): Latitude harus antara -90° dan 90°, Longitude antara -180° dan 180°.`
+      });
+      return;
+    }
+
     set(state => ({
       location: {
         ...state.location,
@@ -92,7 +99,8 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
         placeName: placeName || `Titik Koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`
       },
       elevation_m: elevation ?? Math.round(45 + Math.abs(lat * 12) + Math.abs(lon % 50)),
-      satelliteSyncTime: new Date().toISOString()
+      satelliteSyncTime: new Date().toISOString(),
+      errorBioData: null
     }));
     await get().fetchBioPhysicalData(lat, lon);
   },

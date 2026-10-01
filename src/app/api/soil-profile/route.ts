@@ -7,11 +7,25 @@ const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 Hari
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const latStr = searchParams.get('lat') || '-10.1542';
-  const lonStr = searchParams.get('lon') || '123.8210';
+  const latStr = searchParams.get('lat');
+  const lonStr = searchParams.get('lon');
+
+  if (latStr === null || lonStr === null || latStr.trim() === '' || lonStr.trim() === '') {
+    return NextResponse.json(
+      { error: 'Parameter koordinat tidak lengkap: lat dan lon wajib diisi' },
+      { status: 400 }
+    );
+  }
 
   const lat = parseFloat(latStr);
   const lon = parseFloat(lonStr);
+
+  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+    return NextResponse.json(
+      { error: 'Koordinat latitude (-90 hingga 90) atau longitude (-180 hingga 180) tidak valid' },
+      { status: 400 }
+    );
+  }
 
   const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
   const now = Date.now();
@@ -81,6 +95,7 @@ export async function GET(request: Request) {
 
     const awc = calculateAWC(sand, silt, clay, soc);
     const textureClass = classifySoilTexture(sand, silt, clay);
+    const nowIso = new Date().toISOString();
 
     const soilResult: SoilData = {
       sand,
@@ -90,28 +105,40 @@ export async function GET(request: Request) {
       ph,
       cec,
       awc,
-      textureClass
+      textureClass,
+      source: 'ISRIC_SOILGRIDS_LIVE',
+      fetchedAt: nowIso,
+      cached: false,
+      fallbackReason: null,
+      observationPeriod: 'Standard Depth Layer 0-30cm (ISRIC SoilGrids v2.0)'
     };
 
     soilCache.set(cacheKey, { data: soilResult, timestamp: now });
     return NextResponse.json(soilResult);
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'ISRIC SoilGrids API timeout / network failure';
     console.warn('ISRIC SoilGrids fetch failed, using calibrated regional soil fallback:', error);
-    const fallback = generateFallbackSoil(lat, lon);
+    const fallback = generateFallbackSoil(lat, lon, errorMsg);
     return NextResponse.json(fallback);
   }
 }
 
-function generateFallbackSoil(lat: number, lon: number): SoilData {
-  // Karakteristik tanah lahan kering umum (Lempung Liat Berpasir / Alfisol / Vertisol)
-  const sand = 38.0;
-  const silt = 32.0;
-  const clay = 30.0;
-  const soc = 1.15; // C-Organik sedang-rendah
-  const ph = 6.4;
-  const cec = 19.5;
+function generateFallbackSoil(
+  lat: number,
+  lon: number,
+  fallbackReason: string | null = 'Koneksi ISRIC SoilGrids tidak tersedia / timeout (failover model regional)'
+): SoilData {
+  // Karakteristik tanah terkalibrasi regional (Nusa Tenggara / Karst / Aluvial / Lahan Kering Tropis)
+  const isEasternIslands = lat < -8.0 && lon > 115.0; // NTT / NTB / Kawasan Timur
+  const sand = isEasternIslands ? 36.0 : 38.0;
+  const silt = isEasternIslands ? 30.0 : 32.0;
+  const clay = isEasternIslands ? 34.0 : 30.0;
+  const soc = isEasternIslands ? 1.05 : 1.15; // C-Organik lahan semi-arid
+  const ph = isEasternIslands ? 6.7 : 6.4;
+  const cec = isEasternIslands ? 21.0 : 19.5;
   const awc = calculateAWC(sand, silt, clay, soc);
   const textureClass = classifySoilTexture(sand, silt, clay);
+  const nowIso = new Date().toISOString();
 
   return {
     sand,
@@ -121,6 +148,11 @@ function generateFallbackSoil(lat: number, lon: number): SoilData {
     ph,
     cec,
     awc,
-    textureClass
+    textureClass,
+    source: 'REGIONAL_FALLBACK',
+    fetchedAt: nowIso,
+    cached: false,
+    fallbackReason,
+    observationPeriod: 'Regional Tropical Soil Profile Estimate (Depth 0-30cm)'
   };
 }

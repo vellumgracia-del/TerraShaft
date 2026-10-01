@@ -2,66 +2,121 @@
 @import "leaflet/dist/leaflet.css";
 
 /* ========================================================
-   NASA-GRADE MISSION-CRITICAL AGRONOMIC TELEMETRY THEME
-   Functional Color System (60-30-10 Rule)
-   Zero-Slop Standard
+   TERRASHAFT - MODERN LIGHT AGRITECH DESIGN SYSTEM
+   Calm, friendly, trustworthy farm intelligence workspace
    ======================================================== */
 
 :root {
-  --bg-space: #0B0F17;
-  --bg-card: #131B2E;
-  --border-tech: #1E293B;
-  --text-primary: #F8FAFC;
-  --text-muted: #94A3B8;
-  --text-dim: #64748B;
+  --bg-app: #F5F7F4;
+  --bg-card: #FFFFFF;
+  --text-main: #17231F;
+  --text-muted: #7B8681;
+  --text-light: #9CA3AF;
   
-  /* Telemetri Satelit */
-  --smap-cyan: #06B6D4;
-  --smap-amber: #F59E0B;
-  --smap-red: #EF4444;
-  --gpm-sky: #38BDF8;
-  --ceres-ochre: #EAB308;
-  --nasa-blue: #2563EB;
+  --brand-green: #12A875;
+  --brand-green-hover: #0E9365;
+  --brand-green-soft: #E7F5EE;
+  
+  --soft-blue: #EAF5F4;
+  --soft-amber: #FFF4D8;
+  --soft-red: #FDEAEA;
+  --border-light: #E4EAE6;
+  
+  --status-green: #12A875;
+  --status-amber: #D97706;
+  --status-red: #E11D48;
+  --status-blue: #0284C7;
+  
+  --card-shadow: 0 1px 3px 0 rgba(23, 35, 31, 0.04), 0 1px 2px -1px rgba(23, 35, 31, 0.03);
+  --card-shadow-hover: 0 4px 6px -1px rgba(23, 35, 31, 0.06), 0 2px 4px -2px rgba(23, 35, 31, 0.04);
 }
 
-/* Field / High-Glare Outdoor Mode (Sunlight Adaptive) */
+/* Field / High-Contrast Outdoor Mode (Sunlight Adaptive) */
 [data-field-mode="true"] {
-  --bg-space: #FFFFFF;
-  --bg-card: #F8FAFC;
-  --border-tech: #000000;
-  --text-primary: #000000;
-  --text-muted: #1E293B;
-  --text-dim: #475569;
+  --bg-app: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-main: #000000;
+  --text-muted: #1F2937;
+  --text-light: #374151;
   
-  --smap-cyan: #0284C7;
-  --smap-amber: #D97706;
-  --smap-red: #DC2626;
-  --gpm-sky: #0369A1;
-  --ceres-ochre: #B45309;
-  --nasa-blue: #1D4ED8;
+  --brand-green: #047857;
+  --brand-green-hover: #065F46;
+  --brand-green-soft: #ECFDF5;
+  
+  --soft-blue: #F0FDF4;
+  --soft-amber: #FEF3C7;
+  --soft-red: #FEE2E2;
+  --border-light: #000000;
+  
+  --card-shadow: none;
+  --card-shadow-hover: none;
 }
 
 body {
-  background-color: var(--bg-space);
-  color: var(--text-primary);
+  background-color: var(--bg-app);
+  color: var(--text-main);
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Font Monospaced & Tabular Numbers untuk Presisi Data */
+/* Font Monospaced & Tabular Numbers for Technical Precision */
 .font-mono,
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* Base leaflet adjustments */
+/* Base leaflet adjustments for clean light theme and strict stacking containment */
+.scroll-section {
+  scroll-margin-top: 88px;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 0.5rem;
-  background-color: #0B0F17 !important;
+  border-radius: 1rem;
+  background-color: #EAF0EC !important;
+  z-index: 1 !important;
+  isolation: isolate;
+}
+
+/* Trap all Leaflet panes and controls within local stacking context */
+.leaflet-pane {
+  z-index: 10 !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 2 !important;
+}
+
+.leaflet-overlay-pane {
+  z-index: 4 !important;
+}
+
+.leaflet-shadow-pane {
+  z-index: 5 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 6 !important;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 7 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 8 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 15 !important;
+}
+
+.leaflet-control {
+  z-index: 15 !important;
 }
 
 .custom-map-pin {
@@ -69,30 +124,33 @@ body {
   border: none;
 }
 
-/* Technical Precision Rack Container */
-.telemetry-card {
+/* Modern Agritech Card */
+.agri-card {
   background-color: var(--bg-card);
-  border: 1px solid var(--border-tech);
+  border: 1px solid var(--border-light);
+  border-radius: 1.25rem;
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease-in-out;
 }
 
-[data-field-mode="true"] .telemetry-card {
-  border: 1.5px solid #000000 !important;
+[data-field-mode="true"] .agri-card {
+  border: 2px solid #000000 !important;
   box-shadow: none !important;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F17;
+  background: #F5F7F4;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 2px;
+  background: #D1D5DB;
+  border-radius: 3px;
 }
 
 [data-field-mode="true"] ::-webkit-scrollbar-track {

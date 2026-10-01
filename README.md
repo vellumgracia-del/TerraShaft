@@ -117,9 +117,17 @@ Membagi siklus budidaya ke dalam 4 musim berkesinambungan:
 * **Visualisasi Data:** Recharts (Dual-Axis ComposedChart & 5-Axis Spider Radar Chart).
 * **State Management & Offline:** Zustand + Web App Manifest + Service Worker PWA.
 * **Mesin Ekspor Gambar:** `html-to-image` (Client-side Canvas rendering 1080×1350 px).
-* **Data Plumbing Layer:** Next.js Route Handlers sebagai proxy API terintegrasi:
+* **Data Plumbing Layer & Provenansi Ilmiah:** Next.js Route Handlers sebagai proxy API terintegrasi dengan pelacakan metadata ketat:
   - `/api/nasa-climate` (NASA POWER Agroclimatology: SMAP L4, GPM IMERG, CERES, MERRA-2).
   - `/api/soil-profile` (ISRIC SoilGrids v2.0 REST API).
+  - **Kontrak Provenansi Data (`source`, `fetchedAt`, `cached`, `fallbackReason`, `observationPeriod`):**
+    - `source`: Menandai asal data (`NASA_POWER_LIVE`, `ISRIC_SOILGRIDS_LIVE`, `FALLBACK_CLIMATOLOGY`, `REGIONAL_FALLBACK`).
+    - `fetchedAt`: Waktu stempel pengambilan jaringan / cache lokal (bukan periode observasi fisik).
+    - `observationPeriod`: Menandai rentang waktu observasi fisik sensor/satelit (misal: "Historical 1-Year Baseline" atau "Standard Depth Layer 0-30cm").
+    - `cached`: Menandai data berasal dari in-memory cache TTL (UI menampilkan badge "CACHED DATA").
+    - `fallbackReason`: Penjelasan ilmiah transparan saat failover regional aktif akibat kendala jaringan/timeout.
+  - **Validasi Koordinat Tanpa Silent Clamping:**
+    - Parameter koordinat `lat` dan `lon` wajib diisi. Input di luar batas (-90°..90° latitude, -180°..180° longitude) ditolak dengan HTTP 400 Bad Request dan pesan kesalahan terkontrol, mencegah pergeseran lokasi diam-diam (*silent clamping*).
 
 ---
 
@@ -137,10 +145,13 @@ cd terrashaft-app
 # 2. Pasang dependensi
 npm install
 
-# 3. Jalankan pengujian unit test agronomi (1.296 permutasi)
+# 3. Jalankan pengujian unit test dan integrasi proxy (1.296 permutasi + 12 kriteria API)
 npm test
 
-# 4. Jalankan server pengembangan lokal
+# 4. Jalankan linting kode
+npm run lint
+
+# 5. Jalankan server pengembangan lokal
 npm run dev
 ```
 

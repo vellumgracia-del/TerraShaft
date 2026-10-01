@@ -22,6 +22,8 @@ export interface Crop {
   is_custom?: boolean;
 }
 
+export type SoilSource = 'ISRIC_SOILGRIDS_LIVE' | 'REGIONAL_FALLBACK';
+
 export interface SoilData {
   sand: number; // percentage %
   clay: number; // percentage %
@@ -31,7 +33,13 @@ export interface SoilData {
   cec: number;  // Cation Exchange Capacity cmol/kg
   awc: number;  // Available Water Capacity mm
   textureClass: string; // e.g. "Sandy Loam", "Clay", "Loam"
+  source: SoilSource;
+  fetchedAt: string;
+  cached: boolean;
+  fallbackReason: string | null;
+  observationPeriod: string;
 }
+
 
 export interface SeasonCropAllocation {
   seasonIndex: number;
