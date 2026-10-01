@@ -22,7 +22,7 @@ export interface Crop {
   is_custom?: boolean;
 }
 
-export type SoilSource = 'ISRIC_SOILGRIDS_LIVE' | 'REGIONAL_FALLBACK';
+export type SoilSource = 'ISRIC_SOILGRIDS_LIVE' | 'REGIONAL_FALLBACK' | 'DEMO_SIMULATION';
 
 export interface SoilData {
   sand: number; // percentage %

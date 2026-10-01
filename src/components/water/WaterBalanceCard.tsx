@@ -15,6 +15,7 @@ import {
   Area
 } from 'recharts';
 import { Droplets, Info } from 'lucide-react';
+import { formatMm, getStructuredSeason } from '@/lib/formatters';
 
 interface TooltipPayloadItem {
   name: string;
@@ -43,7 +44,7 @@ const CustomChartTooltip = ({ active, payload, label }: CustomTooltipProps) => {
               <span>{item.name}:</span>
             </span>
             <span className="font-mono font-bold text-[#17231F]">
-              {item.value} mm
+              {formatMm(item.value)}
             </span>
           </div>
         ))}
@@ -58,18 +59,21 @@ export default function WaterBalanceCard() {
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
-  // Chart data from current rotation plan
-  const chartData = currentPlan?.seasons.map((season) => ({
-    seasonName: season.seasonName,
-    cropName: season.crop.name,
-    rainfall_mm: season.expectedRain_mm,
-    demand_mm: season.waterDemand_mm,
-    deficit_mm: season.waterDeficit_mm
-  })) || [
-    { seasonName: 'Musim 1 (Nov-Feb)', cropName: 'Orok-orok', rainfall_mm: 1010, demand_mm: 150, deficit_mm: 0 },
-    { seasonName: 'Musim 2 (Mar-Mei)', cropName: 'Kedelai', rainfall_mm: 360, demand_mm: 360, deficit_mm: 0 },
-    { seasonName: 'Musim 3 (Jun-Agu)', cropName: 'Orok-orok', rainfall_mm: 35, demand_mm: 150, deficit_mm: 115 },
-    { seasonName: 'Musim 4 (Sep-Okt)', cropName: 'Orok-orok', rainfall_mm: 47, demand_mm: 150, deficit_mm: 103 }
+  // Chart data from current rotation plan with structured seasons and clean precision
+  const chartData = currentPlan?.seasons.map((season) => {
+    const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange);
+    return {
+      seasonName: `${sInfo.seasonLabel} (${sInfo.monthRange})`,
+      cropName: season.crop.name,
+      rainfall_mm: Math.round(season.expectedRain_mm),
+      demand_mm: Math.round(season.waterDemand_mm),
+      deficit_mm: Number(season.waterDeficit_mm.toFixed(1))
+    };
+  }) || [
+    { seasonName: 'Musim 1 (Nov – Feb)', cropName: 'Orok-orok', rainfall_mm: 1010, demand_mm: 150, deficit_mm: 0 },
+    { seasonName: 'Musim 2 (Mar – Mei)', cropName: 'Kedelai', rainfall_mm: 360, demand_mm: 360, deficit_mm: 0 },
+    { seasonName: 'Musim 3 (Jun – Agu)', cropName: 'Orok-orok', rainfall_mm: 35, demand_mm: 150, deficit_mm: 115 },
+    { seasonName: 'Musim 4 (Sep – Okt)', cropName: 'Orok-orok', rainfall_mm: 47, demand_mm: 150, deficit_mm: 103 }
   ];
 
   return (
@@ -93,7 +97,7 @@ export default function WaterBalanceCard() {
         <div className="flex items-center gap-2 text-xs self-start sm:self-auto">
           <span className="text-[#7B8681]">Kapasitas Retensi (AWC):</span>
           <span className="font-mono font-bold text-[#12A875] bg-[#E7F5EE] px-2 py-0.5 rounded-md">
-            {soilData?.awc ?? 30.3} mm/30cm
+            {formatMm(soilData?.awc ?? 30.3)} / 30cm
           </span>
         </div>
       </div>

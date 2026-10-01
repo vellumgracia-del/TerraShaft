@@ -12,6 +12,12 @@ import {
   Layers
 } from 'lucide-react';
 
+import {
+  formatKgPerHa,
+  formatPercentage,
+  formatMm
+} from '@/lib/formatters';
+
 interface SoilBatteryCardProps {
   onExploreRotation?: () => void;
 }
@@ -127,13 +133,16 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
                 <Leaf className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs text-[#7B8681] block font-medium">Estimated Nitrogen Balance (ΔN)</span>
+                <span className="text-xs text-[#7B8681] block font-medium">Estimasi Kontribusi N Biologis Kumulatif</span>
                 <span className="text-sm font-bold text-[#17231F]">
-                  {nitrogenBalance >= 0 ? `+${nitrogenBalance}` : nitrogenBalance} kg N/ha
+                  {formatKgPerHa(nitrogenBalance)}
+                </span>
+                <span className="text-[10px] text-[#7B8681] block mt-0.5">
+                  Tidak berarti seluruh nitrogen langsung tersedia bagi tanaman.
                 </span>
               </div>
             </div>
-            <span className="text-[11px] font-semibold text-[#12A875] bg-[#E7F5EE] px-2 py-1 rounded-lg">
+            <span className="text-[11px] font-semibold text-[#12A875] bg-[#E7F5EE] px-2 py-1 rounded-lg shrink-0">
               Fiksasi Biologis
             </span>
           </div>
@@ -145,13 +154,16 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
                 <Droplets className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs text-[#7B8681] block font-medium">Model-based Water Saving Estimate</span>
+                <span className="text-xs text-[#7B8681] block font-medium">Estimasi Penghematan Air Siklus</span>
                 <span className="text-sm font-bold text-[#17231F]">
-                  {waterSavings}% Lebih Hemat Air
+                  Hingga {formatPercentage(waterSavings)} Efisiensi Air
+                </span>
+                <span className="text-[10px] text-[#7B8681] block mt-0.5">
+                  Dibandingkan model baseline monokultur; bukan jaminan hasil lapangan.
                 </span>
               </div>
             </div>
-            <span className="text-[11px] font-semibold text-[#0284C7] bg-[#EAF5F4] px-2 py-1 rounded-lg">
+            <span className="text-[11px] font-semibold text-[#0284C7] bg-[#EAF5F4] px-2 py-1 rounded-lg shrink-0">
               vs Monokultur
             </span>
           </div>
@@ -165,12 +177,12 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
               <div>
                 <span className="text-xs text-[#7B8681] block font-medium">Karbon Organik Tanah (SOC ISRIC)</span>
                 <span className="text-sm font-bold text-[#17231F]">
-                  {socBaseline}% C-Organik (Kedalaman 0–30cm)
+                  {socBaseline}% C-Organik (Lapisan 0–30cm)
                 </span>
               </div>
             </div>
-            <span className="text-[11px] font-semibold text-[#52605B] bg-white border border-[#E4EAE6] px-2 py-1 rounded-lg font-mono">
-              AWC: {soilData?.awc ?? 30.3}mm
+            <span className="text-[11px] font-semibold text-[#52605B] bg-white border border-[#E4EAE6] px-2 py-1 rounded-lg font-mono shrink-0">
+              AWC: {formatMm(soilData?.awc ?? 30.3)}
             </span>
           </div>
         </div>
@@ -180,7 +192,7 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
       <div className="p-3 bg-[#F5F7F4] rounded-xl border border-[#E4EAE6] flex items-start gap-2 text-xs text-[#7B8681]">
         <Info className="w-4 h-4 text-[#12A875] shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong>Catatan Ilmiah:</strong> Skor Baterai Tanah adalah indikator *screening model* berbasis kaidah agronomi pergantian legum penambat nitrogen dan cover crop, bukan pengukuran laboratorium *real-time*.
+          <strong>Catatan Ilmiah:</strong> Skor Baterai Tanah adalah indikator <em>screening model</em> berbasis kaidah agronomi pergantian legum penambat nitrogen dan cover crop, bukan pengukuran laboratorium <em>real-time</em>.
         </p>
       </div>
     </div>

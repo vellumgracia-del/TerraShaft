@@ -12,6 +12,7 @@ import {
   Satellite,
   Sprout
 } from 'lucide-react';
+import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 
 interface SidebarProps {
   activeSection: string;
@@ -30,6 +31,7 @@ export default function Sidebar({
   isCropLibraryOpen = false,
   isExportModalOpen = false
 }: SidebarProps) {
+  const prov = useTerraShaftStore((s) => s.provenance);
   const navItems = [
     { id: 'overview', label: 'Ringkasan Lahan', icon: LayoutDashboard },
     { id: 'field-map', label: 'Peta Lahan', icon: MapPin },
@@ -89,14 +91,32 @@ export default function Sidebar({
         })}
       </nav>
 
-      {/* Scientific Standard Badge in Footer */}
-      <div className="p-3 bg-[#F5F7F4] border border-[#E4EAE6] rounded-2xl flex flex-col gap-1 mt-auto">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#17231F]">
-          <span className="w-2 h-2 rounded-full bg-[#12A875]" />
-          <span>NASA & ISRIC Ready</span>
+      {/* Dynamic Truthful Data Provenance Status in Sidebar Footer */}
+      <div className="p-3 bg-[#F5F7F4] border border-[#E4EAE6] rounded-2xl flex flex-col gap-1.5 mt-auto">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-[#17231F]">
+          <span
+            className={`w-2 h-2 rounded-full ${
+              prov.overallMode === 'live'
+                ? 'bg-[#12A875]'
+                : prov.overallMode === 'cached'
+                ? 'bg-[#0284C7]'
+                : 'bg-[#D97706]'
+            }`}
+          />
+          <span className="truncate">
+            {prov.overallMode === 'live'
+              ? 'Observasi Resmi Live'
+              : prov.overallMode === 'cached'
+              ? 'Telemetri Cache Lokal'
+              : 'Mode Failover Regional'}
+          </span>
         </div>
         <p className="text-[11px] text-[#7B8681] leading-relaxed">
-          Eksplorasi skenario adaptif berbasis biofisik satelit dan model agronomi.
+          {prov.overallMode === 'live'
+            ? 'Terhubung ke observasi satelit NASA dan tanah ISRIC.'
+            : prov.overallMode === 'cached'
+            ? 'Menggunakan snapshot telemetri tervalidasi.'
+            : 'Menggunakan model agroklimat & pedologi terkalibrasi regional.'}
         </p>
       </div>
     </aside>

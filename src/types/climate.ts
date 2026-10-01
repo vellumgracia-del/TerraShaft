@@ -1,4 +1,4 @@
-export type ClimateSource = 'NASA_POWER_LIVE' | 'FALLBACK_CLIMATOLOGY';
+export type ClimateSource = 'NASA_POWER_LIVE' | 'FALLBACK_CLIMATOLOGY' | 'DEMO_SIMULATION';
 
 export interface MonthlyClimate {
   month: number;

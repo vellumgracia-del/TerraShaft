@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { Crop, CropCategory, DroughtTolerance } from '@/types/agronomy';
 import { Database, Plus, X, Check, Sparkles } from 'lucide-react';
+import { getCropEmoji, formatMm } from '@/lib/formatters';
 
 interface CropLibraryModalProps {
   isOpen: boolean;
@@ -268,7 +269,7 @@ export default function CropLibraryModal({ isOpen, onClose }: CropLibraryModalPr
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl p-2 bg-[#F5F7F4] rounded-xl">{crop.icon}</span>
+                    <span className="text-2xl p-2 bg-[#F5F7F4] rounded-xl">{getCropEmoji(crop.icon)}</span>
                     <div>
                       <div className="flex items-center gap-1.5">
                         <h4 className="text-sm font-bold text-[#17231F]">{crop.name}</h4>
@@ -294,7 +295,7 @@ export default function CropLibraryModal({ isOpen, onClose }: CropLibraryModalPr
                   </div>
                   <div className="bg-[#F5F7F4] p-1.5 rounded-xl">
                     <span className="text-[10px] text-[#7B8681] block">Air (ETc)</span>
-                    <span className="font-bold font-mono text-[#0284C7]">{crop.water_requirement_mm}mm</span>
+                    <span className="font-bold font-mono text-[#0284C7]">{formatMm(crop.water_requirement_mm)}</span>
                   </div>
                   <div className="bg-[#F5F7F4] p-1.5 rounded-xl">
                     <span className="text-[10px] text-[#7B8681] block">Toleransi</span>

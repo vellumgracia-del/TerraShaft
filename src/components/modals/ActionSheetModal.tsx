@@ -9,8 +9,17 @@ import {
   Share2,
   Sprout,
   CheckCircle2,
-  Satellite
+  Satellite,
+  AlertCircle
 } from 'lucide-react';
+import {
+  formatMm,
+  formatKgPerHa,
+  formatCoordinate,
+  formatScore,
+  getCropEmoji,
+  getStructuredSeason
+} from '@/lib/formatters';
 
 interface ActionSheetModalProps {
   isOpen: boolean;
@@ -18,7 +27,7 @@ interface ActionSheetModalProps {
 }
 
 export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalProps) {
-  const { location, elevation_m, soilData, climateData, plans, selectedPathway } = useTerraShaftStore();
+  const { location, elevation_m, plans, selectedPathway, provenance } = useTerraShaftStore();
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [isExporting, setIsExporting] = useState(false);
@@ -29,9 +38,28 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
   const currentPlan = plans ? plans[selectedPathway] : null;
   if (!currentPlan) return null;
 
+  const prov = provenance;
+  const overallMode = prov?.overallMode ?? 'fallback';
+
   const initialBattery = currentPlan.initialBatteryScore;
   const finalBattery = currentPlan.soilBatteryScore;
   const deltaBattery = finalBattery - initialBattery;
+
+  // Determine dynamic provenance note
+  const getProvenanceNote = () => {
+    if (overallMode === 'live') {
+      return 'Status data: LIVE OBSERVATION — Terhubung ke API resmi NASA POWER & ISRIC SoilGrids';
+    }
+    if (overallMode === 'cached') {
+      return 'Status data: CACHED DATA — Cache hasil observasi API sebelumnya';
+    }
+    if (overallMode === 'demo') {
+      return 'Status data: DEMO MODE — Bukan observasi live; disimulasikan untuk demonstrasi';
+    }
+    return 'Status data: REGIONAL FALLBACK — Menggunakan model agroklimat regional terkalibrasi';
+  };
+
+  const provenanceNote = getProvenanceNote();
 
   // Handler Download PNG (1080x1350 px native canvas)
   const handleDownloadImage = async () => {
@@ -69,28 +97,24 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
   // Handler WhatsApp Share
   const handleShareWhatsApp = () => {
     const cropsSummary = currentPlan.seasons
-      .map(
-        (s) =>
-          `• *${s.seasonName.split('(')[0].trim()} (${s.monthRange})*: ${s.crop.name} (Varietas: ${
-            s.crop.recommended_variety || 'Unggul'
-          }) — Defisit Air: ${s.waterDeficit_mm}mm, Efek Baterai: ${s.batteryDelta_pct >= 0 ? '+' : ''}${s.batteryDelta_pct}%`
-      )
+      .map((s) => {
+        const seasonInfo = getStructuredSeason(s.seasonIndex, s.seasonName, s.monthRange);
+        const iconEmoji = getCropEmoji(s.crop.icon);
+        return `• *${seasonInfo.seasonLabel}: ${seasonInfo.seasonName} (${seasonInfo.monthRange})*: ${iconEmoji} ${s.crop.name} (Varietas: ${
+          s.crop.recommended_variety || 'Unggul'
+        }) — Defisit Air: ${formatMm(s.waterDeficit_mm)}, Efek Baterai: ${s.batteryDelta_pct >= 0 ? '+' : ''}${s.batteryDelta_pct}%`;
+      })
       .join('\n');
-
-    const sourceSummary =
-      climateData?.source === 'NASA_POWER_LIVE' && soilData?.source === 'ISRIC_SOILGRIDS_LIVE'
-        ? 'NASA POWER & ISRIC SoilGrids Live'
-        : 'Model Agroklimat & Pedologi Regional Terkalibrasi';
 
     const messageText =
       `🌱 *LEMBAR AKSI POLA ROTASI TANAM 4 MUSIM — TERRASHAFT* 🌱\n\n` +
-      `📍 *Lokasi:* ${location.placeName || 'Lahan Budidaya'} (${location.lat.toFixed(4)}°, ${location.lon.toFixed(4)}° · ${elevation_m}m dpl)\n` +
-      `🎯 *Skenario Terpilih:* ${currentPlan.title} (Skor: ${currentPlan.compositeScore}/100)\n\n` +
+      `📍 *Lokasi:* ${location.placeName || 'Lahan Budidaya'} (${formatCoordinate(location.lat)}°, ${formatCoordinate(location.lon)}° · ${Math.round(elevation_m)} m dpl)\n` +
+      `🎯 *Skenario Terpilih:* ${currentPlan.title} (Skor: ${formatScore(currentPlan.compositeScore)}/100)\n\n` +
       `⚡ *Baterai Tanah:* ${initialBattery}% ➔ ${finalBattery}% (${deltaBattery >= 0 ? '+' : ''}${deltaBattery}%)\n` +
-      `💧 *Efisiensi Air:* ${currentPlan.waterSavingsPct}% lebih hemat dibanding monokultur\n` +
-      `🌿 *Neraca Nitrogen Alami:* +${currentPlan.netNitrogenDelta} kg N/ha\n\n` +
+      `💧 *Efisiensi Air:* Estimasi penghematan air hingga ${currentPlan.waterSavingsPct}% dibanding baseline monokultur\n` +
+      `🌿 *Neraca Nitrogen:* Estimasi kontribusi N biologis kumulatif ${formatKgPerHa(currentPlan.netNitrogenDelta)}\n\n` +
       `📅 *JADWAL ROTASI 4 MUSIM:*\n${cropsSummary}\n\n` +
-      `🛰️ _Sumber Data: ${sourceSummary}_\n` +
+      `🛰️ _${provenanceNote}_\n` +
       `⚠️ _TerraShaft adalah alat eksplorasi skenario; validasikan dengan penyuluh dan kondisi lapangan lokal sebelum tanam._`;
 
     const encoded = encodeURIComponent(messageText);
@@ -189,13 +213,24 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
               <div>
                 <span className="text-xs text-[#7B8681] font-semibold uppercase">Koordinat Spasial</span>
                 <p className="text-base font-bold font-mono text-[#17231F] mt-1">
-                  LAT {location.lat.toFixed(4)}° | LON {location.lon.toFixed(4)}°
+                  LAT {formatCoordinate(location.lat)}° | LON {formatCoordinate(location.lon)}°
                 </p>
               </div>
               <div>
                 <span className="text-xs text-[#7B8681] font-semibold uppercase">Ketinggian Lahan</span>
-                <p className="text-base font-bold text-[#17231F] mt-1">{elevation_m} m dpl</p>
+                <p className="text-base font-bold text-[#17231F] mt-1">{Math.round(elevation_m)} m dpl</p>
               </div>
+            </div>
+
+            {/* Required Section 8: Visible Provenance Banner in Action Sheet */}
+            <div className="p-4 rounded-xl bg-[#FFF4D8] border border-[#FDE68A] flex items-center justify-between text-xs text-[#92400E]">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-[#D97706] shrink-0" />
+                <span className="font-semibold">{provenanceNote}</span>
+              </div>
+              <span className="font-mono text-[11px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/70 border border-[#FDE68A]">
+                {overallMode}
+              </span>
             </div>
 
             {/* Pathway Summary Hero */}
@@ -215,7 +250,7 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
               <div className="text-center p-6 bg-white rounded-2xl border border-[#A7F3D0] shadow-sm">
                 <span className="text-xs font-bold uppercase text-[#7B8681] block">Skor Komposit</span>
                 <span className="text-5xl font-black font-mono text-[#12A875]">
-                  {currentPlan.compositeScore}
+                  {formatScore(currentPlan.compositeScore)}
                 </span>
                 <span className="text-xs text-[#7B8681] block mt-1">/ 100</span>
               </div>
@@ -238,7 +273,9 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
                 <span className="text-3xl font-extrabold font-mono text-[#0284C7] mt-1 block">
                   {currentPlan.waterSavingsPct}%
                 </span>
-                <span className="text-xs text-[#7B8681] mt-1 inline-block">vs Monokultur</span>
+                <span className="text-xs text-[#7B8681] mt-1 inline-block leading-tight">
+                  Estimasi vs baseline
+                </span>
               </div>
 
               <div className="p-5 rounded-2xl bg-white border-2 border-[#E4EAE6]">
@@ -266,39 +303,45 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
               </h3>
 
               <div className="grid grid-cols-4 gap-4">
-                {currentPlan.seasons.map((season) => (
-                  <div key={season.seasonIndex} className="p-5 rounded-2xl bg-[#F5F7F4] border-2 border-[#E4EAE6] flex flex-col justify-between gap-3">
-                    <div className="border-b border-[#E4EAE6] pb-2">
-                      <span className="text-xs font-bold text-[#12A875] block uppercase tracking-wider">
-                        Musim {season.seasonIndex}
-                      </span>
-                      <span className="text-xs text-[#7B8681]">{season.monthRange}</span>
-                    </div>
+                {currentPlan.seasons.map((season) => {
+                  const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange);
+                  const iconEmoji = getCropEmoji(season.crop.icon);
 
-                    <div>
-                      <span className="text-3xl mb-1 block">{season.crop.icon}</span>
-                      <h4 className="text-lg font-bold text-[#17231F] leading-tight">{season.crop.name}</h4>
-                      <p className="text-xs text-[#52605B] mt-1 font-medium">
-                        Varietas: {season.crop.recommended_variety || 'Unggul Lokal'}
-                      </p>
-                    </div>
+                  return (
+                    <div key={season.seasonIndex} className="p-5 rounded-2xl bg-[#F5F7F4] border-2 border-[#E4EAE6] flex flex-col justify-between gap-3">
+                      <div className="border-b border-[#E4EAE6] pb-2">
+                        <span className="text-xs font-bold text-[#12A875] block uppercase tracking-wider">
+                          {sInfo.seasonLabel}
+                        </span>
+                        <span className="text-xs font-semibold text-[#17231F] block">{sInfo.seasonName}</span>
+                        <span className="text-xs text-[#7B8681]">{sInfo.monthRange}</span>
+                      </div>
 
-                    <div className="p-3 rounded-xl bg-white border border-[#E4EAE6] text-xs flex flex-col gap-1">
-                      <div className="flex justify-between">
-                        <span className="text-[#7B8681]">Air:</span>
-                        <span className="font-mono font-bold text-[#17231F]">{season.waterDemand_mm} mm</span>
+                      <div>
+                        <span className="text-3xl mb-1 block">{iconEmoji}</span>
+                        <h4 className="text-lg font-bold text-[#17231F] leading-tight">{season.crop.name}</h4>
+                        <p className="text-xs text-[#52605B] mt-1 font-medium">
+                          Varietas: {season.crop.recommended_variety || 'Unggul Lokal'}
+                        </p>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#7B8681]">Defisit:</span>
-                        <span className="font-mono font-bold text-[#D97706]">{season.waterDeficit_mm} mm</span>
-                      </div>
-                      <div className="flex justify-between font-bold text-[#12A875] pt-1 border-t border-[#E4EAE6]">
-                        <span>Baterai:</span>
-                        <span>{season.batteryDelta_pct >= 0 ? `+${season.batteryDelta_pct}%` : `${season.batteryDelta_pct}%`}</span>
+
+                      <div className="p-3 rounded-xl bg-white border border-[#E4EAE6] text-xs flex flex-col gap-1">
+                        <div className="flex justify-between">
+                          <span className="text-[#7B8681]">Kebutuhan Air:</span>
+                          <span className="font-mono font-bold text-[#17231F]">{formatMm(season.waterDemand_mm)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[#7B8681]">Defisit Air:</span>
+                          <span className="font-mono font-bold text-[#D97706]">{formatMm(season.waterDeficit_mm)}</span>
+                        </div>
+                        <div className="flex justify-between font-bold text-[#12A875] pt-1 border-t border-[#E4EAE6]">
+                          <span>Efek Baterai:</span>
+                          <span>{season.batteryDelta_pct >= 0 ? `+${season.batteryDelta_pct}%` : `${season.batteryDelta_pct}%`}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -307,7 +350,7 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
               <div className="flex items-center gap-3">
                 <Satellite className="w-5 h-5 text-[#12A875] shrink-0" />
                 <p className="max-w-3xl leading-relaxed">
-                  <strong>Pernyataan Ilmiah:</strong> Dihitung dengan algoritma optimasi TerraShaft berbasis asimilasi NASA POWER (SMAP L4, GPM IMERG, CERES) dan profil tanah ISRIC SoilGrids v2.0. Rekomendasi wajib divalidasi bersama Penyuluh Pertanian Lapangan (PPL).
+                  <strong>Pernyataan Ilmiah:</strong> Dihitung dengan algoritma optimasi TerraShaft berbasis asimilasi data NASA POWER dan profil tanah ISRIC SoilGrids. Skor Baterai Tanah adalah indikator <em>screening model</em>; rekomendasi wajib divalidasi bersama Penyuluh Pertanian Lapangan (PPL).
                 </p>
               </div>
               <span className="font-mono font-bold text-[#17231F] text-sm shrink-0">

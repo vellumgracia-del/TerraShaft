@@ -5,6 +5,7 @@ import { Crop, SoilData, Priorities, RotationPlan } from '@/types/agronomy';
 import { ClimateData, LocationCoordinates } from '@/types/climate';
 import initialCrops from '@/data/crops_library.json';
 import { generateOptimizationPlans } from '@/lib/optimizationEngine';
+import { resolveTerraShaftProvenance, TerraShaftProvenance } from '@/types/provenance';
 
 interface TerraShaftState {
   // Lokasi Lahan & Telemetri
@@ -18,6 +19,7 @@ interface TerraShaftState {
   climateData: ClimateData | null;
   isLoadingBioData: boolean;
   errorBioData: string | null;
+  provenance: TerraShaftProvenance;
 
   // Prioritas Petani / PPL
   priorities: Priorities;
@@ -46,6 +48,7 @@ interface TerraShaftState {
   openAddCropModal: () => void;
   closeAddCropModal: () => void;
   recalculate: () => void;
+  getProvenance: () => TerraShaftProvenance;
 }
 
 // Lokasi Default: Kupang Timur, NTT (Kawasan Lahan Kering Semi-Arid Indonesia)
@@ -72,6 +75,7 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   climateData: null,
   isLoadingBioData: false,
   errorBioData: null,
+  provenance: resolveTerraShaftProvenance(null, null, false, null),
   priorities: DEFAULT_PRIORITIES,
   crops: initialCrops as Crop[],
   selectedPathway: 'A',
@@ -85,9 +89,11 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
 
   setLocation: async (lat: number, lon: number, placeName?: string, elevation?: number) => {
     if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      set({
-        errorBioData: `Koordinat tidak valid (${lat}, ${lon}): Latitude harus antara -90° dan 90°, Longitude antara -180° dan 180°.`
-      });
+      const errorMsg = `Koordinat tidak valid (${lat}, ${lon}): Latitude harus antara -90° dan 90°, Longitude antara -180° dan 180°.`;
+      set((state) => ({
+        errorBioData: errorMsg,
+        provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, false, errorMsg)
+      }));
       return;
     }
 
@@ -106,7 +112,11 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   },
 
   fetchBioPhysicalData: async (lat: number, lon: number) => {
-    set({ isLoadingBioData: true, errorBioData: null });
+    set((state) => ({
+      isLoadingBioData: true,
+      errorBioData: null,
+      provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, true, null)
+    }));
     try {
       const [climateRes, soilRes] = await Promise.all([
         fetch(`/api/nasa-climate?lat=${lat}&lon=${lon}`),
@@ -124,7 +134,8 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
         climateData,
         soilData,
         isLoadingBioData: false,
-        satelliteSyncTime: new Date().toISOString()
+        satelliteSyncTime: new Date().toISOString(),
+        provenance: resolveTerraShaftProvenance(climateData, soilData, false, null)
       });
 
       // Hitung ulang rekomendasi rotasi
@@ -132,7 +143,11 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
     } catch (err: unknown) {
       console.error('Error fetching bio-physical data:', err);
       const errorMsg = err instanceof Error ? err.message : 'Terjadi kendala jaringan telemetri satelit';
-      set({ isLoadingBioData: false, errorBioData: errorMsg });
+      set((state) => ({
+        isLoadingBioData: false,
+        errorBioData: errorMsg,
+        provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, false, errorMsg)
+      }));
     }
   },
 
@@ -186,5 +201,9 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
 
     const generatedPlans = generateOptimizationPlans(crops, climateData, soilData, priorities);
     set({ plans: generatedPlans });
+  },
+
+  getProvenance: () => {
+    return get().provenance;
   }
 }));

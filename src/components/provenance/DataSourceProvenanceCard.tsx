@@ -7,38 +7,65 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  ShieldCheck
+  ShieldCheck,
+  Layers,
+  Info
 } from 'lucide-react';
+import { DataMode } from '@/types/provenance';
 
 export default function DataSourceProvenanceCard() {
-  const { climateData, soilData } = useTerraShaftStore();
+  const { climateData, soilData, provenance } = useTerraShaftStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Status helper
-  const getSourceBadge = (source?: string, cached?: boolean) => {
-    if (cached) {
-      return {
-        label: 'CACHED DATA',
-        style: 'bg-[#EAF5F4] text-[#0284C7] border-[#BAE6FD]',
-        dot: 'bg-[#0284C7]'
-      };
+  const prov = provenance;
+  const nasaProv = prov?.nasaPower;
+  const soilProv = prov?.isricSoilGrids;
+  const overallMode = prov?.overallMode ?? 'fallback';
+
+  const getBadgeStyle = (mode: DataMode) => {
+    switch (mode) {
+      case 'live':
+        return {
+          label: 'LIVE STREAM',
+          style: 'bg-[#E7F5EE] text-[#12A875] border-[#A7F3D0]',
+          dot: 'bg-[#12A875]'
+        };
+      case 'cached':
+        return {
+          label: 'CACHED DATA',
+          style: 'bg-[#EAF5F4] text-[#0284C7] border-[#BAE6FD]',
+          dot: 'bg-[#0284C7]'
+        };
+      case 'fallback':
+        return {
+          label: 'REGIONAL FALLBACK',
+          style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
+          dot: 'bg-[#D97706]'
+        };
+      case 'demo':
+        return {
+          label: 'DEMO DATA',
+          style: 'bg-[#F3E8FF] text-[#7E22CE] border-[#E9D5FF]',
+          dot: 'bg-[#7E22CE]'
+        };
+      case 'error':
+        return {
+          label: 'API ERROR',
+          style: 'bg-[#FDEAEA] text-[#E11D48] border-[#FECDD3]',
+          dot: 'bg-[#E11D48]'
+        };
+      case 'loading':
+      default:
+        return {
+          label: 'MEMUAT...',
+          style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
+          dot: 'bg-[#7B8681]'
+        };
     }
-    if (source === 'NASA_POWER_LIVE' || source === 'ISRIC_SOILGRIDS_LIVE') {
-      return {
-        label: 'LIVE STREAM',
-        style: 'bg-[#E7F5EE] text-[#12A875] border-[#A7F3D0]',
-        dot: 'bg-[#12A875]'
-      };
-    }
-    return {
-      label: 'REGIONAL FALLBACK',
-      style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
-      dot: 'bg-[#D97706]'
-    };
   };
 
-  const climateBadge = getSourceBadge(climateData?.source, climateData?.cached);
-  const soilBadge = getSourceBadge(soilData?.source, soilData?.cached);
+  const nasaBadge = getBadgeStyle(nasaProv?.mode ?? 'fallback');
+  const soilBadge = getBadgeStyle(soilProv?.mode ?? 'fallback');
 
   const formatTime = (iso?: string) => {
     if (!iso) return '--:--';
@@ -52,6 +79,9 @@ export default function DataSourceProvenanceCard() {
       return '--:--';
     }
   };
+
+  const isAnyDemo = overallMode === 'demo' || nasaProv?.isSimulated || soilProv?.isSimulated;
+  const isAnyFallback = nasaProv?.isFallback || soilProv?.isFallback;
 
   return (
     <div id="data-sources" className="agri-card p-5 lg:p-6 flex flex-col gap-4">
@@ -81,6 +111,19 @@ export default function DataSourceProvenanceCard() {
         </button>
       </div>
 
+      {/* Demo / Simulation Warning Banner if Demo/Fallback */}
+      {isAnyDemo && (
+        <div className="p-3.5 rounded-xl bg-[#FAF5FF] border border-[#E9D5FF] flex items-start gap-2.5 text-xs text-[#6B21A8]">
+          <Info className="w-4 h-4 text-[#9333EA] shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">DEMO DATA — Nilai disimulasikan untuk demonstrasi produk.</span>
+            <p className="mt-0.5 text-[#7E22CE] leading-relaxed">
+              Mode Demo aktif. Nilai iklim, tanah, dan rekomendasi yang ditampilkan digunakan untuk demonstrasi produk dan belum seluruhnya berasal dari observasi API resmi secara langsung.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Main Provenance Badges Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. NASA POWER Climate */}
@@ -90,20 +133,36 @@ export default function DataSourceProvenanceCard() {
               <span className="w-2 h-2 rounded-full bg-[#0284C7]" />
               Iklim & Atmosfer (NASA POWER)
             </span>
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${climateBadge.style}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${climateBadge.dot}`} />
-              <span>{climateBadge.label}</span>
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-1 ${nasaBadge.style}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${nasaBadge.dot}`} />
+              <span>{nasaBadge.label}</span>
             </span>
           </div>
 
           <div className="text-xs text-[#52605B] flex flex-col gap-1 mt-1">
             <div className="flex justify-between">
-              <span className="text-[#7B8681]">Waktu Fetch/Cache:</span>
+              <span className="text-[#7B8681]">Penyedia & Dataset:</span>
+              <span className="font-medium text-[#17231F] text-right truncate max-w-[200px]">
+                {nasaProv?.dataset || 'NASA POWER Climatology'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#7B8681]">Waktu Pengambilan:</span>
               <span className="font-mono font-semibold text-[#17231F]">{formatTime(climateData?.fetchedAt)}</span>
             </div>
             <div className="flex justify-between">
+              <span className="text-[#7B8681]">Status Observasi:</span>
+              <span className="font-medium text-[#17231F] text-right">
+                {nasaProv?.isOfficialObservation
+                  ? 'Observasi Resmi Terverifikasi'
+                  : nasaProv?.isCached
+                  ? 'Cache Hasil Observasi'
+                  : 'Estimasi Regional (Fallback)'}
+              </span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-[#7B8681]">Periode Observasi:</span>
-              <span className="font-medium text-[#17231F] text-right truncate max-w-[220px]" title={climateData?.observationPeriod}>
+              <span className="font-medium text-[#17231F] text-right truncate max-w-[200px]" title={climateData?.observationPeriod}>
                 {climateData?.observationPeriod || 'Historical Baseline 1-Tahun'}
               </span>
             </div>
@@ -132,13 +191,29 @@ export default function DataSourceProvenanceCard() {
 
           <div className="text-xs text-[#52605B] flex flex-col gap-1 mt-1">
             <div className="flex justify-between">
-              <span className="text-[#7B8681]">Waktu Fetch/Cache:</span>
+              <span className="text-[#7B8681]">Penyedia & Model:</span>
+              <span className="font-medium text-[#17231F] text-right truncate max-w-[200px]">
+                {soilProv?.dataset || 'ISRIC SoilGrids 250m v2.0'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#7B8681]">Waktu Pengambilan:</span>
               <span className="font-mono font-semibold text-[#17231F]">{formatTime(soilData?.fetchedAt)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#7B8681]">Lapisan Tanah:</span>
-              <span className="font-medium text-[#17231F] text-right truncate max-w-[220px]" title={soilData?.observationPeriod}>
-                {soilData?.observationPeriod || 'Standard Depth Layer 0-30cm'}
+              <span className="text-[#7B8681]">Status Observasi:</span>
+              <span className="font-medium text-[#17231F] text-right">
+                {soilProv?.isOfficialObservation
+                  ? 'Observasi Resmi Terverifikasi'
+                  : soilProv?.isCached
+                  ? 'Cache Profil Tanah'
+                  : 'Profil Tipikal Regional (Fallback)'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#7B8681]">Lapisan Kedalaman:</span>
+              <span className="font-medium text-[#17231F] text-right truncate max-w-[200px]" title={soilData?.observationPeriod}>
+                {soilData?.observationPeriod || 'Standard Depth Layer 0–30cm'}
               </span>
             </div>
           </div>
@@ -152,10 +227,26 @@ export default function DataSourceProvenanceCard() {
         </div>
       </div>
 
+      {/* Section 14 Requirement: Explicit Keterbatasan Data Box */}
+      <div className="p-4 rounded-xl bg-[#F5F7F4] border border-[#E4EAE6] flex flex-col gap-2 text-xs text-[#52605B]">
+        <div className="flex items-center gap-1.5 font-bold text-[#17231F]">
+          <Layers className="w-4 h-4 text-[#0284C7]" />
+          <span>Keterbatasan Data</span>
+        </div>
+        <p className="leading-relaxed text-[#52605B]">
+          TerraShaft saat ini dapat menggunakan kombinasi data demo, cache, fallback regional, dan respons API tergantung ketersediaan sumber. Status setiap sumber ditampilkan secara terpisah di atas. Nilai demo dan fallback tidak boleh diperlakukan sebagai observasi lapangan langsung.
+        </p>
+        {isAnyFallback && (
+          <p className="text-[11px] text-[#D97706] bg-[#FFF4D8] p-2 rounded-lg border border-[#FDE68A]">
+            Saat ini deployment menggunakan data fallback regional atau demo untuk sebagian sumber telemetri karena keterbatasan akses jaringan/upstream service. Integrasi API resmi perlu diverifikasi sebelum digunakan untuk keputusan budidaya nyata.
+          </p>
+        )}
+      </div>
+
       {/* Expanded Details on Sensors and Models */}
       {isExpanded && (
         <div className="p-4 rounded-xl bg-[#F5F7F4] border border-[#E4EAE6] flex flex-col gap-2 text-xs text-[#52605B]">
-          <span className="font-bold text-[#17231F]">Instrumen Asimilasi Satelit:</span>
+          <span className="font-bold text-[#17231F]">Instrumen Asimilasi Satelit & Model:</span>
           <ul className="list-disc pl-5 space-y-1 text-[#7B8681]">
             <li><strong>NASA SMAP (Soil Moisture Active Passive):</strong> Level-4 Root-Zone Soil Wetness (0–100cm).</li>
             <li><strong>NASA GPM (Global Precipitation Measurement):</strong> IMERG Corrected Precipitation.</li>
@@ -165,7 +256,7 @@ export default function DataSourceProvenanceCard() {
         </div>
       )}
 
-      {/* Required Scientific Disclaimer (Prompt Requirement) */}
+      {/* Required Scientific Disclaimer */}
       <div className="p-3.5 rounded-xl bg-[#E7F5EE] border border-[#A7F3D0] flex items-start gap-2.5 text-xs text-[#17231F]">
         <ShieldCheck className="w-4 h-4 text-[#12A875] shrink-0 mt-0.5" />
         <p className="leading-relaxed">

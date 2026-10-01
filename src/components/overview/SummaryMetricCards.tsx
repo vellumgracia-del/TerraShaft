@@ -11,9 +11,11 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { formatMm, formatNumber, getWaterStatusDetails } from '@/lib/formatters';
 
 export default function SummaryMetricCards() {
-  const { climateData, plans, selectedPathway } = useTerraShaftStore();
+  const { climateData, plans, selectedPathway, provenance } = useTerraShaftStore();
+  const prov = provenance;
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
@@ -43,12 +45,10 @@ export default function SummaryMetricCards() {
   if (currentPlan && currentPlan.seasons) {
     maxDeficit = Math.max(...currentPlan.seasons.map((s) => s.waterDeficit_mm), 0);
   }
-  const isHighWaterRisk = maxDeficit > 100;
-  const isModerateWaterRisk = maxDeficit > 40 && maxDeficit <= 100;
-  const waterRiskStatus = isHighWaterRisk ? 'Defisit Kritis' : isModerateWaterRisk ? 'Defisit Terkendali' : 'Air Aman';
-  const waterRiskColor = isHighWaterRisk
+  const waterDetails = getWaterStatusDetails(maxDeficit);
+  const waterRiskColor = maxDeficit > 100
     ? 'text-[#E11D48] bg-[#FDEAEA]'
-    : isModerateWaterRisk
+    : maxDeficit > 40
     ? 'text-[#D97706] bg-[#FFF4D8]'
     : 'text-[#12A875] bg-[#E7F5EE]';
 
@@ -71,7 +71,7 @@ export default function SummaryMetricCards() {
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold font-mono text-[#17231F] tabular-nums">
-              {gwetroot.toFixed(2)}
+              {formatNumber(gwetroot, 2)}
             </span>
             <span className="text-xs text-[#7B8681]">/ 1.00</span>
           </div>
@@ -79,7 +79,9 @@ export default function SummaryMetricCards() {
             <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${moistureColor}`}>
               {moistureStatus}
             </span>
-            <span className="text-[10px] text-[#9CA3AF] font-mono">SMAP L4</span>
+            <span className="text-[10px] text-[#9CA3AF] font-mono">
+              {prov?.nasaPower.mode === 'live' ? 'SMAP L4 (API)' : 'SMAP (Sim)'}
+            </span>
           </div>
         </div>
       </div>
@@ -145,15 +147,15 @@ export default function SummaryMetricCards() {
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold font-mono text-[#17231F] tabular-nums">
-              {maxDeficit.toFixed(1)}
+              {formatMm(maxDeficit)}
             </span>
-            <span className="text-xs text-[#7B8681]">mm / musim</span>
+            <span className="text-xs text-[#7B8681]">/ musim</span>
           </div>
           <div className="mt-2 flex items-center justify-between">
             <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${waterRiskColor}`}>
-              {waterRiskStatus}
+              {waterDetails.label}
             </span>
-            <span className="text-[10px] text-[#9CA3AF]">Threshold 100mm</span>
+            <span className="text-[10px] text-[#9CA3AF]">Threshold 100 mm</span>
           </div>
         </div>
       </div>
@@ -174,7 +176,7 @@ export default function SummaryMetricCards() {
             <span className="text-[11px] font-medium text-[#52605B] truncate max-w-[120px]" title={season1Variety}>
               {season1Variety}
             </span>
-            <span className="text-[10px] text-[#7B8681] font-mono">{season1Water}mm</span>
+            <span className="text-[10px] text-[#7B8681] font-mono">{formatMm(season1Water)}</span>
           </div>
         </div>
       </div>
