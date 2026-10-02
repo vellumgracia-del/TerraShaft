@@ -56,9 +56,13 @@ export function resolveTerraShaftProvenance(
   climate: ClimateData | null,
   soil: SoilData | null,
   isLoading = false,
-  errorMsg: string | null = null
+  errorMsg: string | null = null,
+  loadingSources?: { nasaPower?: boolean; soilGrids?: boolean }
 ): TerraShaftProvenance {
-  if (isLoading) {
+  const isNasaLoading = isLoading && (loadingSources ? loadingSources.nasaPower !== false : true);
+  const isSoilLoading = isLoading && (loadingSources ? loadingSources.soilGrids !== false : true);
+
+  if (isNasaLoading && isSoilLoading) {
     const loadingProv: DataProvenance = {
       mode: 'loading',
       provider: 'Telemetri Satelit NASA & ISRIC',
@@ -68,18 +72,18 @@ export function resolveTerraShaftProvenance(
       isCached: false
     };
     return {
-      nasaPower: loadingProv,
-      isricSoilGrids: loadingProv,
+      nasaPower: { ...loadingProv, provider: 'NASA POWER Agroclimatology' },
+      isricSoilGrids: { ...loadingProv, provider: 'ISRIC SoilGrids v2.0' },
       overallMode: 'loading',
       headerBadge: {
-        label: 'MEMUAT OBSERVASI...',
-        text: 'MEMUAT OBSERVASI...',
-        sublabel: 'Menghubungkan ke API NASA & ISRIC',
+        label: 'MEMUAT DATA...',
+        text: 'MEMUAT DATA...',
+        sublabel: 'Menghubungkan ke API NASA POWER & ISRIC SoilGrids',
         style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
         dot: 'bg-[#7B8681]',
         isVerifiedLive: false
       },
-      disclosureText: 'Sedang mengambil observasi satelit NASA POWER dan profil tanah ISRIC SoilGrids...'
+      disclosureText: 'Sedang mengambil data agroklimatologi NASA POWER dan profil tanah ISRIC SoilGrids...'
     };
   }
 
@@ -115,7 +119,9 @@ export function resolveTerraShaftProvenance(
   const isNasaLive = climate?.source === 'NASA_POWER_LIVE' && !isNasaFallback;
   const isNasaDemo = !climate || climate.source === ('DEMO_SIMULATION' as string);
 
-  const nasaMode: DataMode = isNasaFallback
+  const nasaMode: DataMode = isNasaLoading
+    ? 'loading'
+    : isNasaFallback
     ? 'fallback'
     : isNasaCached
     ? 'cached'
@@ -125,8 +131,8 @@ export function resolveTerraShaftProvenance(
 
   const nasaPower: DataProvenance = {
     mode: nasaMode,
-    provider: 'NASA POWER Agroclimatology (SMAP L4, GPM IMERG, CERES)',
-    dataset: 'Daily Point Agroclimatology v2.0',
+    provider: 'NASA POWER Agroclimatology',
+    dataset: 'Daily Point Agroclimatology (Historical 1-Year Baseline)',
     fetchedAt: climate?.fetchedAt,
     observationPeriod: climate?.observationPeriod || (isNasaFallback ? 'Klimatologi Regional Nusa Tenggara' : 'Baseline 1 Tahun Historis'),
     isOfficialObservation: isNasaLive || (isNasaCached && !isNasaFallback),
@@ -142,7 +148,9 @@ export function resolveTerraShaftProvenance(
   const isSoilLive = soil?.source === 'ISRIC_SOILGRIDS_LIVE' && !isSoilFallback;
   const isSoilDemo = !soil || soil.source === ('DEMO_SIMULATION' as string);
 
-  const soilMode: DataMode = isSoilFallback
+  const soilMode: DataMode = isSoilLoading
+    ? 'loading'
+    : isSoilFallback
     ? 'fallback'
     : isSoilCached
     ? 'cached'
@@ -165,7 +173,9 @@ export function resolveTerraShaftProvenance(
 
   // Determine Truthful Overall Mode
   let overallMode: DataMode = 'live';
-  if (isNasaDemo || isSoilDemo) {
+  if (isNasaLoading || isSoilLoading) {
+    overallMode = 'loading';
+  } else if (isNasaDemo || isSoilDemo) {
     overallMode = 'demo';
   } else if (isNasaFallback || isSoilFallback) {
     overallMode = 'fallback';
@@ -177,17 +187,47 @@ export function resolveTerraShaftProvenance(
 
   // Header Badge and Truthful Disclosure Text
   let headerBadge = {
-    label: 'LIVE OBSERVATION',
-    text: 'LIVE OBSERVATION',
-    sublabel: 'Observasi resmi terhubung langsung',
+    label: 'NASA POWER & SOILGRIDS API OK',
+    text: 'NASA POWER & SOILGRIDS API OK',
+    sublabel: 'Respons API diterima · baseline historis & profil tanah terverifikasi',
     style: 'bg-[#E7F5EE] text-[#12A875] border-[#A7F3D0]',
     dot: 'bg-[#12A875]',
     isVerifiedLive: true
   };
   let disclosureText =
-    'Data agroklimat bersumber dari NASA POWER dan profil tanah bersumber dari ISRIC SoilGrids secara resmi.';
+    'Respons API NASA POWER (baseline historis 1-tahun) dan profil tanah ISRIC SoilGrids berhasil diterima.';
 
-  if (overallMode === 'demo') {
+  if (isNasaLoading && isSoilLoading) {
+    headerBadge = {
+      label: 'MEMUAT DATA...',
+      text: 'MEMUAT DATA...',
+      sublabel: 'Menghubungkan ke API NASA POWER & ISRIC SoilGrids',
+      style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
+      dot: 'bg-[#7B8681]',
+      isVerifiedLive: false
+    };
+    disclosureText = 'Sedang mengambil data agroklimatologi NASA POWER dan profil tanah ISRIC SoilGrids...';
+  } else if (isNasaLoading) {
+    headerBadge = {
+      label: 'MEMUAT NASA POWER...',
+      text: 'MEMUAT NASA POWER...',
+      sublabel: 'ISRIC SoilGrids selesai · Menunggu data iklim',
+      style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
+      dot: 'bg-[#7B8681]',
+      isVerifiedLive: false
+    };
+    disclosureText = 'Profil tanah ISRIC SoilGrids telah diterima; sedang menunggu data agroklimat NASA POWER...';
+  } else if (isSoilLoading) {
+    headerBadge = {
+      label: 'MEMUAT SOILGRIDS...',
+      text: 'MEMUAT SOILGRIDS...',
+      sublabel: 'NASA POWER selesai · Menunggu profil tanah',
+      style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
+      dot: 'bg-[#7B8681]',
+      isVerifiedLive: false
+    };
+    disclosureText = 'Data iklim NASA POWER telah diterima; sedang menunggu profil tanah ISRIC SoilGrids...';
+  } else if (overallMode === 'demo') {
     headerBadge = {
       label: 'DEMO DATA · BUKAN OBSERVASI LIVE',
       text: 'DEMO DATA · BUKAN OBSERVASI LIVE',
@@ -202,7 +242,7 @@ export function resolveTerraShaftProvenance(
     headerBadge = {
       label: 'REGIONAL FALLBACK',
       text: 'REGIONAL FALLBACK',
-      sublabel: 'Failover: NASA & SoilGrids regional model',
+      sublabel: 'Failover: model agroklimat & pedologi regional terkalibrasi',
       style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
       dot: 'bg-[#D97706]',
       isVerifiedLive: false
@@ -211,26 +251,26 @@ export function resolveTerraShaftProvenance(
       'Mode Failover Regional: Permintaan API NASA POWER dan ISRIC SoilGrids tidak tersedia secara langsung. Menampilkan data klimatologi dan pedologi regional terkalibrasi Nusa Tenggara untuk eksplorasi skenario.';
   } else if (isNasaLive && isSoilFallback) {
     headerBadge = {
-      label: 'NASA LIVE · SOIL FALLBACK',
-      text: 'NASA LIVE · SOIL FALLBACK',
-      sublabel: 'NASA Power live, SoilGrids failover regional',
+      label: 'NASA POWER API · SOILGRIDS FALLBACK',
+      text: 'NASA POWER API · SOILGRIDS FALLBACK',
+      sublabel: 'NASA POWER response diterima · ISRIC SoilGrids menggunakan fallback regional',
       style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
       dot: 'bg-[#D97706]',
       isVerifiedLive: false
     };
     disclosureText =
-      'Sebagian Observasi Resmi: NASA POWER terhubung live, namun ISRIC SoilGrids menggunakan profil tanah regional terkalibrasi akibat kendala koneksi hulu.';
+      'Sebagian Observasi Resmi: NASA POWER terhubung via API (baseline historis 1-tahun), namun ISRIC SoilGrids menggunakan profil tanah regional terkalibrasi akibat kendala koneksi hulu.';
   } else if (isNasaFallback && isSoilLive) {
     headerBadge = {
-      label: 'NASA FALLBACK · SOIL LIVE',
-      text: 'NASA FALLBACK · SOIL LIVE',
-      sublabel: 'SoilGrids live, NASA Power failover regional',
+      label: 'SOILGRIDS API OK · NASA FALLBACK',
+      text: 'SOILGRIDS API OK · NASA FALLBACK',
+      sublabel: 'ISRIC SoilGrids response diterima · NASA POWER failover regional',
       style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
       dot: 'bg-[#D97706]',
       isVerifiedLive: false
     };
     disclosureText =
-      'Sebagian Observasi Resmi: ISRIC SoilGrids terhubung live, namun NASA POWER menggunakan data klimatologi regional terkalibrasi akibat kendala koneksi hulu.';
+      'Sebagian Observasi Resmi: ISRIC SoilGrids terhubung via API, namun NASA POWER menggunakan data klimatologi regional terkalibrasi akibat kendala koneksi hulu.';
   } else if (isNasaCached || isSoilCached) {
     const cachedSources = [
       isNasaCached ? 'NASA POWER' : null,

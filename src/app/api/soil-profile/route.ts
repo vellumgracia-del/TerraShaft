@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server';
 import { SoilData } from '@/types/agronomy';
 import { calculateAWC, classifySoilTexture } from '@/lib/pedotransfer';
 
+import { getAppEnv } from '@/lib/env';
+
 const soilCache = new Map<string, { data: SoilData; timestamp: number }>();
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 Hari
 
 export async function GET(request: Request) {
+  const env = getAppEnv();
   const { searchParams } = new URL(request.url);
   const latStr = searchParams.get('lat');
   const lonStr = searchParams.get('lon');
@@ -39,10 +42,10 @@ export async function GET(request: Request) {
 
   try {
     const properties = 'clay,sand,silt,soc,phh2o,cec';
-    const url = `https://rest.isric.org/soilgrids/v2.0/properties/query?lat=${lat}&lon=${lon}&property=${properties}&depth=0-30cm&value=mean`;
+    const url = `${env.soilGridsBaseUrl}/properties/query?lat=${lat}&lon=${lon}&property=${properties}&depth=0-30cm&value=mean`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000); // 6s timeout
+    const timeout = setTimeout(() => controller.abort(), env.soilGridsTimeoutMs);
 
     const response = await fetch(url, {
       signal: controller.signal,

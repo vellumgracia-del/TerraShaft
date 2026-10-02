@@ -90,7 +90,7 @@ export default function WaterBalanceCard() {
             </h2>
           </div>
           <p className="text-xs text-[#7B8681] mt-0.5">
-            Komparasi presipitasi musiman NASA GPM vs kebutuhan air tanaman (ETc)
+            Komparasi estimasi presipitasi via NASA POWER vs kebutuhan air tanaman (ETc)
           </p>
         </div>
 
@@ -129,11 +129,11 @@ export default function WaterBalanceCard() {
               wrapperStyle={{ paddingBottom: '12px', fontSize: '11px', color: '#52605B' }}
             />
 
-            {/* Presipitasi Hujan GPM (Bar) */}
+            {/* Presipitasi Hujan via NASA POWER (Bar) */}
             <Bar
               yAxisId="left"
               dataKey="rainfall_mm"
-              name="Presipitasi GPM (mm)"
+              name="Presipitasi NASA POWER (mm)"
               fill="#38BDF8"
               radius={[6, 6, 0, 0]}
               maxBarSize={48}

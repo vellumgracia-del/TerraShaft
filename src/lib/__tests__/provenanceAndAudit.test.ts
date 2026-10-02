@@ -16,8 +16,17 @@ import { ClimateData } from '../../types/climate';
 import { SoilData, Crop, Priorities } from '../../types/agronomy';
 import initialCrops from '../../data/crops_library.json';
 import { generateOptimizationPlans } from '../optimizationEngine';
+import {
+  getNasaPowerDisplayStatus,
+  getNasaSmapDisplayStatus,
+  getNasaPrecipitationDisplayStatus,
+  getSoilGridsDisplayStatus,
+  getOverallDisplayStatus,
+  getActionSheetProvenanceDisplay
+} from '../provenance';
+import { getAppEnv } from '../env';
 
-console.log('--- STARTING MILESTONE 2.2 PROVENANCE & DYNAMIC AUDIT UNIT TESTS ---');
+console.log('--- STARTING MILESTONE 2.3 PROVENANCE & DYNAMIC AUDIT UNIT TESTS ---');
 
 // 1. PRECISION FORMATTERS TEST
 console.log('1. Testing Precision Formatters & Float Sanitation...');
@@ -138,8 +147,8 @@ const provLive = resolveTerraShaftProvenance(dummyClimateLive, dummySoilLive, fa
 assert.strictEqual(provLive.nasaPower.mode, 'live');
 assert.strictEqual(provLive.isricSoilGrids.mode, 'live');
 assert.strictEqual(provLive.overallMode, 'live');
-assert.strictEqual(provLive.headerBadge.text, 'LIVE OBSERVATION');
-console.log('✓ Pure LIVE mode correctly detected when both APIs live');
+assert.strictEqual(provLive.headerBadge.text, 'NASA POWER & SOILGRIDS API OK');
+console.log('✓ Pure LIVE mode correctly detected as API OK (not claiming real-time field observation)');
 
 // Partial Fallback
 const dummySoilFallback: SoilData = {
@@ -152,8 +161,8 @@ const provPartial = resolveTerraShaftProvenance(dummyClimateLive, dummySoilFallb
 assert.strictEqual(provPartial.nasaPower.mode, 'live');
 assert.strictEqual(provPartial.isricSoilGrids.mode, 'fallback');
 assert.notStrictEqual(provPartial.overallMode, 'live');
-assert.strictEqual(provPartial.headerBadge.text, 'NASA LIVE · SOIL FALLBACK');
-console.log('✓ Partial fallback correctly reported without falsely labeling overall as LIVE');
+assert.strictEqual(provPartial.headerBadge.text, 'NASA POWER API · SOILGRIDS FALLBACK');
+console.log('✓ Partial fallback correctly reported as NASA POWER API · SOILGRIDS FALLBACK');
 
 // Demo Mode
 const dummyClimateDemo: ClimateData = {
@@ -165,14 +174,69 @@ assert.strictEqual(provDemo.overallMode, 'demo');
 assert.strictEqual(provDemo.headerBadge.text, 'DEMO DATA · BUKAN OBSERVASI LIVE');
 console.log('✓ Demo mode explicitly acknowledged in provenance badge');
 
-// 6. DYNAMIC AUDIT LOG SYNCHRONIZATION
-console.log('6. Testing Dynamic Audit Log Generation & Anti-Stale Values...');
+// 6. SHARED SOURCE-STATUS PRESENTATION MODEL TESTS (MILESTONE 2.3)
+console.log('6. Testing Shared Source-Status Presentation Resolvers...');
+
+// 6.1 NASA POWER Display Status
+const nasaLiveDisplay = getNasaPowerDisplayStatus(provPartial);
+assert.strictEqual(nasaLiveDisplay.isFieldObservation, false, 'NASA POWER must NOT claim field observation');
+assert.strictEqual(nasaLiveDisplay.isOfficialApiResponse, true);
+assert.strictEqual(nasaLiveDisplay.shortLabel, 'NASA POWER · API OK');
+assert.ok(nasaLiveDisplay.detailText.includes('bukan sensor in-situ real-time'), 'NASA detail must state not in-situ');
+
+// 6.2 SMAP GWETROOT Display Status
+const smapLiveDisplay = getNasaSmapDisplayStatus(provPartial);
+assert.strictEqual(smapLiveDisplay.shortLabel, 'SMAP L4 (Model)');
+assert.ok(smapLiveDisplay.longLabel.includes('Model-assimilated'), 'SMAP must be described as model-assimilated');
+assert.ok(smapLiveDisplay.detailText.includes('bukan pembacaan sensor in-situ'), 'SMAP must clarify not in-situ');
+
+const smapFallbackDisplay = getNasaSmapDisplayStatus(provDemo);
+assert.strictEqual(smapFallbackDisplay.shortLabel, 'Model demo estimate');
+
+// 6.3 NASA Precipitation Display Status (No Direct GPM Overclaim)
+const precipDisplay = getNasaPrecipitationDisplayStatus(provPartial);
+assert.strictEqual(precipDisplay.shortLabel, 'Presipitasi NASA POWER');
+assert.ok(!precipDisplay.shortLabel.includes('GPM IMERG'), 'Must NOT claim direct GPM IMERG');
+assert.ok(precipDisplay.longLabel.includes('via NASA POWER'), 'Precipitation must specify via NASA POWER');
+
+// 6.4 SoilGrids Display Status
+const soilFallbackDisplay = getSoilGridsDisplayStatus(provPartial);
+assert.strictEqual(soilFallbackDisplay.shortLabel, 'SoilGrids · Fallback');
+assert.strictEqual(soilFallbackDisplay.longLabel, 'ISRIC SoilGrids · Regional fallback');
+assert.ok(soilFallbackDisplay.detailText.includes('bukan observasi grid SoilGrids live'), 'Must explain regional fallback');
+
+// 6.5 Overall Display Status
+const overallPartialDisplay = getOverallDisplayStatus(provPartial);
+assert.strictEqual(overallPartialDisplay.shortLabel, 'NASA API OK · Soil fallback');
+assert.strictEqual(overallPartialDisplay.longLabel, 'NASA POWER API · SOILGRIDS FALLBACK');
+assert.strictEqual(overallPartialDisplay.tone, 'warning');
+
+// 6.6 Action Sheet Provenance Synchronization
+const actionSheetDisplay = getActionSheetProvenanceDisplay(provPartial);
+assert.ok(actionSheetDisplay.compactSourceBlock.nasa.includes('NASA POWER: API OK'));
+assert.ok(actionSheetDisplay.compactSourceBlock.soil.includes('ISRIC SoilGrids: fallback regional'));
+assert.ok(actionSheetDisplay.scientificNote.includes('baseline agroklimatologi historis'));
+assert.ok(actionSheetDisplay.scientificNote.includes('fallback regional'));
+console.log('✓ Shared source-status presentation model verified across all sources & Action Sheet');
+
+// 7. ENVIRONMENT CONFIGURATION TESTS (MILESTONE 2.3)
+console.log('7. Testing Secure Environment Configuration & Validation...');
+const defaultEnv = getAppEnv();
+assert.ok(defaultEnv.dataMode === 'api' || defaultEnv.dataMode === 'demo');
+assert.ok(defaultEnv.nasaPowerTimeoutMs >= 2000 && defaultEnv.nasaPowerTimeoutMs <= 30000);
+assert.ok(defaultEnv.isricSoilGridsTimeoutMs >= 2000 && defaultEnv.isricSoilGridsTimeoutMs <= 30000);
+assert.ok(defaultEnv.nasaPowerBaseUrl.startsWith('https://'));
+assert.ok(defaultEnv.isricSoilGridsBaseUrl.startsWith('https://'));
+console.log('✓ Environment validation applies safe bounds and defaults');
+
+// 8. DYNAMIC AUDIT LOG SYNCHRONIZATION
+console.log('8. Testing Dynamic Audit Log Generation & Anti-Stale Values...');
 const dummyCrops = initialCrops as unknown as Crop[];
 
 const testClimate: ClimateData = {
   monthlyData: mockMonthlyData,
   annualRainfall_mm: 1375,
-  rootZoneSoilMoisture: 0.72, // Notice: 0.72, NOT 0.18!
+  rootZoneSoilMoisture: 0.72,
   soilWetnessCategory: 'Adequate',
   avgTemp_c: 27.0,
   source: 'NASA_POWER_LIVE',
@@ -190,7 +254,7 @@ const testSoil: SoilData = {
   soc: 2.1,
   ph: 6.2,
   cec: 28,
-  awc: 42.5, // Notice: 42.5, NOT 60!
+  awc: 42.5,
   textureClass: 'Lempung Liat (Clay Loam)',
   source: 'ISRIC_SOILGRIDS_LIVE',
   fetchedAt: new Date().toISOString(),
@@ -233,4 +297,4 @@ assert.ok(allExplanations.includes('42.5 mm'), 'Must contain active AWC 42.5 mm'
 assert.ok(allExplanations.includes('Gianyar, Bali'), 'Must contain active place name');
 
 console.log('✓ Audit log dynamically synchronized with active state without stale hardcoded values');
-console.log('--- ALL MILESTONE 2.2 TESTS PASSED SUCCESSFULLY! ---');
+console.log('--- ALL MILESTONE 2.3 TESTS PASSED SUCCESSFULLY! ---');

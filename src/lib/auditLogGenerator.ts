@@ -33,18 +33,26 @@ export function generateDynamicAuditLog(
   priorities: Priorities,
   allCrops: Crop[]
 ): DynamicAuditLog {
-  const isFallback =
-    climateData?.source === 'FALLBACK_CLIMATOLOGY' || soilData?.source === 'REGIONAL_FALLBACK';
+  const isNasaFallback = climateData?.source === 'FALLBACK_CLIMATOLOGY';
+  const isSoilFallback = soilData?.source === 'REGIONAL_FALLBACK';
   const isCached = Boolean(climateData?.cached || soilData?.cached);
 
   let modeBadge = 'Audit berbasis respons API NASA POWER dan SoilGrids';
   let provenanceNote =
-    'Audit algoritma dihitung menggunakan telemetri live NASA POWER (SMAP L4, GPM IMERG) dan profil tanah ISRIC SoilGrids v2.0.';
+    'Audit algoritma dihitung menggunakan data API NASA POWER (baseline historis) dan profil tanah ISRIC SoilGrids v2.0.';
 
-  if (isFallback) {
+  if (isNasaFallback && isSoilFallback) {
     modeBadge = 'Audit berbasis data fallback regional';
     provenanceNote =
       'Audit algoritma dihitung menggunakan model agroklimat dan pedologi regional terkalibrasi Nusa Tenggara (karena permintaan API resmi hulu tidak tersedia).';
+  } else if (!isNasaFallback && isSoilFallback) {
+    modeBadge = 'Audit: NASA POWER API & Soil fallback regional';
+    provenanceNote =
+      'Audit algoritma dihitung menggunakan respons API NASA POWER (baseline agroklimat historis) dan model profil tanah regional terkalibrasi Nusa Tenggara (failover ISRIC).';
+  } else if (isNasaFallback && !isSoilFallback) {
+    modeBadge = 'Audit: SoilGrids API & NASA fallback regional';
+    provenanceNote =
+      'Audit algoritma dihitung menggunakan respons API ISRIC SoilGrids dan model klimatologi regional terkalibrasi Nusa Tenggara.';
   } else if (isCached) {
     modeBadge = 'Audit berbasis data cache lokal';
     provenanceNote =

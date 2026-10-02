@@ -12,10 +12,12 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { formatMm, formatNumber, getWaterStatusDetails } from '@/lib/formatters';
+import { getNasaSmapDisplayStatus } from '@/lib/provenance';
 
 export default function SummaryMetricCards() {
-  const { climateData, plans, selectedPathway, provenance } = useTerraShaftStore();
+  const { climateData, plans, selectedPathway, provenance, isLoadingBioData } = useTerraShaftStore();
   const prov = provenance;
+  const smapStatus = getNasaSmapDisplayStatus(prov);
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
@@ -77,10 +79,10 @@ export default function SummaryMetricCards() {
           </div>
           <div className="mt-2 flex items-center justify-between">
             <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${moistureColor}`}>
-              {moistureStatus}
+              {isLoadingBioData ? 'Menunggu API' : moistureStatus}
             </span>
-            <span className="text-[10px] text-[#9CA3AF] font-mono">
-              {prov?.nasaPower.mode === 'live' ? 'SMAP L4 (API)' : 'SMAP (Sim)'}
+            <span className="text-[10px] text-[#9CA3AF] font-mono truncate max-w-[120px]" title={smapStatus.detailText}>
+              {smapStatus.shortLabel}
             </span>
           </div>
         </div>

@@ -10,7 +10,8 @@ import {
   Sprout,
   CheckCircle2,
   Satellite,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import {
   formatMm,
@@ -20,6 +21,7 @@ import {
   getCropEmoji,
   getStructuredSeason
 } from '@/lib/formatters';
+import { getActionSheetProvenanceDisplay, getOverallDisplayStatus } from '@/lib/provenance';
 
 interface ActionSheetModalProps {
   isOpen: boolean;
@@ -36,30 +38,35 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
   if (!isOpen) return null;
 
   const currentPlan = plans ? plans[selectedPathway] : null;
-  if (!currentPlan) return null;
+  if (!currentPlan) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+        <div className="bg-white border border-[#E4EAE6] rounded-3xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center gap-4 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#E7F5EE] text-[#12A875] flex items-center justify-center">
+            <RefreshCw className="w-6 h-6 animate-spin" />
+          </div>
+          <h3 className="text-base font-bold text-[#17231F]">Menyiapkan Lembar Aksi Lapangan...</h3>
+          <p className="text-xs text-[#7B8681]">
+            Sedang menghitung optimasi rotasi berdasarkan data telemetri iklim & tanah. Mohon tunggu sejenak.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl bg-[#F5F7F4] border border-[#E4EAE6] text-xs font-semibold text-[#17231F] hover:bg-[#E4EAE6]"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const prov = provenance;
-  const overallMode = prov?.overallMode ?? 'fallback';
+  const actionSheetProv = getActionSheetProvenanceDisplay(provenance);
+  const overallDisplay = getOverallDisplayStatus(provenance);
 
   const initialBattery = currentPlan.initialBatteryScore;
   const finalBattery = currentPlan.soilBatteryScore;
   const deltaBattery = finalBattery - initialBattery;
-
-  // Determine dynamic provenance note
-  const getProvenanceNote = () => {
-    if (overallMode === 'live') {
-      return 'Status data: LIVE OBSERVATION — Terhubung ke API resmi NASA POWER & ISRIC SoilGrids';
-    }
-    if (overallMode === 'cached') {
-      return 'Status data: CACHED DATA — Cache hasil observasi API sebelumnya';
-    }
-    if (overallMode === 'demo') {
-      return 'Status data: DEMO MODE — Bukan observasi live; disimulasikan untuk demonstrasi';
-    }
-    return 'Status data: REGIONAL FALLBACK — Menggunakan model agroklimat regional terkalibrasi';
-  };
-
-  const provenanceNote = getProvenanceNote();
 
   // Handler Download PNG (1080x1350 px native canvas)
   const handleDownloadImage = async () => {
@@ -114,7 +121,8 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
       `💧 *Efisiensi Air:* Estimasi penghematan air hingga ${currentPlan.waterSavingsPct}% dibanding baseline monokultur\n` +
       `🌿 *Neraca Nitrogen:* Estimasi kontribusi N biologis kumulatif ${formatKgPerHa(currentPlan.netNitrogenDelta)}\n\n` +
       `📅 *JADWAL ROTASI 4 MUSIM:*\n${cropsSummary}\n\n` +
-      `🛰️ _${provenanceNote}_\n` +
+      `🛰️ *Status Sumber Data:*\n• ${actionSheetProv.compactSourceBlock.nasa}\n• ${actionSheetProv.compactSourceBlock.soil}\n\n` +
+      `ℹ️ _${actionSheetProv.scientificNote}_\n` +
       `⚠️ _TerraShaft adalah alat eksplorasi skenario; validasikan dengan penyuluh dan kondisi lapangan lokal sebelum tanam._`;
 
     const encoded = encodeURIComponent(messageText);
@@ -222,15 +230,36 @@ export default function ActionSheetModal({ isOpen, onClose }: ActionSheetModalPr
               </div>
             </div>
 
-            {/* Required Section 8: Visible Provenance Banner in Action Sheet */}
-            <div className="p-4 rounded-xl bg-[#FFF4D8] border border-[#FDE68A] flex items-center justify-between text-xs text-[#92400E]">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-[#D97706] shrink-0" />
-                <span className="font-semibold">{provenanceNote}</span>
+            {/* Required Section 5: Visible Source-Specific Provenance Block in Action Sheet */}
+            <div className={`p-4 rounded-xl border flex flex-col gap-2 ${
+              actionSheetProv.overallTone === 'success'
+                ? 'bg-[#E7F5EE] border-[#A7F3D0] text-[#065F46]'
+                : actionSheetProv.overallTone === 'info'
+                ? 'bg-[#EAF5F4] border-[#BAE6FD] text-[#0369A1]'
+                : 'bg-[#FFF4D8] border-[#FDE68A] text-[#92400E]'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span className="font-bold text-xs uppercase tracking-wide">Status Sumber Data</span>
+                </div>
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-white/80 border border-current">
+                  {overallDisplay.shortLabel}
+                </span>
               </div>
-              <span className="font-mono text-[11px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/70 border border-[#FDE68A]">
-                {overallMode}
-              </span>
+              <div className="grid grid-cols-2 gap-4 text-xs font-semibold pt-1 border-t border-current/20">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-current shrink-0" />
+                  <span>{actionSheetProv.compactSourceBlock.nasa}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-current shrink-0" />
+                  <span>{actionSheetProv.compactSourceBlock.soil}</span>
+                </div>
+              </div>
+              <p className="text-[11px] leading-relaxed opacity-90 italic">
+                {actionSheetProv.scientificNote}
+              </p>
             </div>
 
             {/* Pathway Summary Hero */}

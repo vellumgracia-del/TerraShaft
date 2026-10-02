@@ -13,6 +13,7 @@ import {
   Sprout
 } from 'lucide-react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { getOverallDisplayStatus } from '@/lib/provenance';
 
 interface SidebarProps {
   activeSection: string;
@@ -32,6 +33,7 @@ export default function Sidebar({
   isExportModalOpen = false
 }: SidebarProps) {
   const prov = useTerraShaftStore((s) => s.provenance);
+  const overallStatus = getOverallDisplayStatus(prov);
   const navItems = [
     { id: 'overview', label: 'Ringkasan Lahan', icon: LayoutDashboard },
     { id: 'field-map', label: 'Peta Lahan', icon: MapPin },
@@ -95,28 +97,22 @@ export default function Sidebar({
       <div className="p-3 bg-[#F5F7F4] border border-[#E4EAE6] rounded-2xl flex flex-col gap-1.5 mt-auto">
         <div className="flex items-center gap-1.5 text-xs font-bold text-[#17231F]">
           <span
-            className={`w-2 h-2 rounded-full ${
-              prov.overallMode === 'live'
+            className={`w-2 h-2 rounded-full shrink-0 ${
+              overallStatus.tone === 'success'
                 ? 'bg-[#12A875]'
-                : prov.overallMode === 'cached'
+                : overallStatus.tone === 'info'
                 ? 'bg-[#0284C7]'
+                : overallStatus.tone === 'neutral'
+                ? 'bg-[#7B8681]'
+                : overallStatus.tone === 'error'
+                ? 'bg-[#E11D48]'
                 : 'bg-[#D97706]'
             }`}
           />
-          <span className="truncate">
-            {prov.overallMode === 'live'
-              ? 'Observasi Resmi Live'
-              : prov.overallMode === 'cached'
-              ? 'Telemetri Cache Lokal'
-              : 'Mode Failover Regional'}
-          </span>
+          <span className="truncate">{overallStatus.shortLabel}</span>
         </div>
-        <p className="text-[11px] text-[#7B8681] leading-relaxed">
-          {prov.overallMode === 'live'
-            ? 'Terhubung ke observasi satelit NASA dan tanah ISRIC.'
-            : prov.overallMode === 'cached'
-            ? 'Menggunakan snapshot telemetri tervalidasi.'
-            : 'Menggunakan model agroklimat & pedologi terkalibrasi regional.'}
+        <p className="text-[11px] text-[#7B8681] leading-relaxed line-clamp-2">
+          {overallStatus.detailText}
         </p>
       </div>
     </aside>

@@ -18,6 +18,11 @@ interface TerraShaftState {
   soilData: SoilData | null;
   climateData: ClimateData | null;
   isLoadingBioData: boolean;
+  loadingSources: {
+    nasaPower: boolean;
+    soilGrids: boolean;
+  };
+  activeRequestId: number;
   errorBioData: string | null;
   provenance: TerraShaftProvenance;
 
@@ -74,6 +79,11 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   soilData: null,
   climateData: null,
   isLoadingBioData: false,
+  loadingSources: {
+    nasaPower: false,
+    soilGrids: false
+  },
+  activeRequestId: 0,
   errorBioData: null,
   provenance: resolveTerraShaftProvenance(null, null, false, null),
   priorities: DEFAULT_PRIORITIES,
@@ -106,48 +116,102 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
       },
       elevation_m: elevation ?? Math.round(45 + Math.abs(lat * 12) + Math.abs(lon % 50)),
       satelliteSyncTime: new Date().toISOString(),
-      errorBioData: null
+      errorBioData: null,
+      isLoadingBioData: true,
+      loadingSources: { nasaPower: true, soilGrids: true }
     }));
     await get().fetchBioPhysicalData(lat, lon);
   },
 
   fetchBioPhysicalData: async (lat: number, lon: number) => {
-    set((state) => ({
+    const nextReqId = (get().activeRequestId || 0) + 1;
+    set({
+      activeRequestId: nextReqId,
       isLoadingBioData: true,
       errorBioData: null,
-      provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, true, null)
-    }));
-    try {
-      const [climateRes, soilRes] = await Promise.all([
-        fetch(`/api/nasa-climate?lat=${lat}&lon=${lon}`),
-        fetch(`/api/soil-profile?lat=${lat}&lon=${lon}`)
-      ]);
+      loadingSources: { nasaPower: true, soilGrids: true },
+      provenance: resolveTerraShaftProvenance(get().climateData, get().soilData, true, null, {
+        nasaPower: true,
+        soilGrids: true
+      })
+    });
 
-      if (!climateRes.ok || !soilRes.ok) {
-        throw new Error('Gagal memuat profil iklim atau tanah dari server proxy');
+    const fetchNasa = async () => {
+      try {
+        const res = await fetch(`/api/nasa-climate?lat=${lat}&lon=${lon}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: ClimateData = await res.json();
+        if (get().activeRequestId !== nextReqId) return null;
+        set(state => {
+          const newLoading = { ...state.loadingSources, nasaPower: false };
+          const stillLoading = newLoading.soilGrids;
+          return {
+            climateData: data,
+            loadingSources: newLoading,
+            isLoadingBioData: stillLoading,
+            provenance: resolveTerraShaftProvenance(data, state.soilData, stillLoading, null, newLoading)
+          };
+        });
+        return data;
+      } catch (err) {
+        if (get().activeRequestId !== nextReqId) return null;
+        console.warn('NASA POWER fetch failed, using fallback:', err);
+        set(state => {
+          const newLoading = { ...state.loadingSources, nasaPower: false };
+          const stillLoading = newLoading.soilGrids;
+          return {
+            loadingSources: newLoading,
+            isLoadingBioData: stillLoading,
+            provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, stillLoading, null, newLoading)
+          };
+        });
+        return null;
       }
+    };
 
-      const climateData: ClimateData = await climateRes.json();
-      const soilData: SoilData = await soilRes.json();
+    const fetchSoil = async () => {
+      try {
+        const res = await fetch(`/api/soil-profile?lat=${lat}&lon=${lon}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: SoilData = await res.json();
+        if (get().activeRequestId !== nextReqId) return null;
+        set(state => {
+          const newLoading = { ...state.loadingSources, soilGrids: false };
+          const stillLoading = newLoading.nasaPower;
+          return {
+            soilData: data,
+            loadingSources: newLoading,
+            isLoadingBioData: stillLoading,
+            provenance: resolveTerraShaftProvenance(state.climateData, data, stillLoading, null, newLoading)
+          };
+        });
+        return data;
+      } catch (err) {
+        if (get().activeRequestId !== nextReqId) return null;
+        console.warn('SoilGrids fetch failed, using fallback:', err);
+        set(state => {
+          const newLoading = { ...state.loadingSources, soilGrids: false };
+          const stillLoading = newLoading.nasaPower;
+          return {
+            loadingSources: newLoading,
+            isLoadingBioData: stillLoading,
+            provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, stillLoading, null, newLoading)
+          };
+        });
+        return null;
+      }
+    };
 
+    await Promise.allSettled([fetchNasa(), fetchSoil()]);
+
+    if (get().activeRequestId === nextReqId) {
       set({
-        climateData,
-        soilData,
         isLoadingBioData: false,
+        loadingSources: { nasaPower: false, soilGrids: false },
         satelliteSyncTime: new Date().toISOString(),
-        provenance: resolveTerraShaftProvenance(climateData, soilData, false, null)
+        provenance: resolveTerraShaftProvenance(get().climateData, get().soilData, false, null)
       });
-
-      // Hitung ulang rekomendasi rotasi
       get().recalculate();
-    } catch (err: unknown) {
-      console.error('Error fetching bio-physical data:', err);
-      const errorMsg = err instanceof Error ? err.message : 'Terjadi kendala jaringan telemetri satelit';
-      set((state) => ({
-        isLoadingBioData: false,
-        errorBioData: errorMsg,
-        provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, false, errorMsg)
-      }));
     }
   },
 

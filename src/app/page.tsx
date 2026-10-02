@@ -53,9 +53,12 @@ export default function Home() {
   const isManualScrollRef = React.useRef(false);
   const manualScrollTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  // Initial fetch upon mounting if data has not been fetched yet
+  const hasInitializedRef = React.useRef(false);
+
+  // Initial fetch upon mounting once
   useEffect(() => {
-    if (!soilData && !isLoadingBioData) {
+    if (!hasInitializedRef.current && !soilData && !isLoadingBioData) {
+      hasInitializedRef.current = true;
       fetchBioPhysicalData(location.lat, location.lon);
     }
   }, [fetchBioPhysicalData, isLoadingBioData, location.lat, location.lon, soilData]);

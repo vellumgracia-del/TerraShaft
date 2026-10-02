@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server';
 import { ClimateData, MonthlyClimate } from '@/types/climate';
 import { calculateDailyET0 } from '@/lib/evapotranspiration';
 
+import { getAppEnv } from '@/lib/env';
+
 // In-Memory Cache untuk menghindari repetitive calls
 const climateCache = new Map<string, { data: ClimateData; timestamp: number }>();
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Jam
 
 export async function GET(request: Request) {
+  const env = getAppEnv();
   const { searchParams } = new URL(request.url);
   const latStr = searchParams.get('lat');
   const lonStr = searchParams.get('lon');
@@ -45,10 +48,10 @@ export async function GET(request: Request) {
     const start = `${startYear}0101`;
     const end = `${startYear}1231`;
 
-    const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,ALLSKY_SFC_SW_DWN,GWETROOT&community=AG&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`;
+    const url = `${env.nasaPowerBaseUrl}/temporal/daily/point?parameters=T2M,T2M_MAX,T2M_MIN,PRECTOTCORR,ALLSKY_SFC_SW_DWN,GWETROOT&community=AG&longitude=${lon}&latitude=${lat}&start=${start}&end=${end}&format=JSON`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6500); // 6.5s timeout
+    const timeout = setTimeout(() => controller.abort(), env.nasaPowerTimeoutMs);
 
     const response = await fetch(url, {
       signal: controller.signal,

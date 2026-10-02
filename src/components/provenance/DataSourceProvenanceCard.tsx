@@ -13,6 +13,11 @@ import {
 } from 'lucide-react';
 import { DataMode } from '@/types/provenance';
 
+import {
+  getNasaPowerDisplayStatus,
+  getSoilGridsDisplayStatus
+} from '@/lib/provenance';
+
 export default function DataSourceProvenanceCard() {
   const { climateData, soilData, provenance } = useTerraShaftStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -22,17 +27,20 @@ export default function DataSourceProvenanceCard() {
   const soilProv = prov?.isricSoilGrids;
   const overallMode = prov?.overallMode ?? 'fallback';
 
+  const nasaStatus = getNasaPowerDisplayStatus(prov);
+  const soilStatus = getSoilGridsDisplayStatus(prov);
+
   const getBadgeStyle = (mode: DataMode) => {
     switch (mode) {
       case 'live':
         return {
-          label: 'LIVE STREAM',
+          label: 'API RESPONSE RECEIVED',
           style: 'bg-[#E7F5EE] text-[#12A875] border-[#A7F3D0]',
           dot: 'bg-[#12A875]'
         };
       case 'cached':
         return {
-          label: 'CACHED DATA',
+          label: 'CACHED API DATA',
           style: 'bg-[#EAF5F4] text-[#0284C7] border-[#BAE6FD]',
           dot: 'bg-[#0284C7]'
         };
@@ -44,20 +52,20 @@ export default function DataSourceProvenanceCard() {
         };
       case 'demo':
         return {
-          label: 'DEMO DATA',
+          label: 'DEMO DATA — BUKAN LIVE',
           style: 'bg-[#F3E8FF] text-[#7E22CE] border-[#E9D5FF]',
           dot: 'bg-[#7E22CE]'
         };
       case 'error':
         return {
-          label: 'API ERROR',
+          label: 'DATA SOURCE ERROR',
           style: 'bg-[#FDEAEA] text-[#E11D48] border-[#FECDD3]',
           dot: 'bg-[#E11D48]'
         };
       case 'loading':
       default:
         return {
-          label: 'MEMUAT...',
+          label: 'MEMUAT DATA...',
           style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
           dot: 'bg-[#7B8681]'
         };
@@ -152,11 +160,13 @@ export default function DataSourceProvenanceCard() {
             </div>
             <div className="flex justify-between">
               <span className="text-[#7B8681]">Status Observasi:</span>
-              <span className="font-medium text-[#17231F] text-right">
-                {nasaProv?.isOfficialObservation
-                  ? 'Observasi Resmi Terverifikasi'
+              <span className="font-medium text-[#17231F] text-right truncate max-w-[200px]" title={nasaStatus.detailText}>
+                {nasaProv?.mode === 'live'
+                  ? 'API Response Received (Baseline Historis)'
                   : nasaProv?.isCached
-                  ? 'Cache Hasil Observasi'
+                  ? 'Cached API Data'
+                  : nasaProv?.mode === 'demo'
+                  ? 'Simulasi Demo'
                   : 'Estimasi Regional (Fallback)'}
               </span>
             </div>
@@ -167,6 +177,10 @@ export default function DataSourceProvenanceCard() {
               </span>
             </div>
           </div>
+
+          <p className="text-[11px] text-[#7B8681] italic mt-1 bg-white p-2 rounded-lg border border-[#E4EAE6]">
+            {nasaStatus.detailText}
+          </p>
 
           {climateData?.fallbackReason && (
             <div className="mt-2 p-2 rounded-lg bg-[#FFF4D8] border border-[#FDE68A] text-[11px] text-[#D97706] flex items-start gap-1.5">
@@ -202,12 +216,14 @@ export default function DataSourceProvenanceCard() {
             </div>
             <div className="flex justify-between">
               <span className="text-[#7B8681]">Status Observasi:</span>
-              <span className="font-medium text-[#17231F] text-right">
-                {soilProv?.isOfficialObservation
-                  ? 'Observasi Resmi Terverifikasi'
+              <span className="font-medium text-[#17231F] text-right truncate max-w-[200px]" title={soilStatus.detailText}>
+                {soilProv?.mode === 'live'
+                  ? 'API Response Received (0–30cm)'
                   : soilProv?.isCached
-                  ? 'Cache Profil Tanah'
-                  : 'Profil Tipikal Regional (Fallback)'}
+                  ? 'Cached Soil Profile'
+                  : soilProv?.mode === 'demo'
+                  ? 'Simulasi Demo'
+                  : 'Profil Regional Terkalibrasi (Fallback)'}
               </span>
             </div>
             <div className="flex justify-between">
@@ -217,6 +233,10 @@ export default function DataSourceProvenanceCard() {
               </span>
             </div>
           </div>
+
+          <p className="text-[11px] text-[#7B8681] italic mt-1 bg-white p-2 rounded-lg border border-[#E4EAE6]">
+            {soilStatus.detailText}
+          </p>
 
           {soilData?.fallbackReason && (
             <div className="mt-2 p-2 rounded-lg bg-[#FFF4D8] border border-[#FDE68A] text-[11px] text-[#D97706] flex items-start gap-1.5">
@@ -248,10 +268,10 @@ export default function DataSourceProvenanceCard() {
         <div className="p-4 rounded-xl bg-[#F5F7F4] border border-[#E4EAE6] flex flex-col gap-2 text-xs text-[#52605B]">
           <span className="font-bold text-[#17231F]">Instrumen Asimilasi Satelit & Model:</span>
           <ul className="list-disc pl-5 space-y-1 text-[#7B8681]">
-            <li><strong>NASA SMAP (Soil Moisture Active Passive):</strong> Level-4 Root-Zone Soil Wetness (0–100cm).</li>
-            <li><strong>NASA GPM (Global Precipitation Measurement):</strong> IMERG Corrected Precipitation.</li>
-            <li><strong>NASA CERES & MERRA-2:</strong> Solar Surface Radiation & Evapotranspiration Hargreaves-Samani.</li>
-            <li><strong>ISRIC SoilGrids 250m v2.0:</strong> Pedotransfer Sand, Clay, Silt, C-Organic, pH, dan CEC.</li>
+            <li><strong>NASA SMAP (Soil Moisture Active Passive):</strong> Level-4 Model-Assimilated Root-Zone Soil Wetness (0–100cm).</li>
+            <li><strong>NASA POWER Precipitation:</strong> NASA-derived precipitation estimate via NASA POWER daily PRECTOTCORR.</li>
+            <li><strong>NASA CERES & MERRA-2:</strong> Solar Surface Radiation & Evapotranspiration Hargreaves-Samani via NASA POWER.</li>
+            <li><strong>ISRIC SoilGrids 250m v2.0:</strong> Pedotransfer Sand, Clay, Silt, C-Organic, pH, dan CEC (atau profil regional terkalibrasi saat failover).</li>
           </ul>
         </div>
       )}

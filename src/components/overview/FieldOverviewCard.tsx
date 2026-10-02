@@ -45,8 +45,20 @@ export default function FieldOverviewCard() {
 
   // Real agronomic insight calculation based purely on verified state
   const getAgronomicInsight = () => {
-    if (climateData?.source === 'FALLBACK_CLIMATOLOGY' || soilData?.source === 'REGIONAL_FALLBACK') {
-      return 'Data observasi langsung satelit tidak tersedia. Proyeksi menggunakan klimatologi regional terkalibrasi Nusa Tenggara.';
+    if (isLoadingBioData) {
+      return 'Menghubungkan ke API NASA POWER dan profil tanah ISRIC SoilGrids...';
+    }
+    const isNasaFallback = climateData?.source === 'FALLBACK_CLIMATOLOGY';
+    const isSoilFallback = soilData?.source === 'REGIONAL_FALLBACK';
+
+    if (isNasaFallback && isSoilFallback) {
+      return 'Mode failover regional aktif: Menggunakan model agroklimat dan pedologi regional terkalibrasi Nusa Tenggara.';
+    }
+    if (!isNasaFallback && isSoilFallback) {
+      return 'Telemetri iklim bersumber dari API NASA POWER (baseline historis 1-tahun). Sifat fisik tanah menggunakan profil regional terkalibrasi Nusa Tenggara karena respons hulu SoilGrids tidak tersedia.';
+    }
+    if (isNasaFallback && !isSoilFallback) {
+      return 'Profil tanah bersumber dari API ISRIC SoilGrids (0–30cm). Data iklim menggunakan klimatologi regional terkalibrasi Nusa Tenggara.';
     }
     if (isCriticalMoisture) {
       return 'Cadangan air zona akar berada pada kondisi defisit kritis (<0.25). Prioritaskan tanaman toleran kekeringan tinggi (Sorgum / Kacang Hijau).';
