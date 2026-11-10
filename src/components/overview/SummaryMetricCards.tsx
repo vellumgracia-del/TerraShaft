@@ -61,12 +61,12 @@ export default function SummaryMetricCards() {
   const season1Water = season1Crop?.water_requirement_mm ?? 150;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
       {/* 1. Kelembapan Zona Akar */}
-      <div className="agri-card p-4 flex flex-col justify-between gap-3">
-        <div className="flex items-center justify-between">
+      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-[#7B8681]">Air Zona Akar</span>
-          <span className="p-2 rounded-xl bg-[#EAF5F4] text-[#0284C7]">
+          <span className="p-2 rounded-xl bg-[#EAF5F4] text-[#0284C7] shrink-0">
             <Droplets className="w-4 h-4" />
           </span>
         </div>
@@ -77,11 +77,11 @@ export default function SummaryMetricCards() {
             </span>
             <span className="text-xs text-[#7B8681]">/ 1.00</span>
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${moistureColor}`}>
+          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border whitespace-nowrap ${moistureColor}`}>
               {isLoadingBioData ? 'Menunggu API' : moistureStatus}
             </span>
-            <span className="text-[10px] text-[#9CA3AF] font-mono truncate max-w-[120px]" title={smapStatus.detailText}>
+            <span className="text-[10px] text-[#9CA3AF] font-mono truncate" title={smapStatus.detailText}>
               {smapStatus.shortLabel}
             </span>
           </div>
@@ -89,10 +89,10 @@ export default function SummaryMetricCards() {
       </div>
 
       {/* 2. Baterai Tanah */}
-      <div className="agri-card p-4 flex flex-col justify-between gap-3">
-        <div className="flex items-center justify-between">
+      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-[#7B8681]">Baterai Tanah</span>
-          <span className="p-2 rounded-xl bg-[#E7F5EE] text-[#12A875]">
+          <span className="p-2 rounded-xl bg-[#E7F5EE] text-[#12A875] shrink-0">
             <BatteryCharging className="w-4 h-4" />
           </span>
         </div>
@@ -103,25 +103,25 @@ export default function SummaryMetricCards() {
             </span>
             <span className="text-xs text-[#7B8681]">skor</span>
           </div>
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
             <span
-              className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-0.5 ${
+              className={`px-2 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-0.5 whitespace-nowrap ${
                 isCharging ? 'bg-[#E7F5EE] text-[#12A875]' : 'bg-[#FDEAEA] text-[#E11D48]'
               }`}
             >
-              {isCharging ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-              <span>{isCharging ? `+${batteryDelta}% Charging` : `${batteryDelta}% Discharging`}</span>
+              {isCharging ? <ArrowUpRight className="w-3 h-3 shrink-0" /> : <ArrowDownRight className="w-3 h-3 shrink-0" />}
+              <span>{isCharging ? `+${batteryDelta}%` : `${batteryDelta}%`}</span>
             </span>
-            <span className="text-[10px] text-[#9CA3AF] font-mono">Awal: {initialBattery}%</span>
+            <span className="text-[10px] text-[#9CA3AF] font-mono whitespace-nowrap">Awal: {initialBattery}%</span>
           </div>
         </div>
       </div>
 
       {/* 3. Skenario Rotasi Aktif */}
-      <div className="agri-card p-4 flex flex-col justify-between gap-3">
-        <div className="flex items-center justify-between">
+      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-[#7B8681]">Skenario Rotasi</span>
-          <span className="p-2 rounded-xl bg-[#EAF5F4] text-[#0284C7]">
+          <span className="p-2 rounded-xl bg-[#EAF5F4] text-[#0284C7] shrink-0">
             <RotateCw className="w-4 h-4" />
           </span>
         </div>
@@ -129,20 +129,20 @@ export default function SummaryMetricCards() {
           <div className="text-base font-bold text-[#17231F] truncate" title={pathwayTitle}>
             Jalur {selectedPathway}: {pathwayTitle.split(' ')[0]}
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E7F5EE] text-[#12A875]">
+          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E7F5EE] text-[#12A875] whitespace-nowrap">
               Skor {pathwayScore}/100
             </span>
-            <span className="text-[10px] text-[#9CA3AF]">Komposit</span>
+            <span className="text-[10px] text-[#9CA3AF] whitespace-nowrap">Komposit</span>
           </div>
         </div>
       </div>
 
       {/* 4. Risiko Defisit Air */}
-      <div className="agri-card p-4 flex flex-col justify-between gap-3">
-        <div className="flex items-center justify-between">
+      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-[#7B8681]">Defisit Air Puncak</span>
-          <span className="p-2 rounded-xl bg-[#FFF4D8] text-[#D97706]">
+          <span className="p-2 rounded-xl bg-[#FFF4D8] text-[#D97706] shrink-0">
             <AlertTriangle className="w-4 h-4" />
           </span>
         </div>
@@ -153,20 +153,20 @@ export default function SummaryMetricCards() {
             </span>
             <span className="text-xs text-[#7B8681]">/ musim</span>
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${waterRiskColor}`}>
+          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${waterRiskColor}`}>
               {waterDetails.label}
             </span>
-            <span className="text-[10px] text-[#9CA3AF]">Threshold 100 mm</span>
+            <span className="text-[10px] text-[#9CA3AF] whitespace-nowrap">Ambang 100mm</span>
           </div>
         </div>
       </div>
 
       {/* 5. Rekomendasi Musim Berjalan */}
-      <div className="agri-card p-4 flex flex-col justify-between gap-3">
-        <div className="flex items-center justify-between">
+      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
+        <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-[#7B8681]">Rekomendasi Musim 1</span>
-          <span className="p-2 rounded-xl bg-[#E7F5EE] text-[#12A875]">
+          <span className="p-2 rounded-xl bg-[#E7F5EE] text-[#12A875] shrink-0">
             <Sprout className="w-4 h-4" />
           </span>
         </div>
@@ -174,11 +174,11 @@ export default function SummaryMetricCards() {
           <div className="text-base font-bold text-[#17231F] truncate" title={season1Name}>
             {season1Name}
           </div>
-          <div className="mt-2 flex items-center justify-between text-xs">
-            <span className="text-[11px] font-medium text-[#52605B] truncate max-w-[120px]" title={season1Variety}>
+          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2 text-xs">
+            <span className="text-[11px] font-medium text-[#52605B] truncate" title={season1Variety}>
               {season1Variety}
             </span>
-            <span className="text-[10px] text-[#7B8681] font-mono">{formatMm(season1Water)}</span>
+            <span className="text-[10px] text-[#7B8681] font-mono whitespace-nowrap shrink-0">{formatMm(season1Water)}</span>
           </div>
         </div>
       </div>
