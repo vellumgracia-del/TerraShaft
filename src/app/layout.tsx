@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+import AppShell from "@/components/shell/AppShell";
 
 export const metadata: Metadata = {
   title: "TerraShaft — Modern Farm Intelligence & Climate-Resilient Crop Rotation",
@@ -44,7 +45,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="min-h-full flex flex-col bg-[#F5F7F4] text-[#17231F] selection:bg-[#E7F5EE] selection:text-[#12A875]">
-        {children}
+        <AppShell>{children}</AppShell>
         <ServiceWorkerRegister />
       </body>
     </html>

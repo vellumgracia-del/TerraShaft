@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import {
   RefreshCw,
@@ -16,16 +18,13 @@ import {
 } from 'lucide-react';
 
 interface TopHeaderProps {
-  onOpenCropLibrary: () => void;
-  onOpenExportModal: () => void;
   onToggleMobileMenu?: () => void;
 }
 
 export default function TopHeader({
-  onOpenCropLibrary,
-  onOpenExportModal,
   onToggleMobileMenu
 }: TopHeaderProps) {
+  const pathname = usePathname();
   const {
     location,
     elevation_m,
@@ -123,25 +122,27 @@ export default function TopHeader({
             <span className="hidden md:inline">{isFieldMode ? 'Mode Lapangan [Aktif]' : 'Mode Lapangan'}</span>
           </button>
 
-          {/* Pustaka Tanaman */}
-          <button
-            type="button"
-            onClick={onOpenCropLibrary}
-            className="px-3.5 py-2 rounded-xl border border-[#E4EAE6] bg-white hover:bg-[#F5F7F4] text-[#17231F] text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          {/* Pustaka Tanaman Page Link */}
+          <Link
+            href="/crop-library"
+            className={`px-3.5 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+              pathname.startsWith('/crop-library')
+                ? 'bg-[#E7F5EE] border-[#12A875] text-[#12A875]'
+                : 'border-[#E4EAE6] bg-white hover:bg-[#F5F7F4] text-[#17231F]'
+            }`}
           >
             <Database className="w-3.5 h-3.5 text-[#12A875]" />
             <span className="hidden sm:inline">Pustaka</span>
-          </button>
+          </Link>
 
-          {/* Action Sheet Export */}
-          <button
-            type="button"
-            onClick={onOpenExportModal}
+          {/* Action Sheet Page Link */}
+          <Link
+            href="/action-sheet"
             className="px-4 py-2 rounded-xl bg-[#12A875] hover:bg-[#0E9365] text-white text-xs font-bold flex items-center gap-2 shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Action Sheet</span>
-          </button>
+          </Link>
         </div>
       </div>
     </header>
