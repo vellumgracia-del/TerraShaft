@@ -31,6 +31,12 @@ export default function AppShell({ children }: AppShellProps) {
     }
   }, [fetchBioPhysicalData, isLoadingBioData, location.lat, location.lon, soilData]);
 
+  // Sync dark mode attribute to document.documentElement so full viewport/body respects dark mode
+  useEffect(() => {
+    document.documentElement.setAttribute('data-field-mode', isFieldMode ? 'true' : 'false');
+    document.body.setAttribute('data-field-mode', isFieldMode ? 'true' : 'false');
+  }, [isFieldMode]);
+
   return (
     <div
       data-field-mode={isFieldMode ? 'true' : 'false'}

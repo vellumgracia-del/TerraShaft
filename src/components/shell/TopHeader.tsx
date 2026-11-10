@@ -107,19 +107,19 @@ export default function TopHeader({
             <RefreshCw className={`w-4 h-4 ${isLoadingBioData ? 'animate-spin text-[#12A875]' : ''}`} />
           </button>
 
-          {/* High-Contrast Outdoor Field Mode Toggle */}
+          {/* Dark Mode Toggle */}
           <button
             type="button"
             onClick={toggleFieldMode}
-            title="Mode Lapangan Kontras Tinggi (Keterbacaan Terik Matahari)"
+            title="Alihkan Mode Gelap / Terang"
             className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
               isFieldMode
-                ? 'bg-black text-white border-black shadow-sm'
+                ? 'bg-[#182520] text-[#34D399] border-[#22332C] shadow-xs'
                 : 'bg-white border-[#E4EAE6] text-[#52605B] hover:bg-[#F5F7F4]'
             }`}
           >
             {isFieldMode ? <Sun className="w-3.5 h-3.5 text-amber-300" /> : <Moon className="w-3.5 h-3.5 text-[#7B8681]" />}
-            <span className="hidden md:inline">{isFieldMode ? 'Mode Lapangan [Aktif]' : 'Mode Lapangan'}</span>
+            <span className="hidden md:inline">{isFieldMode ? 'Mode Terang' : 'Mode Gelap'}</span>
           </button>
 
           {/* Pustaka Tanaman Page Link */}
