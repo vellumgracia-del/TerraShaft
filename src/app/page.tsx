@@ -230,7 +230,7 @@ export default function HomePage() {
                   Battery {currentPlan?.initialBatteryScore ?? 63}% to {currentPlan?.soilBatteryScore ?? 100}%
                 </span>
                 <span className="text-[#00C2CC]">
-                  {formatKgPerHa(currentPlan?.estimatedNetN_kg_ha ?? 370)}
+                  {formatKgPerHa(currentPlan?.netNitrogenDelta ?? 370)}
                 </span>
               </div>
             </Link>
