@@ -2,19 +2,16 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import {
   RefreshCw,
-  Share2,
-  Database,
-  Sun,
-  Moon,
-  MapPin,
+  Bell,
+  HelpCircle,
+  Settings,
   Menu,
-  CheckCircle2,
-  AlertTriangle,
-  Clock
+  ChevronDown,
+  LayoutGrid
 } from 'lucide-react';
 
 interface TopHeaderProps {
@@ -24,130 +21,113 @@ interface TopHeaderProps {
 export default function TopHeader({
   onToggleMobileMenu
 }: TopHeaderProps) {
-  const pathname = usePathname();
   const {
     location,
     elevation_m,
-    isFieldMode,
-    toggleFieldMode,
     isLoadingBioData,
     fetchBioPhysicalData,
     provenance
   } = useTerraShaftStore();
 
   const badge = provenance.headerBadge;
-  const prov = provenance;
+  const shortPlace = location.district || location.placeName.split(',')[0] || 'Kupang Timur';
 
   return (
-    <header className="bg-white/95 backdrop-blur-md border-b border-[#E4EAE6] px-4 lg:px-8 py-3 sticky top-0 z-30 transition-colors shadow-xs">
-      <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-3">
-        {/* Left: Mobile Menu Button & Greeting + Location */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          {onToggleMobileMenu && (
-            <button
-              type="button"
-              onClick={onToggleMobileMenu}
-              className="lg:hidden p-2 rounded-xl border border-[#E4EAE6] text-[#52605B] hover:bg-[#F5F7F4] shrink-0"
-              aria-label="Buka Menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          )}
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base sm:text-lg font-bold text-[#17231F] tracking-tight whitespace-nowrap">
-                Halo, Petani TerraShaft!
-              </h1>
-              {/* Dynamic Truthful Provenance Status Chip */}
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap ${badge.style}`}
-                title={`${badge.sublabel} | NASA POWER: ${prov.nasaPower.mode.toUpperCase()} (${prov.nasaPower.observationPeriod}) | SoilGrids: ${prov.isricSoilGrids.mode.toUpperCase()} (${prov.isricSoilGrids.observationPeriod})`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${badge.dot}`} />
-                {badge.isVerifiedLive ? (
-                  <CheckCircle2 className="w-3 h-3 shrink-0" />
-                ) : prov.overallMode === 'cached' ? (
-                  <Clock className="w-3 h-3 shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-3 h-3 shrink-0" />
-                )}
-                <span className="truncate max-w-[200px] sm:max-w-none">{badge.label}</span>
-              </span>
-
-              {!badge.isVerifiedLive && (
-                <span className="text-[11px] text-[#7B8681] hidden 2xl:inline truncate max-w-[280px]">
-                  · {badge.sublabel}
-                </span>
-              )}
-            </div>
-
-            {/* Selected Location Subtitle */}
-            <div className="flex items-center gap-1.5 text-xs text-[#7B8681] mt-0.5 truncate">
-              <MapPin className="w-3.5 h-3.5 text-[#12A875] shrink-0" />
-              <span className="font-medium text-[#52605B] truncate">
-                {location.district ? `${location.district}, ${location.province || 'Indonesia'}` : location.placeName}
-              </span>
-              <span className="shrink-0">·</span>
-              <span className="font-mono text-xs shrink-0">{elevation_m} m dpl</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Operational Controls (Never wraps inside buttons) */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Synchronize Telemetry Button */}
+    <header className="h-16 bg-[#121417] border-b border-[#282C34] px-4 lg:px-6 sticky top-0 z-40 select-none flex items-center justify-between text-[#F1F3F5] transition-all">
+      {/* Left: Brand Mark + Divider + Data Module Selector */}
+      <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+        {onToggleMobileMenu && (
           <button
             type="button"
-            onClick={() => fetchBioPhysicalData(location.lat, location.lon)}
-            disabled={isLoadingBioData}
-            title="Sinkronisasi data biofisik NASA & SoilGrids"
-            className="h-9 w-9 inline-flex items-center justify-center rounded-xl border border-[#E4EAE6] bg-white hover:bg-[#F5F7F4] text-[#52605B] transition-colors disabled:opacity-50 shrink-0"
+            onClick={onToggleMobileMenu}
+            className="lg:hidden p-2 rounded-[5px] text-[#C1C7CD] hover:bg-[#20242B] hover:text-white shrink-0"
+            aria-label="Buka Menu"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoadingBioData ? 'animate-spin text-[#12A875]' : ''}`} />
+            <Menu className="w-5 h-5" />
           </button>
+        )}
 
-          {/* Dark Mode Toggle */}
-          <button
-            type="button"
-            onClick={toggleFieldMode}
-            title="Alihkan Mode Gelap / Terang"
-            className={`h-9 px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors ${
-              isFieldMode
-                ? 'bg-[#182520] text-[#34D399] border-[#22332C] shadow-xs'
-                : 'bg-white border-[#E4EAE6] text-[#52605B] hover:bg-[#F5F7F4]'
-            }`}
-          >
-            {isFieldMode ? (
-              <Sun className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-            ) : (
-              <Moon className="w-3.5 h-3.5 text-[#7B8681] shrink-0" />
-            )}
-            <span className="hidden md:inline">{isFieldMode ? 'Mode Terang' : 'Mode Gelap'}</span>
-          </button>
+        <Link href="/" className="flex items-center shrink-0 group py-1">
+          {/* Official TerraShaft Orbital Agriculture Logo: Prominent & High Clarity */}
+          <Image
+            src="/terrashaft-logo.png"
+            alt="TerraShaft Orbital Agriculture"
+            width={200}
+            height={50}
+            className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+            priority
+          />
+        </Link>
 
-          {/* Pustaka Tanaman Page Link */}
-          <Link
-            href="/crop-library"
-            className={`h-9 px-3.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors ${
-              pathname.startsWith('/crop-library')
-                ? 'bg-[#E7F5EE] border-[#12A875] text-[#12A875]'
-                : 'border-[#E4EAE6] bg-white hover:bg-[#F5F7F4] text-[#17231F]'
-            }`}
-          >
-            <Database className="w-3.5 h-3.5 text-[#12A875] shrink-0" />
-            <span className="hidden sm:inline">Pustaka</span>
-          </Link>
+        <div className="h-7 w-px bg-[#282C34] mx-1 sm:mx-1.5 shrink-0" />
 
-          {/* Action Sheet Page Link */}
-          <Link
-            href="/action-sheet"
-            className="h-9 px-4 rounded-xl bg-[#12A875] hover:bg-[#0E9365] text-white text-xs font-bold inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
-          >
-            <Share2 className="w-3.5 h-3.5 shrink-0" />
-            <span>Action Sheet</span>
-          </Link>
-        </div>
+        {/* Active Workspace / Data Switcher Pill */}
+        <Link
+          href="/field-map"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[5px] bg-[#1C2026] hover:bg-[#242931] border border-[#2C313A] text-xs sm:text-[13px] font-medium text-[#F1F3F5] transition-colors truncate"
+          title={`AOI Aktif: ${location.placeName} (${location.lat.toFixed(4)}°, ${location.lon.toFixed(4)}° | ${elevation_m}m dpl)`}
+        >
+          <span className="w-4 h-4 rounded-[3px] bg-[#0284C7] flex items-center justify-center text-white shrink-0">
+            <LayoutGrid className="w-2.5 h-2.5" />
+          </span>
+          <span className="font-semibold text-white">Data</span>
+          <span className="hidden md:inline text-[#8A949E] font-normal truncate max-w-[240px]">
+            · {shortPlace} ({location.lat.toFixed(2)}°, {location.lon.toFixed(2)}°)
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 text-[#8A949E] shrink-0" />
+        </Link>
+      </div>
+
+      {/* Right: Minimal Planet Utility Toolbar */}
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        {/* Live Telemetry Sync Refresh Button (Icon Only) */}
+        <button
+          type="button"
+          onClick={() => fetchBioPhysicalData(location.lat, location.lon)}
+          disabled={isLoadingBioData}
+          title={isLoadingBioData ? 'Menyinkronkan telemetri satelit...' : `Sinkronisasi telemetri satelit (${badge?.text || 'NASA POWER & ISRIC SoilGrids'})`}
+          className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors disabled:opacity-50"
+          aria-label="Sinkronisasi telemetri satelit"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoadingBioData ? 'animate-spin text-[#00C2CC]' : 'text-[#C1C7CD] hover:text-white'}`} />
+        </button>
+
+        {/* Notifications / Telemetry Provenance */}
+        <Link
+          href="/data-sources"
+          title="Status Telemetri & Provenansi Data"
+          className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors relative"
+        >
+          <Bell className="w-4 h-4" />
+          <span className="w-1.5 h-1.5 rounded-full absolute top-2.5 right-2.5 bg-[#00C2CC]" />
+        </Link>
+
+        {/* Help / Scientific Documentation */}
+        <Link
+          href="/data-sources"
+          title="Dokumentasi Ilmiah & Sumber Satelit"
+          className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors"
+        >
+          <HelpCircle className="w-4 h-4" />
+        </Link>
+
+        {/* Settings / Workbench Preference */}
+        <button
+          type="button"
+          title="Pengaturan Workbench Planet"
+          className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
+
+        {/* Profile Avatar Badge with Solid Color & Text Placeholder (Planet Style) */}
+        <Link
+          href="/action-sheet"
+          title="Profil Pengguna & Lembar Ekspor"
+          className="w-8 h-8 rounded-full bg-[#42CADB] hover:bg-[#52D8E8] text-[#121417] font-bold text-xs inline-flex items-center justify-center ml-1 transition-all select-none shadow-xs shrink-0"
+        >
+          <span>RI</span>
+        </Link>
       </div>
     </header>
   );

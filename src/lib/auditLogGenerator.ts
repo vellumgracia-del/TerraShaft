@@ -10,6 +10,7 @@ export interface AuditLogEntry {
   seasonLabel: string;
   outcome: 'TERELIMINASI' | 'TERPILIH' | 'PERINGATAN';
   reasonHtml: string;
+  reasonText: string;
   summary: string;
   explanation: string;
 }
@@ -19,6 +20,15 @@ export interface DynamicAuditLog {
   auditModeLabel: string;
   provenanceNote: string;
   entries: AuditLogEntry[];
+}
+
+export function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -72,6 +82,9 @@ export function generateDynamicAuditLog(
   const gwetroot = climateData.rootZoneSoilMoisture;
   const awc = soilData.awc;
   const seasons = currentPlan.seasons;
+  const activeCropCount = Math.min(allCrops.length || 6, 8);
+  const permutationCountStr = Math.pow(activeCropCount, 4).toLocaleString('id-ID');
+  const safePlaceName = escapeHtml(location.placeName || 'lahan');
 
   // 1. Dry Season Water Stress Audit (Season 4 - Puncak Kemarau)
   const season4 = seasons[3] || seasons[seasons.length - 1];
@@ -82,6 +95,7 @@ export function generateDynamicAuditLog(
   if (waterHeavyCrop) {
     const rainS4 = season4 ? season4.expectedRain_mm : 40;
     const hypotheticalDeficit = Math.max(0, waterHeavyCrop.water_requirement_mm - rainS4);
+    const reasonText = `Kebutuhan air (${formatMm(waterHeavyCrop.water_requirement_mm)}) menghasilkan proyeksi defisit ${formatMm(hypotheticalDeficit)} pada kelembapan akar SMAP ${formatNumber(gwetroot, 2)} GWETROOT. Risiko kegagalan panen dinilai tidak aman.`;
 
     entries.push({
       id: 'audit-drought-elimination',
@@ -90,7 +104,8 @@ export function generateDynamicAuditLog(
       cropName: `${waterHeavyCrop.name} (${waterHeavyCrop.recommended_variety || 'Varietas Utama'})`,
       seasonLabel: 'Musim 4 (Puncak Kemarau)',
       outcome: 'TERELIMINASI',
-      reasonHtml: `Didiskualifikasi otomatis oleh aturan: <code class="font-mono text-[#E11D48] font-bold">RULE_DROUGHT_RISK</code>. Kebutuhan air (${formatMm(waterHeavyCrop.water_requirement_mm)}) menghasilkan proyeksi defisit ${formatMm(hypotheticalDeficit)} pada kelembapan akar SMAP ${formatNumber(gwetroot, 2)} GWETROOT. Risiko kegagalan panen dinilai tidak aman.`,
+      reasonText,
+      reasonHtml: `Didiskualifikasi otomatis oleh aturan: <code class="font-mono text-[#E11D48] font-bold">RULE_DROUGHT_RISK</code>. ${escapeHtml(reasonText)}`,
       summary: `Proyeksi defisit ${formatMm(hypotheticalDeficit)} pada puncak kemarau melampaui batas aman.`,
       explanation: `Didiskualifikasi otomatis oleh aturan RULE_DROUGHT_RISK di ${location.placeName || 'lahan'}. Kebutuhan air (${formatMm(waterHeavyCrop.water_requirement_mm)}) menghasilkan defisit ${formatMm(hypotheticalDeficit)} pada kelembapan akar ${formatNumber(gwetroot, 2)}.`
     });
@@ -99,6 +114,7 @@ export function generateDynamicAuditLog(
   // 2. Soil Moisture & Available Water Capacity (AWC) Restriction
   const cerealCrop = allCrops.find((c) => c.id === 'padi_gogo' || c.water_requirement_mm >= 450);
   if (cerealCrop) {
+    const reasonText = `Karakteristik tekstur tanah ${soilData.textureClass} dengan AWC terukur ${formatMm(awc)} tidak mampu menopang perakaran dangkal (${cerealCrop.root_depth_cm}cm) saat presipitasi bulanan di bawah ET0.`;
     entries.push({
       id: 'audit-awc-restriction',
       ruleId: 'RULE_WATER_STRESS',
@@ -106,7 +122,8 @@ export function generateDynamicAuditLog(
       cropName: `${cerealCrop.name}`,
       seasonLabel: 'Musim 3 & 4 (Musim Kering)',
       outcome: 'TERELIMINASI',
-      reasonHtml: `Didiskualifikasi oleh aturan: <code class="font-mono text-[#E11D48] font-bold">RULE_WATER_STRESS</code>. Karakteristik tekstur tanah ${soilData.textureClass} dengan AWC terukur ${formatMm(awc)} tidak mampu menopang perakaran dangkal (${cerealCrop.root_depth_cm}cm) saat presipitasi bulanan di bawah ET0.`,
+      reasonText,
+      reasonHtml: `Didiskualifikasi oleh aturan: <code class="font-mono text-[#E11D48] font-bold">RULE_WATER_STRESS</code>. ${escapeHtml(reasonText)}`,
       summary: `Kapasitas AWC ${formatMm(awc)} tidak mencukupi untuk perakaran ${cerealCrop.root_depth_cm}cm pada musim kering.`,
       explanation: `Didiskualifikasi oleh RULE_WATER_STRESS. Karakteristik tanah dengan AWC terukur ${formatMm(awc)} tidak mampu menopang perakaran dangkal.`
     });
@@ -115,6 +132,7 @@ export function generateDynamicAuditLog(
   // 3. Active Crop Selection (Selected in Current Pathway)
   const selectedDryCrop = season4?.crop;
   if (selectedDryCrop) {
+    const reasonText = `Efisiensi air tinggi (${formatMm(selectedDryCrop.water_requirement_mm)}), perakaran mencapai ${selectedDryCrop.root_depth_cm}cm, dan menghasilkan kontribusi hara baterai ${season4.batteryDelta_pct >= 0 ? `+${season4.batteryDelta_pct}%` : `${season4.batteryDelta_pct}%`} serta nitrogen ${season4.nitrogenDelta_kg_ha >= 0 ? `+${season4.nitrogenDelta_kg_ha}` : season4.nitrogenDelta_kg_ha} kg N/ha.`;
     entries.push({
       id: 'audit-crop-selection',
       ruleId: 'RULE_SOIL_RECOVERY',
@@ -122,13 +140,15 @@ export function generateDynamicAuditLog(
       cropName: `${selectedDryCrop.name} (${selectedDryCrop.recommended_variety || 'Varietas Lokal'})`,
       seasonLabel: `Musim ${season4.seasonIndex} (${season4.monthRange})`,
       outcome: 'TERPILIH',
-      reasonHtml: `Terpilih melalui aturan: <code class="font-mono text-[#12A875] font-bold">RULE_SOIL_RECOVERY</code>. Efisiensi air tinggi (${formatMm(selectedDryCrop.water_requirement_mm)}), perakaran mencapai ${selectedDryCrop.root_depth_cm}cm, dan menghasilkan kontribusi hara baterai ${season4.batteryDelta_pct >= 0 ? `+${season4.batteryDelta_pct}%` : `${season4.batteryDelta_pct}%`} serta nitrogen ${season4.nitrogenDelta_kg_ha >= 0 ? `+${season4.nitrogenDelta_kg_ha}` : season4.nitrogenDelta_kg_ha} kg N/ha.`,
+      reasonText,
+      reasonHtml: `Terpilih melalui aturan: <code class="font-mono text-[#12A875] font-bold">RULE_SOIL_RECOVERY</code>. ${escapeHtml(reasonText)}`,
       summary: `Efisiensi air ${formatMm(selectedDryCrop.water_requirement_mm)} dan pemulihan hara baterai tanah.`,
       explanation: `Terpilih melalui RULE_SOIL_RECOVERY. Efisiensi air ${formatMm(selectedDryCrop.water_requirement_mm)} untuk lahan ${location.placeName || 'budidaya'}.`
     });
   }
 
   // 4. Priority Weight Sensitivity Entry
+  const priorityReasonText = `Optimasi ${permutationCountStr} kombinasi rotasi di ${location.placeName || 'lahan'} menyeimbangkan bobot preferensi: Keuntungan (${priorities.profitWeight}%), Efisiensi Air (${priorities.waterWeight}%), dan Baterai Tanah (${priorities.soilWeight}%). Defisit puncak terpelihara pada ${formatMm(maxDeficit)}.`;
   entries.push({
     id: 'audit-priority-weighting',
     ruleId: 'RULE_PRIORITY_WEIGHTS',
@@ -136,7 +156,8 @@ export function generateDynamicAuditLog(
     cropName: `Skenario Jalur ${currentPlan.pathwayId} (Skor: ${formatScore(currentPlan.compositeScore)}/100)`,
     seasonLabel: 'Siklus Penuh 4 Musim',
     outcome: 'TERPILIH',
-    reasonHtml: `Optimasi 1.296 kombinasi rotasi di ${location.placeName || 'lahan'} menyeimbangkan bobot preferensi: Keuntungan (${priorities.profitWeight}%), Efisiensi Air (${priorities.waterWeight}%), dan Baterai Tanah (${priorities.soilWeight}%). Defisit puncak terpelihara pada ${formatMm(maxDeficit)}.`,
+    reasonText: priorityReasonText,
+    reasonHtml: `Optimasi ${permutationCountStr} kombinasi rotasi di ${safePlaceName} menyeimbangkan bobot preferensi: Keuntungan (${priorities.profitWeight}%), Efisiensi Air (${priorities.waterWeight}%), dan Baterai Tanah (${priorities.soilWeight}%). Defisit puncak terpelihara pada ${formatMm(maxDeficit)}.`,
     summary: `Menyeimbangkan bobot Keuntungan ${priorities.profitWeight}%, Air ${priorities.waterWeight}%, Tanah ${priorities.soilWeight}%.`,
     explanation: `Optimasi untuk lokasi ${location.placeName || 'lahan'} menyeimbangkan bobot Keuntungan ${priorities.profitWeight}%, Air ${priorities.waterWeight}%, Tanah ${priorities.soilWeight}%.`
   });

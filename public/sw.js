@@ -1,6 +1,13 @@
-const CACHE_NAME = 'terrarotate-v1';
+const CACHE_NAME = 'terrashaft-v2';
 const STATIC_ASSETS = [
   '/',
+  '/field-map',
+  '/soil-battery',
+  '/rotation-planner',
+  '/water-balance',
+  '/crop-library',
+  '/action-sheet',
+  '/data-sources',
   '/manifest.json',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg'

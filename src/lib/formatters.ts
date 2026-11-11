@@ -90,8 +90,8 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
       description: 'Presipitasi mencukupi kebutuhan air tanaman',
       subLabel: 'Tidak ada defisit air',
       isCritical: false,
-      colorClass: 'text-[#12A875]',
-      badgeClass: 'bg-[#E7F5EE] text-[#12A875] border-[#A7F3D0]'
+      colorClass: 'text-[#00C2CC]',
+      badgeClass: 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
     };
   }
   if (deficitMm <= 40) {
@@ -102,8 +102,8 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
       description: `Defisit ${formatMm(deficitMm)} masih dalam batas cadangan air tanah`,
       subLabel: `Defisit ringan · ${formatMm(deficitMm)}`,
       isCritical: false,
-      colorClass: 'text-[#0284C7]',
-      badgeClass: 'bg-[#EAF5F4] text-[#0284C7] border-[#BAE6FD]'
+      colorClass: 'text-[#00C2CC]',
+      badgeClass: 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
     };
   }
   if (deficitMm <= 100) {
@@ -114,8 +114,8 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
       description: `Defisit ${formatMm(deficitMm)} mendekati ambang toleransi tanaman`,
       subLabel: `Defisit sedang · ${formatMm(deficitMm)}`,
       isCritical: false,
-      colorClass: 'text-[#D97706]',
-      badgeClass: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]'
+      colorClass: 'text-[#C1C7CD]',
+      badgeClass: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
     };
   }
   const s = 'Defisit kritis' as const;
@@ -125,8 +125,8 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
     description: `Defisit ${formatMm(deficitMm)} melampaui ambang kritis 100 mm`,
     subLabel: `Defisit kritis · ${formatMm(deficitMm)}`,
     isCritical: true,
-    colorClass: 'text-[#E11D48]',
-    badgeClass: 'bg-[#FDEAEA] text-[#E11D48] border-[#FECDD3]'
+    colorClass: 'text-[#F87171]',
+    badgeClass: 'bg-[#2D1B1E] text-[#F87171] border-[#7F1D1D]/40'
   };
 }
 

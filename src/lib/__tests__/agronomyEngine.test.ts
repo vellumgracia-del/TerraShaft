@@ -3,7 +3,8 @@ import { calculateAWC, classifySoilTexture, estimateBulkDensity } from '@/lib/pe
 import { calculateDailyET0, calculateCropWaterRequirement } from '@/lib/evapotranspiration';
 import {
   generateAllSequencePermutations,
-  generateOptimizationPlans
+  generateOptimizationPlans,
+  resolveDynamicSeasons
 } from '@/lib/optimizationEngine';
 import initialCrops from '@/data/crops_library.json';
 import { Crop, SoilData, Priorities } from '@/types/agronomy';
@@ -196,5 +197,24 @@ assert.strictEqual(isValidCoordinate(-95, 100), false, 'Latitude < -90 must fail
 assert.strictEqual(isValidCoordinate(0, 185), false, 'Longitude > 180 must fail validation');
 assert.strictEqual(isValidCoordinate(NaN, 100), false, 'NaN coordinate must fail validation');
 console.log('✓ Coordinate validation bounds strictly enforced (-90..90, -180..180)');
+
+// Test Dynamic Dry Season Detection (Global Northern vs Southern Hemisphere)
+const southernSeasons = resolveDynamicSeasons(mockClimate);
+assert.strictEqual(southernSeasons[2].isDrySeason, true, 'Jun-Aug should be dry season in Southern Hemisphere monsoon');
+assert.strictEqual(southernSeasons[3].isDrySeason, true, 'Sep-Oct should be dry season in Southern Hemisphere monsoon');
+
+const northernClimate: ClimateData = {
+  ...mockClimate,
+  monthlyData: mockMonthlyData.map((m) => ({
+    ...m,
+    // Invert rainfall: wet in Jun-Sep (Northern Monsoon), dry in Nov-Apr
+    rainfall_mm: m.month >= 6 && m.month <= 9 ? 260 : 12
+  }))
+};
+const northernSeasons = resolveDynamicSeasons(northernClimate);
+assert.strictEqual(northernSeasons[0].isDrySeason, true, 'Nov-Feb should be detected as dry season in Northern Hemisphere');
+assert.strictEqual(northernSeasons[1].isDrySeason, true, 'Mar-May should be detected as dry season in Northern Hemisphere');
+assert.strictEqual(northernSeasons[2].isDrySeason, false, 'Jun-Aug wet monsoon should not be flagged as dry season');
+console.log('✓ Dynamic global seasonality detection verified across hemispheres');
 
 console.log('--- ALL AGRONOMY & SPRINT 2 UNIT TESTS PASSED SUCCESSFULLY! ---');

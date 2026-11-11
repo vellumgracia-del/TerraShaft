@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { GET as getNasaClimate } from '@/app/api/nasa-climate/route';
 import { GET as getSoilProfile } from '@/app/api/soil-profile/route';
+import { GET as getGeocode } from '@/app/api/geocode/route';
 
 console.log('--- STARTING API PROXY SCIENTIFIC INTEGRITY & PROVENANCE TESTS ---');
 
@@ -384,8 +385,122 @@ async function runTests() {
       console.log('✓ Acceptance Criterion 12 (SoilGrids cached metadata) verified: cached: true returned while preserving live source and timestamps.');
     }
 
+    // -------------------------------------------------------------
+    // CRITERION 13: SOILGRIDS MULTI-DEPTH (0-5, 5-15, 15-30cm) WEIGHTED MEAN
+    // -------------------------------------------------------------
+    console.log('\n[CRITERION 13] Testing SoilGrids v2.0 multi-depth (0-5cm, 5-15cm, 15-30cm) aggregation...');
+    {
+      const mockMultiDepthPayload = {
+        properties: {
+          layers: [
+            {
+              name: 'clay',
+              depths: [
+                { label: '0-5cm', values: { mean: 240 } },
+                { label: '5-15cm', values: { mean: 270 } },
+                { label: '15-30cm', values: { mean: 300 } }
+              ]
+            },
+            {
+              name: 'sand',
+              depths: [
+                { label: '0-5cm', values: { mean: 460 } },
+                { label: '5-15cm', values: { mean: 430 } },
+                { label: '15-30cm', values: { mean: 400 } }
+              ]
+            },
+            {
+              name: 'silt',
+              depths: [
+                { label: '0-5cm', values: { mean: 300 } },
+                { label: '5-15cm', values: { mean: 300 } },
+                { label: '15-30cm', values: { mean: 300 } }
+              ]
+            },
+            {
+              name: 'soc',
+              depths: [
+                { label: '0-5cm', values: { mean: 180 } },
+                { label: '5-15cm', values: { mean: 120 } },
+                { label: '15-30cm', values: { mean: 100 } }
+              ]
+            }
+          ]
+        }
+      };
+
+      globalThis.fetch = async () => {
+        return new Response(JSON.stringify(mockMultiDepthPayload), { status: 200 });
+      };
+
+      const req = new Request('http://localhost:3000/api/soil-profile?lat=-1.52&lon=37.26');
+      const res = await getSoilProfile(req);
+      const data = await res.json();
+
+      assert.strictEqual(data.source, 'ISRIC_SOILGRIDS_LIVE');
+      // Weighted clay: (240*5 + 270*10 + 300*15)/30 = 8400/30 = 280 -> 28.0%
+      assert.strictEqual(data.clay, 28.0);
+      // Weighted sand: (460*5 + 430*10 + 400*15)/30 = 12600/30 = 420 -> 42.0%
+      assert.strictEqual(data.sand, 42.0);
+      assert.strictEqual(data.silt, 30.0);
+      // Weighted soc: (180*5 + 120*10 + 100*15)/30 = 3600/30 = 120 -> 1.20%
+      assert.strictEqual(data.soc, 1.2);
+      console.log('✓ Acceptance Criterion 13 (SoilGrids multi-depth weighted mean) verified.');
+    }
+
+    // -------------------------------------------------------------
+    // CRITERION 14: PUBLIC GEOCODING & DEM ELEVATION PROXY
+    // -------------------------------------------------------------
+    console.log('\n[CRITERION 14] Testing public geocoding & DEM elevation API proxy...');
+    {
+      globalThis.fetch = async (input: string | URL | Request) => {
+        const urlStr = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        if (urlStr.includes('open-meteo.com')) {
+          return new Response(JSON.stringify({ elevation: [142.4] }), { status: 200 });
+        }
+        if (urlStr.includes('nominatim.openstreetmap.org/reverse')) {
+          return new Response(
+            JSON.stringify({
+              address: {
+                village: 'Oesao',
+                county: 'Kupang',
+                state: 'Nusa Tenggara Timur',
+                country: 'Indonesia'
+              }
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response(
+          JSON.stringify([
+            {
+              display_name: 'Waingapu, Sumba Timur, Nusa Tenggara Timur, Indonesia',
+              name: 'Waingapu',
+              lat: '-9.6541',
+              lon: '120.2642'
+            }
+          ]),
+          { status: 200 }
+        );
+      };
+
+      const revReq = new Request('http://localhost:3000/api/geocode?lat=-10.1542&lon=123.821');
+      const revRes = await getGeocode(revReq);
+      const revData = await revRes.json();
+      assert.strictEqual(revData.elevation_m, 142);
+      assert.ok(revData.placeName.includes('Oesao'));
+      assert.strictEqual(revData.source, 'NOMINATIM_OPENMETEO_LIVE');
+
+      const searchReq = new Request('http://localhost:3000/api/geocode?q=Waingapu');
+      const searchRes = await getGeocode(searchReq);
+      const searchData = await searchRes.json();
+      assert.strictEqual(searchData.results.length, 1);
+      assert.strictEqual(searchData.results[0].shortName, 'Waingapu');
+      console.log('✓ Acceptance Criterion 14 (Public Geocoding & DEM Elevation) verified.');
+    }
+
     console.log('\n================================================================');
-    console.log('ALL 12 ACCEPTANCE CRITERIA UNIT & INTEGRATION TESTS PASSED 100%!');
+    console.log('ALL 14 ACCEPTANCE CRITERIA UNIT & INTEGRATION TESTS PASSED 100%!');
     console.log('================================================================');
   } finally {
     globalThis.fetch = originalFetch;

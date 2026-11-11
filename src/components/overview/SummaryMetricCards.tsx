@@ -2,35 +2,25 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import {
-  Droplets,
-  BatteryCharging,
-  RotateCw,
-  AlertTriangle,
-  Sprout,
-  ArrowUpRight,
-  ArrowDownRight
-} from 'lucide-react';
+import { Info } from 'lucide-react';
 import { formatMm, formatNumber, getWaterStatusDetails } from '@/lib/formatters';
 import { getNasaSmapDisplayStatus } from '@/lib/provenance';
 
 export default function SummaryMetricCards() {
-  const { climateData, plans, selectedPathway, provenance, isLoadingBioData } = useTerraShaftStore();
-  const prov = provenance;
-  const smapStatus = getNasaSmapDisplayStatus(prov);
-
+  const { climateData, soilData, plans, selectedPathway, provenance, isLoadingBioData } = useTerraShaftStore();
+  const smapStatus = getNasaSmapDisplayStatus(provenance);
   const currentPlan = plans ? plans[selectedPathway] : null;
 
   // 1. Root-Zone Soil Moisture (NASA SMAP GWETROOT)
   const gwetroot = climateData?.rootZoneSoilMoisture ?? 0.38;
   const isCriticalMoisture = gwetroot < 0.25;
   const isWatchMoisture = gwetroot >= 0.25 && gwetroot < 0.45;
-  const moistureStatus = isCriticalMoisture ? 'Kritis' : isWatchMoisture ? 'Waspada' : 'Memadai';
-  const moistureColor = isCriticalMoisture
-    ? 'text-[#E11D48] bg-[#FDEAEA] border-[#FECDD3]'
+  const moistureStatus = isCriticalMoisture ? 'Defisit Kritis' : isWatchMoisture ? 'Waspada' : 'Memadai';
+  const moistureDot = isCriticalMoisture
+    ? 'bg-[#FB7185]'
     : isWatchMoisture
-    ? 'text-[#D97706] bg-[#FFF4D8] border-[#FDE68A]'
-    : 'text-[#12A875] bg-[#E7F5EE] border-[#A7F3D0]';
+    ? 'bg-[#FBBF24]'
+    : 'bg-[#00C2CC]';
 
   // 2. Soil Battery
   const initialBattery = currentPlan?.initialBatteryScore ?? 63;
@@ -38,9 +28,9 @@ export default function SummaryMetricCards() {
   const batteryDelta = finalBattery - initialBattery;
   const isCharging = batteryDelta >= 0;
 
-  // 3. Active Pathway
-  const pathwayTitle = currentPlan?.title ?? 'Max Soil Regeneration';
-  const pathwayScore = currentPlan?.compositeScore ?? 66;
+  // 3. Soil AWC & Texture (ISRIC SoilGrids)
+  const awcVal = soilData?.awc ?? 27.8;
+  const textureLabel = soilData?.textureClass?.split('(')[0]?.trim() || 'Lempung Liat';
 
   // 4. Water Risk (Max Seasonal Deficit)
   let maxDeficit = 0;
@@ -48,137 +38,114 @@ export default function SummaryMetricCards() {
     maxDeficit = Math.max(...currentPlan.seasons.map((s) => s.waterDeficit_mm), 0);
   }
   const waterDetails = getWaterStatusDetails(maxDeficit);
-  const waterRiskColor = maxDeficit > 100
-    ? 'text-[#E11D48] bg-[#FDEAEA]'
-    : maxDeficit > 40
-    ? 'text-[#D97706] bg-[#FFF4D8]'
-    : 'text-[#12A875] bg-[#E7F5EE]';
 
-  // 5. Recommended Crop (Season 1 / Current)
+  // 5. Recommended Crop (Season 1)
   const season1Crop = currentPlan?.seasons?.[0]?.crop;
-  const season1Name = season1Crop?.name ?? 'Orok-orok';
-  const season1Variety = season1Crop?.recommended_variety ?? 'Varietas Lokal';
-  const season1Water = season1Crop?.water_requirement_mm ?? 150;
+  const season1Name = season1Crop?.name ?? 'Jagung Hibrida';
+  const season1Variety = season1Crop?.recommended_variety ?? 'Bisi-18 / Pioneer';
+  const season1Water = season1Crop?.water_requirement_mm ?? 450;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
-      {/* 1. Kelembapan Zona Akar */}
-      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-[#7B8681]">Air Zona Akar</span>
-          <span className="p-2 rounded-xl bg-[#EAF5F4] text-[#0284C7] shrink-0">
-            <Droplets className="w-4 h-4" />
-          </span>
-        </div>
-        <div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold font-mono text-[#17231F] tabular-nums">
+    <div className="bg-[#20242B] border border-[#2C313A] rounded-[4px] overflow-hidden text-[#F1F3F5]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[#2C313A]">
+        {/* 1. Kelembapan Zona Akar */}
+        <div className="p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between text-xs text-[#8A949E]">
+            <span>Root-Zone Wetness (SMAP)</span>
+            <span title={smapStatus.detailText}>
+              <Info className="w-3.5 h-3.5 text-[#6E7781]" />
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
               {formatNumber(gwetroot, 2)}
             </span>
-            <span className="text-xs text-[#7B8681]">/ 1.00</span>
+            <span className="text-xs font-mono text-[#8A949E]">/ 1.00</span>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border whitespace-nowrap ${moistureColor}`}>
-              {isLoadingBioData ? 'Menunggu API' : moistureStatus}
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
+            <span className="inline-flex items-center gap-1.5 text-[#C1C7CD]">
+              <span className={`w-1.5 h-1.5 rounded-full ${moistureDot}`} />
+              <span>{isLoadingBioData ? 'Syncing...' : moistureStatus}</span>
             </span>
-            <span className="text-[10px] text-[#9CA3AF] font-mono truncate" title={smapStatus.detailText}>
-              {smapStatus.shortLabel}
-            </span>
+            <span className="font-mono">{smapStatus.shortLabel}</span>
           </div>
         </div>
-      </div>
 
-      {/* 2. Baterai Tanah */}
-      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-[#7B8681]">Baterai Tanah</span>
-          <span className="p-2 rounded-xl bg-[#E7F5EE] text-[#12A875] shrink-0">
-            <BatteryCharging className="w-4 h-4" />
-          </span>
-        </div>
-        <div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold font-mono text-[#17231F] tabular-nums">
+        {/* 2. Baterai Tanah */}
+        <div className="p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between text-xs text-[#8A949E]">
+            <span>Soil Battery Projection</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">0-30cm</span>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
               {finalBattery}%
             </span>
-            <span className="text-xs text-[#7B8681]">skor</span>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
             <span
-              className={`px-2 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-0.5 whitespace-nowrap ${
-                isCharging ? 'bg-[#E7F5EE] text-[#12A875]' : 'bg-[#FDEAEA] text-[#E11D48]'
+              className={`text-xs font-mono font-medium ${
+                isCharging ? 'text-[#00C2CC]' : 'text-[#FB7185]'
               }`}
             >
-              {isCharging ? <ArrowUpRight className="w-3 h-3 shrink-0" /> : <ArrowDownRight className="w-3 h-3 shrink-0" />}
-              <span>{isCharging ? `+${batteryDelta}%` : `${batteryDelta}%`}</span>
+              {isCharging ? `+${batteryDelta}%` : `${batteryDelta}%`}
             </span>
-            <span className="text-[10px] text-[#9CA3AF] font-mono whitespace-nowrap">Awal: {initialBattery}%</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
+            <span>Baseline: {initialBattery}%</span>
+            <span className="font-mono">Jalur {selectedPathway}</span>
           </div>
         </div>
-      </div>
 
-      {/* 3. Skenario Rotasi Aktif */}
-      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-[#7B8681]">Skenario Rotasi</span>
-          <span className="p-2 rounded-xl bg-[#EAF5F4] text-[#0284C7] shrink-0">
-            <RotateCw className="w-4 h-4" />
-          </span>
-        </div>
-        <div>
-          <div className="text-base font-bold text-[#17231F] truncate" title={pathwayTitle}>
-            Jalur {selectedPathway}: {pathwayTitle.split(' ')[0]}
+        {/* 3. Kapasitas Air Tanah (ISRIC SoilGrids) */}
+        <div className="p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between text-xs text-[#8A949E]">
+            <span>Available Water (AWC)</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">ISRIC v2.0</span>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E7F5EE] text-[#12A875] whitespace-nowrap">
-              Skor {pathwayScore}/100
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
+              {formatNumber(awcVal, 1)}
             </span>
-            <span className="text-[10px] text-[#9CA3AF] whitespace-nowrap">Komposit</span>
+            <span className="text-xs font-mono text-[#8A949E]">mm</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
+            <span className="truncate max-w-[140px] text-[#C1C7CD]" title={soilData?.textureClass}>
+              {textureLabel}
+            </span>
+            <span className="font-mono">SOC {soilData?.soc ?? 1.2}%</span>
           </div>
         </div>
-      </div>
 
-      {/* 4. Risiko Defisit Air */}
-      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-[#7B8681]">Defisit Air Puncak</span>
-          <span className="p-2 rounded-xl bg-[#FFF4D8] text-[#D97706] shrink-0">
-            <AlertTriangle className="w-4 h-4" />
-          </span>
-        </div>
-        <div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold font-mono text-[#17231F] tabular-nums">
+        {/* 4. Defisit Air Puncak */}
+        <div className="p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between text-xs text-[#8A949E]">
+            <span>Peak Seasonal Deficit</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">ETc vs Rain</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
               {formatMm(maxDeficit)}
             </span>
-            <span className="text-xs text-[#7B8681]">/ musim</span>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2">
-            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${waterRiskColor}`}>
-              {waterDetails.label}
-            </span>
-            <span className="text-[10px] text-[#9CA3AF] whitespace-nowrap">Ambang 100mm</span>
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
+            <span className="text-[#C1C7CD]">{waterDetails.label}</span>
+            <span className="font-mono">Limit 100mm</span>
           </div>
         </div>
-      </div>
 
-      {/* 5. Rekomendasi Musim Berjalan */}
-      <div className="agri-card p-5 flex flex-col justify-between gap-4 h-full">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-[#7B8681]">Rekomendasi Musim 1</span>
-          <span className="p-2 rounded-xl bg-[#E7F5EE] text-[#12A875] shrink-0">
-            <Sprout className="w-4 h-4" />
-          </span>
-        </div>
-        <div>
-          <div className="text-base font-bold text-[#17231F] truncate" title={season1Name}>
+        {/* 5. Komoditas Musim 1 */}
+        <div className="p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between text-xs text-[#8A949E]">
+            <span>Primary Season Crop</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">Musim 1</span>
+          </div>
+          <div className="text-base font-semibold text-[#F1F3F5] truncate" title={season1Name}>
             {season1Name}
           </div>
-          <div className="mt-3 pt-2.5 border-t border-[#E4EAE6] flex items-center justify-between gap-2 text-xs">
-            <span className="text-[11px] font-medium text-[#52605B] truncate" title={season1Variety}>
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1 gap-2">
+            <span className="truncate text-[#C1C7CD]" title={season1Variety}>
               {season1Variety}
             </span>
-            <span className="text-[10px] text-[#7B8681] font-mono whitespace-nowrap shrink-0">{formatMm(season1Water)}</span>
+            <span className="font-mono shrink-0">{formatMm(season1Water)}</span>
           </div>
         </div>
       </div>
