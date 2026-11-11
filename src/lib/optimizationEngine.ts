@@ -51,6 +51,26 @@ export const SEASONS: SeasonDefinition[] = [
   }
 ];
 
+// Helper untuk menentukan 2 musim terkering secara dinamis berdasarkan profil curah hujan aktual lokasi (Global & Lokal)
+export function resolveDynamicSeasons(climate: ClimateData): SeasonDefinition[] {
+  if (!climate.monthlyData || climate.monthlyData.length < 12) {
+    return SEASONS;
+  }
+
+  const withRainRate = SEASONS.map((s) => ({
+    season: s,
+    monthlyRate: getSeasonalRainfall(climate, s) / Math.max(1, s.monthsCount)
+  }));
+
+  // Urutkan dari rata-rata hujan bulanan terendah untuk mengidentifikasi 2 kuartal musim kering di belahan bumi mana pun
+  const sortedByDryness = [...withRainRate].sort((a, b) => a.monthlyRate - b.monthlyRate);
+  const dryIndices = new Set([sortedByDryness[0].season.seasonIndex, sortedByDryness[1].season.seasonIndex]);
+
+  return SEASONS.map((s) => ({
+    ...s,
+    isDrySeason: dryIndices.has(s.seasonIndex)
+  }));
+}
 // Helper untuk menghitung total curah hujan selama musim tertentu
 export function getSeasonalRainfall(climate: ClimateData, season: SeasonDefinition): number {
   if (!climate.monthlyData || climate.monthlyData.length < 12) return 200;
@@ -203,8 +223,10 @@ export function evaluateCropSequence(
   let hasConsecutiveDoubleCereal = false;
   let hasTripleMonoculture = false;
 
+  const dynamicSeasons = resolveDynamicSeasons(climate);
+
   for (let i = 0; i < 4; i++) {
-    const seasonDef = SEASONS[i];
+    const seasonDef = dynamicSeasons[i];
     const crop = sequence[i];
     const prevCrop = i > 0 ? sequence[i - 1] : null;
 
@@ -289,8 +311,13 @@ export function generateAllSequencePermutations(
   soil: SoilData,
   priorities: Priorities
 ): EvaluatedSequence[] {
-  // Batasi kandidat maksimal 7 komoditas teratas jika pustaka sangat besar untuk menjaga eksekusi < 10ms
-  const crops = cropsLibrary.length > 8 ? cropsLibrary.slice(0, 8) : cropsLibrary;
+  // Prioritaskan komoditas kustom yang ditambahkan petani/PPL agar selalu masuk dalam pool evaluasi (maks 8 kandidat = 4.096 permutasi)
+  const customCrops = cropsLibrary.filter((c) => c.is_custom);
+  const defaultCrops = cropsLibrary.filter((c) => !c.is_custom);
+  const crops =
+    cropsLibrary.length > 8
+      ? [...customCrops, ...defaultCrops].slice(0, 8)
+      : cropsLibrary;
   const n = crops.length;
   const results: EvaluatedSequence[] = [];
 

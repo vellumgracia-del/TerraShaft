@@ -2,6 +2,33 @@
 
 All notable changes to the TerraShaft project are documented in this file.
 
+## [Milestone 3.0] - 2026-11-10 - Full-Scope Audit, Security Hardening, Global Seasonality & Agritech UX Upgrade
+
+### Summary
+Executed a full-scope security, scientific, and UX upgrade aligned with the NASA Space Apps Challenge global impact criteria. Eliminated DOM XSS vectors, bounded in-memory telemetry caches against memory exhaustion, implemented dynamic cross-hemisphere dry season detection, added global agricultural presets alongside GPS geolocation and manual coordinate entry, restored the 5-Axis Spider Radar trade-off comparison chart, and exposed the full ISRIC SoilGrids 0-30cm physical and chemical profile.
+
+### Security & Data Reliability
+- **DOM XSS Elimination**: Replaced `dangerouslySetInnerHTML` in `FourSeasonRotationCard.tsx` with safe React elements and added `escapeHtml()` sanitization in `auditLogGenerator.ts`.
+- **Bounded Telemetry Caches**: Capped in-memory maps (`MAX_CACHE_SIZE = 500`) with automatic TTL/FIFO eviction in `/api/nasa-climate` and `/api/soil-profile` to prevent memory exhaustion (DoS/OOM).
+- **NASA POWER `-999` Fill Filtering**: Filtered missing daily observation flags (`-999`) in `PRECTOTCORR` so missing days do not distort seasonal rainfall totals to `0 mm`.
+- **HTTP Security Headers**: Configured `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy` in `next.config.ts`.
+- **Custom Crop Input Clamping**: Added numeric boundary clamping (`20-365` days, `50-2000` mm water, `0-300` kg N/ha, `0-100` profit index) in `crop-library/page.tsx`.
+
+### Added
+- **Public Geocoding & DEM Elevation Integration (`/api/geocode`)**: Connected OpenStreetMap Nominatim (forward place search & reverse geocoding) and Open-Meteo Digital Elevation Model (Copernicus DEM 90m / SRTM) to replace simulated elevation formulas and coordinate-only labels when clicking the map, dragging pins, using GPS, or searching locations worldwide.
+- **ISRIC SoilGrids v2.0 Multi-Depth Aggregation**: Fixed SoilGrids REST query parameters (`property=clay&property=sand...` across `0-5cm`, `5-15cm`, and `15-30cm`) and implemented depth-weighted mean aggregation for the 0-30cm root zone so live soil profiles no longer fall back to static defaults.
+- **Global Agricultural Presets & Coordinate Controls**: Added 5 global dryland presets (Machakos Kenya, Central Valley USA, Murray-Darling Australia, Petrolina Brazil, Punjab India), a global place search bar, a 1-click GPS geolocation button (`navigator.geolocation`), and a manual Lat/Lon input bar in `FieldOverviewCard.tsx`.
+- **Dynamic Cross-Hemisphere Seasonality (`resolveDynamicSeasons`)**: Dynamically identifies the 2 driest quarters from actual monthly precipitation data in `optimizationEngine.ts` instead of hardcoding June-October, plus hemisphere-aware climate/soil failover models in `/api/nasa-climate` and `/api/soil-profile`.
+- **5-Axis Spider Radar Comparison (`PathwayRadarComparison.tsx`)**: Added multi-objective Recharts RadarChart comparing Pathway A, B, and C across Soil Battery, Water Efficiency, Drought Safety, Profit Index, and Nitrogen Fixation on `/rotation-planner`.
+- **Full ISRIC SoilGrids 0-30cm Profile Panel**: Added stacked Sand/Silt/Clay texture bar, USDA texture class, pH H2O, CEC (KTK), Bulk Density (`estimateBulkDensity`), and active moisture reserve (`estimateCurrentMoistureReserve`) in `SoilBatteryCard.tsx`.
+- **Executive 4-Season Overview Strip**: Added interactive 4-season timeline preview and quick Pathway A/B/C switcher directly on the main dashboard (`/`).
+- **Custom Crop LocalStorage Persistence**: Persisted custom varieties in `localStorage` with hydration and deletion controls, and prioritized custom crops in the combinatorial evaluation pool.
+
+### Fixed & Cleaned
+- **Action Sheet Print Theme Isolation**: Ensured the 1080x1350px PNG export always renders in a clean light print theme even when Dark Mode is active, and fixed mobile horizontal scroll overflow.
+- **Mobile Viewport Accessibility**: Unlocked pinch-to-zoom (`maximumScale: 5`) in `layout.tsx` and updated PWA `manifest.json` and `sw.js` route caching.
+- **Dependency & Dead Code Cleanup**: Removed unused `mapbox-gl` dependency and obsolete modal components (`ActionSheetModal.tsx`, `CropLibraryModal.tsx`).
+
 ## [Milestone 2.1] - 2026-10-01 - Dashboard Navigation, Map Layering & Layout Stabilization
 
 ### Summary

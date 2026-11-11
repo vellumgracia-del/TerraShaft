@@ -4,102 +4,226 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard,
-  MapPin,
-  RotateCw,
-  BatteryCharging,
-  Droplets,
+  LayoutGrid,
+  Search,
+  Rss,
+  Pentagon,
+  FileText,
+  Layers,
   Database,
-  Share2,
-  Satellite,
-  Sprout
+  Share2
 } from 'lucide-react';
-import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { getOverallDisplayStatus } from '@/lib/provenance';
 
 interface SidebarProps {
   onNavigate?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export const NAV_ITEMS = [
-  { id: 'overview', href: '/', label: 'Ringkasan Lahan', icon: LayoutDashboard, desc: 'Indikator biofisik & ringkasan' },
-  { id: 'field-map', href: '/field-map', label: 'Peta Lahan', icon: MapPin, desc: 'Observasi spasial & koordinat' },
-  { id: 'soil-battery', href: '/soil-battery', label: 'Baterai Tanah', icon: BatteryCharging, desc: 'Kapasitas kesuburan & hara' },
-  { id: 'rotation-planner', href: '/rotation-planner', label: 'Rotasi 4 Musim', icon: RotateCw, desc: 'Skenario siklus tanam adaptif' },
-  { id: 'water-balance', href: '/water-balance', label: 'Neraca Air', icon: Droplets, desc: 'Presipitasi vs kebutuhan ETc' },
-  { id: 'crop-library', href: '/crop-library', label: 'Pustaka Tanaman', icon: Database, desc: 'Basis data varietas komoditas' },
-  { id: 'action-sheet', href: '/action-sheet', label: 'Lembar Aksi (WA)', icon: Share2, desc: 'Ekspor poster panduan lapangan' },
-  { id: 'data-sources', href: '/data-sources', label: 'Sumber Data', icon: Satellite, desc: 'Provenansi NASA & SoilGrids' }
+  {
+    id: 'overview',
+    href: '/',
+    label: 'Overview',
+    icon: LayoutGrid,
+    desc: 'Alur kerja spasial, telemetri aktif & ringkasan rotasi',
+    apiLabel: 'Workspace Overview',
+    group: 'root'
+  },
+  {
+    id: 'field-map',
+    href: '/field-map',
+    label: 'Search and AOI',
+    icon: Search,
+    desc: 'Cari lokasi global, geser pin koordinat & elevasi DEM',
+    apiLabel: 'Nominatim & DEM API',
+    group: 'add_data'
+  },
+  {
+    id: 'data-sources',
+    href: '/data-sources',
+    label: 'Subscribe to telemetry',
+    icon: Rss,
+    desc: 'Status koneksi satelit NASA POWER & ISRIC SoilGrids v2.0',
+    apiLabel: 'NASA POWER & SoilGrids API',
+    group: 'add_data'
+  },
+  {
+    id: 'crop-library',
+    href: '/crop-library',
+    label: 'Areas & crop varieties',
+    icon: Pentagon,
+    desc: 'Katalog parameter fisiologis tanaman & input varietas lokal',
+    apiLabel: 'Crop Library API',
+    group: 'add_data'
+  },
+  {
+    id: 'rotation-planner',
+    href: '/rotation-planner',
+    label: '4-Season rotation',
+    icon: FileText,
+    desc: 'Optimasi siklus tanam 4 musim, radar 5-sumbu & log audit',
+    apiLabel: 'Combinatorial Engine',
+    group: 'delivery'
+  },
+  {
+    id: 'soil-battery',
+    href: '/soil-battery',
+    label: 'Soil battery (0-30cm)',
+    icon: Layers,
+    desc: 'Profil tekstur pasir-debu-liat, SOC, pH, KTK & neraca N',
+    apiLabel: 'Pedotransfer 0-30cm API',
+    group: 'delivery'
+  },
+  {
+    id: 'water-balance',
+    href: '/water-balance',
+    label: 'Water collections',
+    icon: Database,
+    desc: 'Kurva presipitasi bulanan vs evapotranspirasi Hargreaves ET0',
+    apiLabel: 'Hydrology & ET0 API',
+    group: 'delivery'
+  },
+  {
+    id: 'action-sheet',
+    href: '/action-sheet',
+    label: 'Destinations & export',
+    icon: Share2,
+    desc: 'Cetak poster panduan lapangan 1080x1350px & distribusi WA',
+    apiLabel: 'Destinations & Export API',
+    group: 'delivery'
+  }
 ];
 
-export default function Sidebar({ onNavigate }: SidebarProps) {
+export default function Sidebar({
+  onNavigate,
+  collapsed = false,
+  onToggleCollapse
+}: SidebarProps) {
   const pathname = usePathname();
-  const prov = useTerraShaftStore((s) => s.provenance);
-  const overallStatus = getOverallDisplayStatus(prov);
+
+  const rootItems = NAV_ITEMS.filter((i) => i.group === 'root');
+  const addDataItems = NAV_ITEMS.filter((i) => i.group === 'add_data');
+  const deliveryItems = NAV_ITEMS.filter((i) => i.group === 'delivery');
+
+  const renderNavItem = (item: (typeof NAV_ITEMS)[number]) => {
+    const Icon = item.icon;
+    const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+
+    return (
+      <Link
+        key={item.id}
+        href={item.href}
+        onClick={onNavigate}
+        title={collapsed ? item.label : undefined}
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-[4px] text-[13px] transition-colors ${
+          isActive
+            ? 'bg-[#163A40] text-[#F1F3F5] font-medium'
+            : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white font-normal'
+        } ${collapsed ? 'justify-center px-0' : ''}`}
+      >
+        <Icon
+          className={`w-4 h-4 shrink-0 ${
+            isActive ? 'text-[#00C2CC]' : 'text-[#9BA3AE]'
+          }`}
+        />
+        {!collapsed && <span className="truncate">{item.label}</span>}
+      </Link>
+    );
+  };
 
   return (
-    <aside className="w-64 bg-white border-r border-[#E4EAE6] flex flex-col shrink-0 min-h-screen py-6 px-4 select-none">
-      {/* Brand Identity */}
-      <Link href="/" onClick={onNavigate} className="flex items-center gap-3 px-2 mb-8">
-        <div className="w-10 h-10 rounded-2xl bg-[#12A875] flex items-center justify-center text-white shadow-sm shadow-emerald-500/20">
-          <Sprout className="w-6 h-6 stroke-[2.2]" />
-        </div>
-        <div>
-          <h1 className="text-base font-bold tracking-tight text-[#17231F] leading-tight flex items-center gap-1">
-            TerraShaft
-          </h1>
-          <p className="text-xs text-[#7B8681] font-medium">Farm Intelligence</p>
-        </div>
-      </Link>
-
-      {/* Navigation Links */}
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] px-3 mb-2">
-        Halaman Modul
-      </div>
-      <nav className="flex-1 flex flex-col gap-1.5">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
-
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              onClick={onNavigate}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${
-                isActive
-                  ? 'bg-[#E7F5EE] text-[#12A875] font-semibold'
-                  : 'text-[#52605B] hover:bg-[#F5F7F4] hover:text-[#17231F]'
-              }`}
-            >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#12A875]' : 'text-[#7B8681]'}`} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Dynamic Truthful Data Provenance Status in Sidebar Footer */}
-      <div className="p-3 bg-[#F5F7F4] border border-[#E4EAE6] rounded-2xl flex flex-col gap-1.5 mt-auto">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-[#17231F]">
-          <span
-            className={`w-2 h-2 rounded-full shrink-0 ${
-              overallStatus.tone === 'success'
-                ? 'bg-[#12A875]'
-                : overallStatus.tone === 'info'
-                ? 'bg-[#0284C7]'
-                : overallStatus.tone === 'neutral'
-                ? 'bg-[#7B8681]'
-                : overallStatus.tone === 'error'
-                ? 'bg-[#E11D48]'
-                : 'bg-[#D97706]'
+    <aside
+      className={`${
+        collapsed ? 'w-14' : 'w-56'
+      } bg-[#16191E] border-r border-[#282C34] flex flex-col shrink-0 h-full select-none text-[#C1C7CD] transition-all duration-150`}
+    >
+      {/* Top Collapse Button matching Planet Insights Platform (tab style) */}
+      {onToggleCollapse && (
+        <div className={`flex items-center ${collapsed ? 'justify-center pt-2 pb-1' : 'justify-end'} select-none`}>
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'}
+            title={collapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'}
+            className={`group inline-flex items-center justify-center transition-colors cursor-pointer outline-none focus:outline-none focus:ring-0 ring-0 focus-visible:ring-0 ${
+              collapsed
+                ? 'w-9 h-7 rounded-[3px] bg-[#20252D] hover:bg-[#2A303A] text-[#9BA3AE] hover:text-white border border-[#282C34]'
+                : 'h-7 px-2.5 rounded-bl-[4px] bg-[#20252D] hover:bg-[#2A303A] text-[#9BA3AE] hover:text-white border-l border-b border-[#282C34]'
             }`}
-          />
-          <span className="truncate">{overallStatus.shortLabel}</span>
+          >
+            {collapsed ? (
+              /* Expand Icon: 3 horizontal bars + chevron right */
+              <svg
+                className="w-3.5 h-3.5 text-[#9BA3AE] group-hover:text-white transition-colors"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <rect x="2" y="3.5" width="7" height="1.5" rx="0.75" />
+                <rect x="2" y="7.25" width="7" height="1.5" rx="0.75" />
+                <rect x="2" y="11" width="7" height="1.5" rx="0.75" />
+                <path
+                  d="M10.5 4.5L14 8L10.5 11.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+            ) : (
+              /* Collapse Icon: 3 horizontal bars + chevron left (matches Planet.com) */
+              <svg
+                className="w-3.5 h-3.5 text-[#9BA3AE] group-hover:text-white transition-colors"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <rect x="2" y="3.5" width="7" height="1.5" rx="0.75" />
+                <rect x="2" y="7.25" width="7" height="1.5" rx="0.75" />
+                <rect x="2" y="11" width="7" height="1.5" rx="0.75" />
+                <path
+                  d="M13.5 4.5L10 8L13.5 11.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+            )}
+          </button>
         </div>
-        <p className="text-[11px] text-[#7B8681] leading-relaxed line-clamp-2">
-          {overallStatus.detailText}
-        </p>
+      )}
+
+      <div className={`p-2.5 ${collapsed ? 'pt-1' : 'pt-2'} flex-1 flex flex-col gap-5 overflow-y-auto`}>
+        {/* Root Overview Item */}
+        <nav className="flex flex-col gap-1">
+          {rootItems.map(renderNavItem)}
+        </nav>
+
+        {/* ADD DATA Group */}
+        <div className="flex flex-col gap-1">
+          {!collapsed && (
+            <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#8A949E] px-3 mb-1">
+              ADD DATA
+            </div>
+          )}
+          <nav className="flex flex-col gap-0.5">
+            {addDataItems.map(renderNavItem)}
+          </nav>
+        </div>
+
+        {/* VIEW DATA DELIVERY Group */}
+        <div className="flex flex-col gap-1">
+          {!collapsed && (
+            <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#8A949E] px-3 mb-1">
+              VIEW DATA DELIVERY
+            </div>
+          )}
+          <nav className="flex flex-col gap-0.5">
+            {deliveryItems.map(renderNavItem)}
+          </nav>
+        </div>
       </div>
     </aside>
   );

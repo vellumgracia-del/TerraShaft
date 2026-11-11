@@ -404,12 +404,12 @@ export function getActionSheetProvenanceDisplay(prov?: TerraShaftProvenance): Ac
     scientificNote = 'NASA POWER berhasil diakses melalui API. Nilai ini merupakan baseline agroklimatologi historis, bukan sensor real-time di lahan. Profil tanah sedang menggunakan fallback regional karena SoilGrids tidak tersedia.';
   } else if (!nasaLiveOrCached && soilLiveOrCached) {
     banner = 'Status sumber data: ISRIC SoilGrids (API OK) · NASA POWER (Regional fallback)';
-    scientificNote = 'ISRIC SoilGrids berhasil diakses melalui API (0–30cm). Data iklim sedang menggunakan fallback klimatologi regional terkalibrasi.';
+    scientificNote = 'ISRIC SoilGrids berhasil diakses melalui API (0-30cm). Data iklim sedang menggunakan fallback klimatologi regional terkalibrasi.';
   } else if (prov?.overallMode === 'demo') {
-    banner = 'Status sumber data: DEMO MODE — Bukan observasi live; disimulasikan untuk demonstrasi';
+    banner = 'Status sumber data: DEMO MODE (Bukan observasi live, disimulasikan untuk demonstrasi)';
     scientificNote = 'Data demo/simulasi aktif. Nilai bukan observasi lapangan langsung; gunakan untuk evaluasi antarmuka dan logika optimasi.';
   } else {
-    banner = 'Status sumber data: REGIONAL FALLBACK — Model agroklimat & pedologi regional terkalibrasi';
+    banner = 'Status sumber data: REGIONAL FALLBACK (Model agroklimat & pedologi regional terkalibrasi)';
     scientificNote = 'Data demo/fallback aktif. Nilai bukan observasi lapangan langsung. Rekomendasi dihitung menggunakan model agroklimat dan pedologi regional terkalibrasi Nusa Tenggara.';
   }
 

@@ -42,29 +42,30 @@ Sistem komputasi TerraShaft secara otomatis mengevaluasi **$6^4 = 1.296$ kemungk
 [ Peta Satelit Lahan ] ──► [ Deteksi Biofisik Satelit NASA ] ──► [ Rekomendasi 4 Musim Siap WhatsApp ]
 ```
 
-### ① Peta Digital Lahan & Deteksi Lokasi Spasial
-* Cukup geser pin lokasi di peta atau pilih tombol preset wilayah lahan kering (seperti **Kupang Timur**, **Gunungkidul**, **Sumba Timur**, **Indramayu**, atau **Lombok Timur**).
-* Sistem langsung mendeteksi koordinat GPS, ketinggian lahan (*elevation*), dan memuat data satelit terkait dalam hitungan detik.
+### ① Peta Digital Lahan, Deteksi Lokasi Spasial Global & Input GPS
+* Cari nama desa/kabupaten/kota di seluruh dunia (via **OpenStreetMap Nominatim**), geser pin lokasi di peta, masukkan koordinat manual (Latitude/Longitude), gunakan tombol **Lokasi GPS Saya**, atau pilih tombol preset wilayah lahan kering **Indonesia** (**Kupang Timur**, **Gunungkidul**, **Sumba Timur**, **Indramayu**, **Lombok Timur**) maupun **Sentra Global** (**Machakos Kenya**, **Central Valley USA**, **Murray-Darling Australia**, **Petrolina Brazil**, **Punjab India**).
+* Sistem langsung mendeteksi nama administratif wilayah, ketinggian lahan aktual berbasis model elevasi digital (**Open-Meteo Copernicus DEM / SRTM**), dan memuat data satelit terkait dalam hitungan detik.
 
 ### ② Pantauan Telemetri Satelit NASA & Tanah *Real-Time*
 Tanpa perlu memasang sensor fisik mahal di sawah, TerraShaft langsung terhubung dengan asimilasi satelit NASA POWER dan ISRIC SoilGrids v2.0:
 * **NASA SMAP (`GWETROOT`):** Memantau kelembapan air tanah zona perakaran (skala 0.00 – 1.00) lengkap dengan garis takik merah batas kritis di angka $0.25$.
-* **NASA GPM (`PRECTOTCORR`):** Mengukur laju curah hujan harian (mm/hari) dan akumulasi presipitasi musiman.
+* **NASA GPM (`PRECTOTCORR`):** Mengukur laju curah hujan harian (mm/hari) dan akumulasi presipitasi musiman (dilengkapi filter otomatis nilai fill `-999`).
 * **NASA CERES (`ALLSKY_SFC_SW_DWN`):** Mengukur intensitas radiasi matahari untuk menghitung laju penguapan air tanah ($ET_0$).
-* **ISRIC SoilGrids:** Menghitung Kapasitas Menahan Air Tanah ($AWC$), kadar Karbon Organik ($SOC\%$), pH, dan kelas tekstur segitiga USDA.
+* **ISRIC SoilGrids (Lapisan 0–30 cm):** Menghitung Kapasitas Menahan Air Tanah ($AWC$), Cadangan Air Aktif, kadar Karbon Organik ($SOC\%$), bar komposisi Pasir-Debu-Liat, kelas tekstur segitiga USDA, derajat keasaman ($\text{pH H}_2\text{O}$), Kapasitas Tukar Kation ($CEC$), dan Kerapatan Lindak (*Bulk Density* / indikasi padas olah).
 
 ### ③ Indikator Baterai Tanah (*The Soil Battery Gauge*)
 * Tabung visual status kapasitas kesuburan tanah ($0–100\%$).
 * Menampilkan status secara langsung apakah pola rotasi sedang *Charging* (terisi hara) atau *Discharging* (terkuras).
 * Menghitung pasokan **Neraca Nitrogen Alami ($\Delta N$, $\text{kg N/ha}$)** dan estimasi penghematan air dibanding monokultur.
 
-### ④ Tiga Jalur Skenario Rotasi Optimal (Pathway A, B, C)
+### ④ Tiga Jalur Skenario Rotasi Optimal (Pathway A, B, C) & 5-Axis Radar Chart
 1. **Pathway A (Max Soil Regeneration):**  
    *Pilihan terbaik untuk memulihkan tanah tandus.* Wajib menyisipkan tanaman penutup berakar dalam dan legum penambat N tinggi untuk menambah pupuk alami dan memperbaiki struktur tanah.
 2. **Pathway B (Drought Resilience):**  
-   *Pilihan siaga menghadapi kemarau panjang atau El Niño.* Memblokir seluruh tanaman boros air pada musim kemarau puncak dan hanya mengizinkan komoditas tahan kering (seperti sorgum atau kacang hijau).
+   *Pilihan siaga menghadapi kemarau panjang atau El Niño.* Mendeteksi kuartal musim terkering secara dinamis di belahan bumi utara maupun selatan, memblokir tanaman boros air pada puncak kemarau, dan hanya mengizinkan komoditas tahan kering (seperti sorgum atau kacang hijau).
 3. **Pathway C (Cash-Flow Optimized):**  
    *Pilihan untuk memaksimalkan keuntungan tunai hasil panen*, namun tetap dibatasi batas aman ketersediaan air tanah agar tidak terjadi gagal panen.
+* Dilengkapi **Komparasi Multi-Objektif 5-Axis Spider Radar Chart** untuk mengevaluasi *trade-off* antara Baterai Tanah, Efisiensi Air, Aman Kemarau, Indeks Profit, dan Fiksasi Nitrogen.
 
 ### ⑤ Matriks Kalender 4 Musim Lengkap dengan Varietas Benih
 Membagi siklus budidaya ke dalam 4 musim berkesinambungan:
@@ -174,4 +175,14 @@ npm run start
 * **FAO Irrigation and Drainage Paper No. 56**: Metodologi Hargreaves-Samani ($ET_0$) dan Koefisien Tanaman ($K_c$).
 
 ---
-*© 2026 TerraShaft Team — Built for Resilient Agriculture & Space-to-Field Impact.*
+
+## 8. Tim Pengembang (NASA Space Apps Challenge)
+
+* **Zulfa Fahmiy Al Murtadlo** (`@varosaghasi`) - Team Owner
+* **Mohammad Arga** (`@rifaldhi`)
+* **Moch. Hafidz zawawi** (`@zawacaprio`)
+* **Stiven Josh Peter Siburian** (`@stevenjoshburian`)
+* **Ravi Arnan Irianto** (`@raviarnan`)
+
+---
+*© 2026 TerraShaft Team - Built for Resilient Agriculture & Space-to-Field Impact.*

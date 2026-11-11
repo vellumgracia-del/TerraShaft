@@ -36,10 +36,6 @@ interface TerraShaftState {
   selectedPathway: 'A' | 'B' | 'C';
   plans: Record<'A' | 'B' | 'C', RotationPlan> | null;
 
-  // Modal States
-  isExportModalOpen: boolean;
-  isAddCropModalOpen: boolean;
-
   // Actions
   setLocation: (lat: number, lon: number, placeName?: string, elevation?: number) => Promise<void>;
   fetchBioPhysicalData: (lat: number, lon: number) => Promise<void>;
@@ -48,13 +44,13 @@ interface TerraShaftState {
   setPriorityPreset: (preset: 'profit' | 'water' | 'soil') => void;
   setSelectedPathway: (id: 'A' | 'B' | 'C') => void;
   addCustomCrop: (crop: Omit<Crop, 'id'>) => void;
-  openExportModal: () => void;
-  closeExportModal: () => void;
-  openAddCropModal: () => void;
-  closeAddCropModal: () => void;
+  removeCustomCrop: (id: string) => void;
+  hydrateCustomCrops: () => void;
   recalculate: () => void;
   getProvenance: () => TerraShaftProvenance;
 }
+
+const CUSTOM_CROPS_STORAGE_KEY = 'terrashaft_custom_crops_v1';
 
 // Lokasi Default: Kupang Timur, NTT (Kawasan Lahan Kering Semi-Arid Indonesia)
 const DEFAULT_LOCATION: LocationCoordinates = {
@@ -75,7 +71,7 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   location: DEFAULT_LOCATION,
   elevation_m: 85,
   satelliteSyncTime: new Date().toISOString(),
-  isFieldMode: false,
+  isFieldMode: true,
   soilData: null,
   climateData: null,
   isLoadingBioData: false,
@@ -90,8 +86,6 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   crops: initialCrops as Crop[],
   selectedPathway: 'A',
   plans: null,
-  isExportModalOpen: false,
-  isAddCropModalOpen: false,
 
   toggleFieldMode: () => {
     set((state) => ({ isFieldMode: !state.isFieldMode }));
@@ -107,19 +101,53 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
       return;
     }
 
+    const needsGeocode = !placeName || elevation === undefined;
+
     set(state => ({
       location: {
         ...state.location,
         lat,
         lon,
-        placeName: placeName || `Titik Koordinat: ${lat.toFixed(4)}, ${lon.toFixed(4)}`
+        placeName: placeName || `Memuat nama lokasi (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)...`
       },
-      elevation_m: elevation ?? Math.round(45 + Math.abs(lat * 12) + Math.abs(lon % 50)),
+      elevation_m: elevation ?? state.elevation_m,
       satelliteSyncTime: new Date().toISOString(),
       errorBioData: null,
       isLoadingBioData: true,
       loadingSources: { nasaPower: true, soilGrids: true }
     }));
+
+    if (needsGeocode && typeof window !== 'undefined') {
+      fetch(`/api/geocode?lat=${lat}&lon=${lon}`)
+        .then(res => (res.ok ? res.json() : null))
+        .then(geo => {
+          if (!geo) return;
+          const currentLoc = get().location;
+          if (Math.abs(currentLoc.lat - lat) < 0.001 && Math.abs(currentLoc.lon - lon) < 0.001) {
+            set(state => ({
+              location: {
+                ...state.location,
+                placeName: placeName || geo.placeName || `Titik Koordinat: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`,
+                district: geo.district || state.location.district,
+                province: geo.province || state.location.province
+              },
+              elevation_m: elevation ?? (typeof geo.elevation_m === 'number' ? geo.elevation_m : state.elevation_m)
+            }));
+          }
+        })
+        .catch(() => {
+          const currentLoc = get().location;
+          if (!placeName && Math.abs(currentLoc.lat - lat) < 0.001 && Math.abs(currentLoc.lon - lon) < 0.001) {
+            set(state => ({
+              location: {
+                ...state.location,
+                placeName: `Titik Koordinat: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`
+              }
+            }));
+          }
+        });
+    }
+
     await get().fetchBioPhysicalData(lat, lon);
   },
 
@@ -245,19 +273,59 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
       is_custom: true
     };
 
-    set(state => ({
-      crops: [...state.crops, customCrop],
-      isAddCropModalOpen: false
-    }));
+    set(state => {
+      const updated = [...state.crops, customCrop];
+      if (typeof window !== 'undefined') {
+        try {
+          const customOnly = updated.filter(c => c.is_custom);
+          window.localStorage.setItem(CUSTOM_CROPS_STORAGE_KEY, JSON.stringify(customOnly));
+        } catch {
+          // Ignore storage quota errors
+        }
+      }
+      return { crops: updated };
+    });
 
     get().recalculate();
   },
 
-  openExportModal: () => set({ isExportModalOpen: true }),
-  closeExportModal: () => set({ isExportModalOpen: false }),
+  removeCustomCrop: (id: string) => {
+    set(state => {
+      const updated = state.crops.filter(c => !(c.id === id && c.is_custom));
+      if (typeof window !== 'undefined') {
+        try {
+          const customOnly = updated.filter(c => c.is_custom);
+          window.localStorage.setItem(CUSTOM_CROPS_STORAGE_KEY, JSON.stringify(customOnly));
+        } catch {
+          // Ignore storage errors
+        }
+      }
+      return { crops: updated };
+    });
 
-  openAddCropModal: () => set({ isAddCropModalOpen: true }),
-  closeAddCropModal: () => set({ isAddCropModalOpen: false }),
+    get().recalculate();
+  },
+
+  hydrateCustomCrops: () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(CUSTOM_CROPS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed) || parsed.length === 0) return;
+      const validCustom: Crop[] = parsed.filter(
+        (c: unknown): c is Crop =>
+          Boolean(c && typeof c === 'object' && 'id' in c && 'name' in c)
+      ).map(c => ({ ...c, is_custom: true }));
+
+      if (validCustom.length > 0) {
+        set({ crops: [...(initialCrops as Crop[]), ...validCustom] });
+        get().recalculate();
+      }
+    } catch {
+      // Ignore malformed local storage
+    }
+  },
 
   recalculate: () => {
     const { climateData, soilData, priorities, crops } = get();

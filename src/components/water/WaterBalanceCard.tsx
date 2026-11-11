@@ -33,17 +33,17 @@ interface CustomTooltipProps {
 const CustomChartTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 rounded-xl border border-[#E4EAE6] shadow-lg text-xs flex flex-col gap-1.5 z-50">
-        <span className="font-bold text-[#17231F] pb-1 border-b border-[#E4EAE6]">
+      <div className="bg-[#16191E] p-3 rounded-[4px] border border-[#2C313A] shadow-xl text-xs flex flex-col gap-1.5 z-50 text-[#F1F3F5]">
+        <span className="font-bold text-[#F1F3F5] pb-1 border-b border-[#2C313A]">
           {label}
         </span>
         {payload.map((item, index) => (
           <div key={`tooltip-${index}`} className="flex items-center justify-between gap-4">
-            <span className="flex items-center gap-1.5 text-[#52605B]">
+            <span className="flex items-center gap-1.5 text-[#8A949E]">
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color || item.fill }} />
               <span>{item.name}:</span>
             </span>
-            <span className="font-mono font-bold text-[#17231F]">
+            <span className="font-mono font-bold text-[#F1F3F5]">
               {formatMm(item.value)}
             </span>
           </div>
@@ -77,26 +77,26 @@ export default function WaterBalanceCard() {
   ];
 
   return (
-    <div id="water-balance" className="agri-card p-5 lg:p-6 flex flex-col gap-4">
+    <div id="water-balance" className="bg-[#20242B] border border-[#2C313A] rounded-[4px] p-5 lg:p-6 flex flex-col gap-4 text-[#F1F3F5]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E4EAE6]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#2C313A]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#EAF5F4] text-[#0284C7]">
+            <span className="p-1.5 rounded-[4px] bg-[#163A40] text-[#00C2CC]">
               <Droplets className="w-4 h-4" />
             </span>
-            <h2 className="text-base font-bold text-[#17231F] tracking-tight">
+            <h2 className="text-base font-bold text-[#F1F3F5] tracking-tight">
               Neraca Air Lahan & Risiko Defisit (Dual-Axis Water Balance)
             </h2>
           </div>
-          <p className="text-xs text-[#7B8681] mt-0.5">
+          <p className="text-xs text-[#8A949E] mt-0.5">
             Komparasi estimasi presipitasi via NASA POWER vs kebutuhan air tanaman (ETc)
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs self-start sm:self-auto">
-          <span className="text-[#7B8681]">Kapasitas Retensi (AWC):</span>
-          <span className="font-mono font-bold text-[#12A875] bg-[#E7F5EE] px-2 py-0.5 rounded-md">
+          <span className="text-[#8A949E]">Kapasitas Retensi (AWC):</span>
+          <span className="font-mono font-bold text-[#00C2CC] bg-[#163A40] border border-[#009DA5]/40 px-2 py-0.5 rounded-[3px]">
             {formatMm(soilData?.awc ?? 30.3)} / 30cm
           </span>
         </div>
@@ -106,19 +106,19 @@ export default function WaterBalanceCard() {
       <div className="w-full h-[280px] sm:h-[340px] pt-2">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 15, right: 15, bottom: 25, left: -10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E4EAE6" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#2C313A" vertical={false} />
             <XAxis
               dataKey="seasonName"
-              tick={{ fill: '#7B8681', fontSize: 11 }}
+              tick={{ fill: '#8A949E', fontSize: 11 }}
               tickLine={false}
-              axisLine={{ stroke: '#E4EAE6' }}
+              axisLine={{ stroke: '#2C313A' }}
             />
             <YAxis
               yAxisId="left"
-              tick={{ fill: '#7B8681', fontSize: 11 }}
+              tick={{ fill: '#8A949E', fontSize: 11 }}
               tickLine={false}
-              axisLine={{ stroke: '#E4EAE6' }}
-              label={{ value: 'Milimeter (mm)', angle: -90, position: 'insideLeft', fill: '#9CA3AF', fontSize: 10, offset: 15 }}
+              axisLine={{ stroke: '#2C313A' }}
+              label={{ value: 'Milimeter (mm)', angle: -90, position: 'insideLeft', fill: '#8A949E', fontSize: 10, offset: 15 }}
             />
 
             <Tooltip content={<CustomChartTooltip />} />
@@ -126,7 +126,7 @@ export default function WaterBalanceCard() {
             <Legend
               verticalAlign="top"
               align="right"
-              wrapperStyle={{ paddingBottom: '12px', fontSize: '11px', color: '#52605B' }}
+              wrapperStyle={{ paddingBottom: '12px', fontSize: '11px', color: '#8A949E' }}
             />
 
             {/* Presipitasi Hujan via NASA POWER (Bar) */}
@@ -134,8 +134,8 @@ export default function WaterBalanceCard() {
               yAxisId="left"
               dataKey="rainfall_mm"
               name="Presipitasi NASA POWER (mm)"
-              fill="#38BDF8"
-              radius={[6, 6, 0, 0]}
+              fill="#009DA5"
+              radius={[2, 2, 0, 0]}
               maxBarSize={48}
             />
 
@@ -145,8 +145,8 @@ export default function WaterBalanceCard() {
               type="monotone"
               dataKey="deficit_mm"
               name="Defisit Air Cekaman (mm)"
-              fill="#FDEAEA"
-              stroke="#E11D48"
+              fill="#3B1C22"
+              stroke="#EF4444"
               strokeWidth={1.5}
             />
 
@@ -156,9 +156,9 @@ export default function WaterBalanceCard() {
               type="monotone"
               dataKey="demand_mm"
               name="Kebutuhan Air ETc (mm)"
-              stroke="#D97706"
-              strokeWidth={2.5}
-              dot={{ r: 4, fill: '#D97706', stroke: '#FFFFFF', strokeWidth: 2 }}
+              stroke="#E5A93C"
+              strokeWidth={2}
+              dot={{ r: 4, fill: '#E5A93C', stroke: '#181B20', strokeWidth: 2 }}
               activeDot={{ r: 6 }}
             />
           </ComposedChart>
@@ -166,12 +166,12 @@ export default function WaterBalanceCard() {
       </div>
 
       {/* Chart Footer Note */}
-      <div className="p-3 bg-[#F5F7F4] rounded-xl border border-[#E4EAE6] flex items-center justify-between text-xs text-[#7B8681]">
+      <div className="p-3 bg-[#16191E] rounded-[4px] border border-[#2C313A] flex items-center justify-between text-xs text-[#8A949E]">
         <div className="flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-[#0284C7] shrink-0" />
+          <Info className="w-3.5 h-3.5 text-[#00C2CC] shrink-0" />
           <span>Area arsir merah menandakan defisit air musiman yang melampaui cadangan air tanah AWC.</span>
         </div>
-        <span className="font-semibold text-[#17231F] hidden sm:inline">
+        <span className="font-semibold text-[#F1F3F5] hidden sm:inline">
           Ambang Batas Kritis: 100 mm
         </span>
       </div>

@@ -4,9 +4,27 @@ import { calculateDailyET0 } from '@/lib/evapotranspiration';
 
 import { getAppEnv } from '@/lib/env';
 
-// In-Memory Cache untuk menghindari repetitive calls
+// In-Memory Cache dengan batas maksimum entri untuk mencegah kebocoran memori (DoS/OOM)
 const climateCache = new Map<string, { data: ClimateData; timestamp: number }>();
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Jam
+const MAX_CACHE_SIZE = 500;
+
+function setBoundedClimateCache(key: string, data: ClimateData, now: number) {
+  if (climateCache.size >= MAX_CACHE_SIZE && !climateCache.has(key)) {
+    for (const [k, v] of climateCache.entries()) {
+      if (now - v.timestamp >= CACHE_TTL_MS) {
+        climateCache.delete(k);
+      }
+    }
+    if (climateCache.size >= MAX_CACHE_SIZE) {
+      const oldestKey = climateCache.keys().next().value;
+      if (oldestKey !== undefined) {
+        climateCache.delete(oldestKey);
+      }
+    }
+  }
+  climateCache.set(key, { data, timestamp: now });
+}
 
 export async function GET(request: Request) {
   const env = getAppEnv();
@@ -42,9 +60,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Ambil data 1 tahun terakhir dari NASA POWER API
+    // Ambil data 1 tahun penuh terakhir dari NASA POWER API
     const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 1;
+    const startYear = Math.min(currentYear - 1, 2025);
     const start = `${startYear}0101`;
     const end = `${startYear}1231`;
 
@@ -80,12 +98,17 @@ export async function GET(request: Request) {
     const daysInMonth = new Array(12).fill(0);
 
     const precEntries = Object.entries(params.PRECTOTCORR as Record<string, number>);
+    let validPrecDays = 0;
 
     for (const [dateStr, precVal] of precEntries) {
       const monthIdx = parseInt(dateStr.substring(4, 6), 10) - 1;
       if (monthIdx < 0 || monthIdx > 11) continue;
 
-      const rain = precVal >= 0 ? precVal : 0;
+      // Abaikan nilai fill NASA POWER (-999) agar tidak mendistorsi curah hujan menjadi 0
+      if (typeof precVal !== 'number' || precVal < 0) continue;
+
+      validPrecDays += 1;
+      const rain = precVal;
       const tmin = params.T2M_MIN?.[dateStr] ?? 23;
       const tmax = params.T2M_MAX?.[dateStr] ?? 32;
       const tmean = params.T2M?.[dateStr] ?? 27;
@@ -99,6 +122,10 @@ export async function GET(request: Request) {
       monthlyRad[monthIdx] += rad >= 0 ? rad : 18;
       monthlyGwet[monthIdx] += gwet >= 0 ? gwet : 0.45;
       daysInMonth[monthIdx] += 1;
+    }
+
+    if (validPrecDays === 0 || (precEntries.length >= 100 && validPrecDays < precEntries.length * 0.5)) {
+      throw new Error('Data observasi harian NASA POWER belum lengkap untuk periode ini (-999 fill)');
     }
 
     const monthNames = [
@@ -160,7 +187,7 @@ export async function GET(request: Request) {
       observationPeriod: 'Historical 1-Year Baseline (NASA POWER Agroclimatology v2.0)'
     };
 
-    climateCache.set(cacheKey, { data: climateResult, timestamp: now });
+    setBoundedClimateCache(cacheKey, climateResult, now);
     return NextResponse.json(climateResult);
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'NASA POWER API error / timeout';
@@ -176,22 +203,32 @@ function generateFallbackClimate(
   lon: number,
   fallbackReason: string | null = 'Koneksi NASA POWER tidak tersedia / timeout (failover model regional)'
 ): ClimateData {
-  // Kalibrasi realistis: NTT / kawasan Indonesia bagian timur (lon > 115) memiliki curah hujan 800 - 1400 mm
-  const isSouthernDryzone = lat < -7.0 && lon > 110.0;
-  const baseRain = isSouthernDryzone
-    ? [210, 190, 140, 75, 30, 15, 10, 5, 8, 35, 110, 185]
-    : [280, 260, 210, 130, 70, 45, 35, 25, 40, 95, 180, 245];
+  const isNorthernHemisphere = lat > 5.0;
+  const isSubtropical = Math.abs(lat) > 20.0;
+  const isSouthernDryzone = (lat < -7.0 && lon > 110.0) || isSubtropical;
+
+  const southernDryRain = [210, 190, 140, 75, 30, 15, 10, 5, 8, 35, 110, 185];
+  const southernHumidRain = [280, 260, 210, 130, 70, 45, 35, 25, 40, 95, 180, 245];
+  const northernDryRain = [25, 30, 20, 15, 35, 110, 195, 180, 115, 40, 15, 20];
+
+  const baseRain = isNorthernHemisphere
+    ? northernDryRain
+    : isSouthernDryzone
+    ? southernDryRain
+    : southernHumidRain;
 
   const monthNames = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ];
 
+  const latTempOffset = isSubtropical ? -4.5 : 0;
+
   const monthlyData: MonthlyClimate[] = baseRain.map((rain, idx) => {
-    const isDryMonth = idx >= 5 && idx <= 8;
-    const tmin = isDryMonth ? 21.5 : 24.0;
-    const tmax = isDryMonth ? 33.5 : 31.0;
-    const tmean = (tmin + tmax) / 2;
+    const isDryMonth = rain < 50;
+    const tmin = Math.round(((isDryMonth ? 21.5 : 24.0) + latTempOffset) * 10) / 10;
+    const tmax = Math.round(((isDryMonth ? 33.5 : 31.0) + latTempOffset) * 10) / 10;
+    const tmean = Math.round(((tmin + tmax) / 2) * 10) / 10;
     const rad = isDryMonth ? 21.5 : 17.5;
     const dailyET0 = calculateDailyET0(tmin, tmax, rad);
     return {
@@ -207,15 +244,16 @@ function generateFallbackClimate(
   });
 
   const totalRain = baseRain.reduce((a, b) => a + b, 0);
-  const rootZone = isSouthernDryzone ? 0.28 : 0.48;
+  const rootZone = isSouthernDryzone || isNorthernHemisphere ? 0.28 : 0.48;
+  const avgTemp = Math.round((27.2 + latTempOffset) * 10) / 10;
   const nowIso = new Date().toISOString();
 
   return {
     annualRainfall_mm: totalRain,
     monthlyData,
     rootZoneSoilMoisture: rootZone,
-    soilWetnessCategory: isSouthernDryzone ? 'Deficit' : 'Adequate',
-    avgTemp_c: 27.2,
+    soilWetnessCategory: rootZone < 0.45 ? 'Deficit' : 'Adequate',
+    avgTemp_c: avgTemp,
     source: 'FALLBACK_CLIMATOLOGY',
     lastUpdated: nowIso,
     fetchedAt: nowIso,

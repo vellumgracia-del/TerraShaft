@@ -11,7 +11,7 @@ import {
   getStructuredSeason
 } from '../formatters';
 import { resolveTerraShaftProvenance } from '../../types/provenance';
-import { generateDynamicAuditLog } from '../auditLogGenerator';
+import { generateDynamicAuditLog, escapeHtml } from '../auditLogGenerator';
 import { ClimateData } from '../../types/climate';
 import { SoilData, Crop, Priorities } from '../../types/agronomy';
 import initialCrops from '../../data/crops_library.json';
@@ -296,5 +296,19 @@ assert.ok(allExplanations.includes('0.72'), 'Must contain active GWETROOT 0.72')
 assert.ok(allExplanations.includes('42.5 mm'), 'Must contain active AWC 42.5 mm');
 assert.ok(allExplanations.includes('Gianyar, Bali'), 'Must contain active place name');
 
-console.log('✓ Audit log dynamically synchronized with active state without stale hardcoded values');
+// Verify XSS HTML Escaping on Audit Log
+assert.strictEqual(escapeHtml('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+const xssAudit = generateDynamicAuditLog(
+  { lat: -8.5, lon: 115.2, placeName: '<script>alert("xss")</script>' },
+  testClimate,
+  testSoil,
+  planA,
+  testPriorities,
+  dummyCrops
+);
+const allReasonHtml = xssAudit.entries.map((e) => e.reasonHtml).join(' ');
+assert.ok(!allReasonHtml.includes('<script>'), 'Audit reasonHtml must escape script tags to prevent XSS');
+assert.ok(xssAudit.entries.every((e) => typeof e.reasonText === 'string' && e.reasonText.length > 0), 'Audit entries must provide clean reasonText');
+
+console.log('✓ Audit log dynamically synchronized with active state & XSS protection verified');
 console.log('--- ALL MILESTONE 2.3 TESTS PASSED SUCCESSFULLY! ---');

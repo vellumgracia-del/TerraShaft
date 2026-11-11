@@ -190,8 +190,8 @@ export function resolveTerraShaftProvenance(
     label: 'NASA POWER & SOILGRIDS API OK',
     text: 'NASA POWER & SOILGRIDS API OK',
     sublabel: 'Respons API diterima · baseline historis & profil tanah terverifikasi',
-    style: 'bg-[#E7F5EE] text-[#12A875] border-[#A7F3D0]',
-    dot: 'bg-[#12A875]',
+    style: 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40',
+    dot: 'bg-[#00C2CC]',
     isVerifiedLive: true
   };
   let disclosureText =
@@ -202,8 +202,8 @@ export function resolveTerraShaftProvenance(
       label: 'MEMUAT DATA...',
       text: 'MEMUAT DATA...',
       sublabel: 'Menghubungkan ke API NASA POWER & ISRIC SoilGrids',
-      style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
-      dot: 'bg-[#7B8681]',
+      style: 'bg-[#20242B] text-[#8A949E] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText = 'Sedang mengambil data agroklimatologi NASA POWER dan profil tanah ISRIC SoilGrids...';
@@ -212,8 +212,8 @@ export function resolveTerraShaftProvenance(
       label: 'MEMUAT NASA POWER...',
       text: 'MEMUAT NASA POWER...',
       sublabel: 'ISRIC SoilGrids selesai · Menunggu data iklim',
-      style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
-      dot: 'bg-[#7B8681]',
+      style: 'bg-[#20242B] text-[#8A949E] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText = 'Profil tanah ISRIC SoilGrids telah diterima; sedang menunggu data agroklimat NASA POWER...';
@@ -222,8 +222,8 @@ export function resolveTerraShaftProvenance(
       label: 'MEMUAT SOILGRIDS...',
       text: 'MEMUAT SOILGRIDS...',
       sublabel: 'NASA POWER selesai · Menunggu profil tanah',
-      style: 'bg-[#F5F7F4] text-[#7B8681] border-[#E4EAE6]',
-      dot: 'bg-[#7B8681]',
+      style: 'bg-[#20242B] text-[#8A949E] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText = 'Data iklim NASA POWER telah diterima; sedang menunggu profil tanah ISRIC SoilGrids...';
@@ -232,8 +232,8 @@ export function resolveTerraShaftProvenance(
       label: 'DEMO DATA · BUKAN OBSERVASI LIVE',
       text: 'DEMO DATA · BUKAN OBSERVASI LIVE',
       sublabel: 'Nilai disimulasikan untuk demonstrasi produk',
-      style: 'bg-[#FAF5FF] text-[#7E22CE] border-[#E9D5FF]',
-      dot: 'bg-[#7E22CE]',
+      style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText =
@@ -243,8 +243,8 @@ export function resolveTerraShaftProvenance(
       label: 'REGIONAL FALLBACK',
       text: 'REGIONAL FALLBACK',
       sublabel: 'Failover: model agroklimat & pedologi regional terkalibrasi',
-      style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
-      dot: 'bg-[#D97706]',
+      style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText =
@@ -254,8 +254,8 @@ export function resolveTerraShaftProvenance(
       label: 'NASA POWER API · SOILGRIDS FALLBACK',
       text: 'NASA POWER API · SOILGRIDS FALLBACK',
       sublabel: 'NASA POWER response diterima · ISRIC SoilGrids menggunakan fallback regional',
-      style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
-      dot: 'bg-[#D97706]',
+      style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText =
@@ -265,8 +265,8 @@ export function resolveTerraShaftProvenance(
       label: 'SOILGRIDS API OK · NASA FALLBACK',
       text: 'SOILGRIDS API OK · NASA FALLBACK',
       sublabel: 'ISRIC SoilGrids response diterima · NASA POWER failover regional',
-      style: 'bg-[#FFF4D8] text-[#D97706] border-[#FDE68A]',
-      dot: 'bg-[#D97706]',
+      style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]',
+      dot: 'bg-[#8A949E]',
       isVerifiedLive: false
     };
     disclosureText =
@@ -280,8 +280,8 @@ export function resolveTerraShaftProvenance(
       label: `CACHED: ${cachedSources.toUpperCase()}`,
       text: `CACHED: ${cachedSources.toUpperCase()}`,
       sublabel: 'Data tersimpan di cache lokal',
-      style: 'bg-[#EAF5F4] text-[#0284C7] border-[#BAE6FD]',
-      dot: 'bg-[#0284C7]',
+      style: 'bg-[#1A2630] text-[#00C2CC] border-[#2C313A]',
+      dot: 'bg-[#00C2CC]',
       isVerifiedLive: false
     };
     disclosureText = `Data telemetri ${cachedSources} disajikan dari memori cache lokal untuk respons cepat.`;

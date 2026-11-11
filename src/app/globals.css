@@ -2,68 +2,71 @@
 @import "leaflet/dist/leaflet.css";
 
 /* ========================================================
-   TERRASHAFT - MODERN AGRITECH DESIGN SYSTEM (LIGHT & DARK)
-   Calm, friendly, trustworthy farm intelligence workspace
+   TERRASHAFT - PLANET INSIGHTS PLATFORM DESIGN SYSTEM
+   Geospatial & Agronomic Workbench (Dark Carbon-Slate)
    ======================================================== */
 
 :root {
-  --bg-app: #F5F7F4;
-  --bg-card: #FFFFFF;
-  --bg-subtle: #F5F7F4;
-  --text-main: #17231F;
-  --text-secondary: #52605B;
-  --text-muted: #7B8681;
-  --text-light: #9CA3AF;
+  --bg-app: #181B20;
+  --bg-card: #20242B;
+  --bg-subtle: #16191E;
+  --text-main: #F1F3F5;
+  --text-secondary: #C1C7CD;
+  --text-muted: #8A949E;
+  --text-light: #6E7781;
 
-  --brand-green: #12A875;
-  --brand-green-hover: #0E9365;
-  --brand-green-soft: #E7F5EE;
+  --brand-green: #009DA5;
+  --brand-green-hover: #00B4BD;
+  --brand-green-soft: #163A40;
 
-  --soft-blue: #EAF5F4;
-  --soft-amber: #FFF4D8;
-  --soft-red: #FDEAEA;
-  --border-light: #E4EAE6;
-
-  --status-green: #12A875;
-  --status-amber: #D97706;
-  --status-red: #E11D48;
-  --status-blue: #0284C7;
-
-  --card-shadow: 0 1px 3px 0 rgba(23, 35, 31, 0.04), 0 1px 2px -1px rgba(23, 35, 31, 0.03);
-  --card-shadow-hover: 0 4px 6px -1px rgba(23, 35, 31, 0.06), 0 2px 4px -2px rgba(23, 35, 31, 0.04);
-}
-
-/* True Modern Dark Mode */
-[data-field-mode="true"] {
-  --bg-app: #0B1210;
-  --bg-card: #121C18;
-  --bg-subtle: #182520;
-  --text-main: #F1F5F3;
-  --text-secondary: #CBD5E1;
-  --text-muted: #94A3B8;
-  --text-light: #64748B;
-
-  --brand-green: #10B981;
-  --brand-green-hover: #059669;
-  --brand-green-soft: rgba(16, 185, 129, 0.15);
-
-  --soft-blue: rgba(14, 165, 233, 0.14);
+  --soft-blue: rgba(0, 157, 165, 0.14);
   --soft-amber: rgba(245, 158, 11, 0.14);
   --soft-red: rgba(244, 63, 94, 0.14);
-  --border-light: #22332C;
+  --border-light: #2C313A;
 
-  --card-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.45);
-  --card-shadow-hover: 0 8px 18px -4px rgba(0, 0, 0, 0.65);
+  --status-green: #009DA5;
+  --status-amber: #D97706;
+  --status-red: #F87171;
+  --status-blue: #0284C7;
+
+  --card-shadow: none;
+  --card-shadow-hover: none;
+  color-scheme: dark;
+}
+
+/* Carbon-Slate Theme (Enforced Globally) */
+[data-field-mode],
+[data-field-mode="true"],
+[data-field-mode="false"] {
+  --bg-app: #181B20;
+  --bg-card: #20242B;
+  --bg-subtle: #16191E;
+  --text-main: #F1F3F5;
+  --text-secondary: #C1C7CD;
+  --text-muted: #8A949E;
+  --text-light: #6E7781;
+
+  --brand-green: #009DA5;
+  --brand-green-hover: #00B4BD;
+  --brand-green-soft: #163A40;
+
+  --soft-blue: rgba(0, 157, 165, 0.14);
+  --soft-amber: rgba(245, 158, 11, 0.14);
+  --soft-red: rgba(244, 63, 94, 0.14);
+  --border-light: #2C313A;
+
+  --card-shadow: none;
+  --card-shadow-hover: none;
   color-scheme: dark;
 }
 
 body {
-  background-color: var(--bg-app);
-  color: var(--text-main);
+  background-color: #181B20;
+  color: #F1F3F5;
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Font Monospaced & Tabular Numbers for Technical Precision */
@@ -75,20 +78,16 @@ body {
 
 /* Base leaflet adjustments and strict stacking containment */
 .scroll-section {
-  scroll-margin-top: 88px;
+  scroll-margin-top: 80px;
 }
 
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 1rem;
-  background-color: #EAF0EC !important;
+  border-radius: 0.25rem;
+  background-color: #16191E !important;
   z-index: 1 !important;
   isolation: isolate;
-}
-
-[data-field-mode="true"] .leaflet-container {
-  background-color: #0F1714 !important;
 }
 
 /* Trap all Leaflet panes and controls within local stacking context */
@@ -134,207 +133,279 @@ body {
   border: none;
 }
 
-/* Modern Agritech Card */
+/* Planet Insights Platform Flat Bordered Panel */
 .agri-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: 1.25rem;
-  box-shadow: var(--card-shadow);
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #20242B !important;
+  border: 1px solid #2C313A !important;
+  border-radius: 0.25rem !important;
+  color: #F1F3F5 !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-[data-field-mode="true"] .agri-card {
-  background-color: var(--bg-card) !important;
-  border: 1px solid var(--border-light) !important;
-  box-shadow: var(--card-shadow) !important;
+[data-field-mode] .agri-card,
+[data-field-mode="true"] .agri-card,
+[data-field-mode="false"] .agri-card {
+  background-color: #20242B !important;
+  border: 1px solid #2C313A !important;
+  border-radius: 0.25rem !important;
+  color: #F1F3F5 !important;
+  box-shadow: none !important;
+}
+
+/* Enforce Planet crisp 4px-6px geometry inside main workspace cards */
+main .rounded-2xl,
+main .rounded-xl {
+  border-radius: 0.25rem !important;
+}
+
+/* Strip tinted icon square boxes in section headers for clean Planet monochrome look */
+main .agri-card span.p-1\.5.rounded-lg {
+  background-color: transparent !important;
+  padding: 0 !important;
+  color: #C1C7CD !important;
 }
 
 /* ========================================================
-   COMPREHENSIVE DARK MODE OVERRIDES FOR TAILWIND UTILITIES
+   PLANET CARBON-SLATE OVERRIDES FOR COMPONENT UTILITIES
    ======================================================== */
 
-/* Backgrounds */
-[data-field-mode="true"] .bg-\[\#F5F7F4\] {
-  background-color: var(--bg-app) !important;
+/* Backgrounds - Global Enforcement */
+.bg-white,
+[data-field-mode] .bg-white {
+  background-color: #20242B !important;
 }
 
-[data-field-mode="true"] .agri-card .bg-\[\#F5F7F4\],
-[data-field-mode="true"] aside .bg-\[\#F5F7F4\] {
-  background-color: var(--bg-subtle) !important;
+.bg-white\/98,
+.bg-white\/95,
+[data-field-mode] .bg-white\/98,
+[data-field-mode] .bg-white\/95 {
+  background-color: rgba(24, 27, 32, 0.96) !important;
 }
 
-[data-field-mode="true"] .bg-white {
-  background-color: var(--bg-card) !important;
+.bg-white\/80,
+.bg-white\/60,
+[data-field-mode] .bg-white\/80,
+[data-field-mode] .bg-white\/60 {
+  background-color: rgba(24, 27, 32, 0.82) !important;
 }
 
-[data-field-mode="true"] .bg-white\/98,
-[data-field-mode="true"] .bg-white\/95 {
-  background-color: rgba(18, 28, 24, 0.95) !important;
+.bg-\[\#F5F7F4\],
+[data-field-mode] .bg-\[\#F5F7F4\] {
+  background-color: #181B20 !important;
 }
 
-[data-field-mode="true"] .bg-white\/80,
-[data-field-mode="true"] .bg-white\/60 {
-  background-color: rgba(18, 28, 24, 0.8) !important;
+.agri-card .bg-\[\#F5F7F4\],
+aside .bg-\[\#F5F7F4\],
+[data-field-mode] .agri-card .bg-\[\#F5F7F4\],
+[data-field-mode] aside .bg-\[\#F5F7F4\] {
+  background-color: #16191E !important;
 }
 
-/* Soft Tinted Accent Backgrounds in Dark Mode */
-[data-field-mode="true"] .bg-\[\#E7F5EE\],
-[data-field-mode="true"] .bg-\[\#E7F5EE\]\/60 {
-  background-color: rgba(16, 185, 129, 0.15) !important;
+/* Primary Buttons & Accents -> Planet Teal (#009DA5) */
+.bg-\[\#12A875\],
+[data-field-mode] .bg-\[\#12A875\] {
+  background-color: #009DA5 !important;
 }
 
-[data-field-mode="true"] .bg-\[\#EAF5F4\] {
-  background-color: rgba(14, 165, 233, 0.14) !important;
+.hover\:bg-\[\#0E9365\]:hover,
+[data-field-mode] .hover\:bg-\[\#0E9365\]:hover {
+  background-color: #00B4BD !important;
 }
 
-[data-field-mode="true"] .bg-\[\#FFF4D8\] {
-  background-color: rgba(245, 158, 11, 0.15) !important;
+/* Soft Tinted Accent Backgrounds in Planet Dark Mode */
+.bg-\[\#E7F5EE\],
+.bg-\[\#E7F5EE\]\/60,
+[data-field-mode] .bg-\[\#E7F5EE\],
+[data-field-mode] .bg-\[\#E7F5EE\]\/60 {
+  background-color: #163A40 !important;
 }
 
-[data-field-mode="true"] .bg-\[\#FDEAEA\] {
-  background-color: rgba(244, 63, 94, 0.15) !important;
+.bg-\[\#EAF5F4\],
+[data-field-mode] .bg-\[\#EAF5F4\] {
+  background-color: rgba(0, 180, 189, 0.14) !important;
 }
 
-[data-field-mode="true"] .bg-\[\#FAF5FF\],
-[data-field-mode="true"] .bg-\[\#F3E8FF\] {
-  background-color: rgba(168, 85, 247, 0.16) !important;
+.bg-\[\#FFF4D8\],
+[data-field-mode] .bg-\[\#FFF4D8\] {
+  background-color: #20242B !important;
+}
+
+.bg-\[\#FDEAEA\],
+[data-field-mode] .bg-\[\#FDEAEA\] {
+  background-color: rgba(244, 63, 94, 0.14) !important;
+}
+
+.bg-\[\#FAF5FF\],
+.bg-\[\#F3E8FF\],
+[data-field-mode] .bg-\[\#FAF5FF\],
+[data-field-mode] .bg-\[\#F3E8FF\] {
+  background-color: #20242B !important;
 }
 
 /* Hover Backgrounds */
-[data-field-mode="true"] .hover\:bg-\[\#F5F7F4\]:hover,
-[data-field-mode="true"] .hover\:bg-white:hover,
-[data-field-mode="true"] .hover\:bg-\[\#E4EAE6\]:hover {
-  background-color: #1F3029 !important;
+.hover\:bg-\[\#F5F7F4\]:hover,
+.hover\:bg-white:hover,
+.hover\:bg-\[\#E4EAE6\]:hover,
+[data-field-mode] .hover\:bg-\[\#F5F7F4\]:hover,
+[data-field-mode] .hover\:bg-white:hover,
+[data-field-mode] .hover\:bg-\[\#E4EAE6\]:hover {
+  background-color: #262B33 !important;
 }
 
-[data-field-mode="true"] .hover\:bg-\[\#E7F5EE\]:hover {
-  background-color: rgba(16, 185, 129, 0.25) !important;
+.hover\:bg-\[\#E7F5EE\]:hover,
+[data-field-mode] .hover\:bg-\[\#E7F5EE\]:hover {
+  background-color: #1B464D !important;
 }
 
-[data-field-mode="true"] .hover\:bg-\[\#EAF5F4\]:hover {
-  background-color: rgba(14, 165, 233, 0.25) !important;
+.hover\:bg-\[\#EAF5F4\]:hover,
+[data-field-mode] .hover\:bg-\[\#EAF5F4\]:hover {
+  background-color: rgba(0, 180, 189, 0.22) !important;
 }
 
-[data-field-mode="true"] .hover\:bg-\[\#FFF4D8\]:hover {
-  background-color: rgba(245, 158, 11, 0.25) !important;
+.hover\:bg-\[\#FFF4D8\]:hover,
+[data-field-mode] .hover\:bg-\[\#FFF4D8\]:hover {
+  background-color: #262B33 !important;
 }
 
 /* Text Colors */
-[data-field-mode="true"] .text-\[\#17231F\] {
-  color: var(--text-main) !important;
+.text-\[\#17231F\],
+[data-field-mode] .text-\[\#17231F\] {
+  color: #F1F3F5 !important;
 }
 
-[data-field-mode="true"] .text-\[\#52605B\] {
-  color: var(--text-secondary) !important;
+.text-\[\#52605B\],
+[data-field-mode] .text-\[\#52605B\] {
+  color: #C1C7CD !important;
 }
 
-[data-field-mode="true"] .text-\[\#7B8681\] {
-  color: var(--text-muted) !important;
+.text-\[\#7B8681\],
+[data-field-mode] .text-\[\#7B8681\] {
+  color: #8A949E !important;
 }
 
-[data-field-mode="true"] .text-\[\#9CA3AF\] {
-  color: var(--text-light) !important;
+.text-\[\#9CA3AF\],
+[data-field-mode] .text-\[\#9CA3AF\] {
+  color: #6E7781 !important;
 }
 
-[data-field-mode="true"] .text-\[\#12A875\],
-[data-field-mode="true"] .text-\[\#065F46\] {
-  color: #34D399 !important;
+.text-\[\#12A875\],
+.text-\[\#065F46\],
+[data-field-mode] .text-\[\#12A875\],
+[data-field-mode] .text-\[\#065F46\] {
+  color: #00C2CC !important;
 }
 
-[data-field-mode="true"] .text-\[\#0284C7\],
-[data-field-mode="true"] .text-\[\#0369A1\] {
+.text-\[\#0284C7\],
+.text-\[\#0369A1\],
+[data-field-mode] .text-\[\#0284C7\],
+[data-field-mode] .text-\[\#0369A1\] {
   color: #38BDF8 !important;
 }
 
-[data-field-mode="true"] .text-\[\#D97706\],
-[data-field-mode="true"] .text-\[\#92400E\] {
+.text-\[\#D97706\],
+.text-\[\#92400E\],
+[data-field-mode] .text-\[\#D97706\],
+[data-field-mode] .text-\[\#92400E\] {
   color: #FBBF24 !important;
 }
 
-[data-field-mode="true"] .text-\[\#E11D48\] {
+.text-\[\#E11D48\],
+[data-field-mode] .text-\[\#E11D48\] {
   color: #FB7185 !important;
 }
 
-[data-field-mode="true"] .text-\[\#7E22CE\],
-[data-field-mode="true"] .text-\[\#6B21A8\] {
-  color: #C084FC !important;
+.text-\[\#7E22CE\],
+.text-\[\#6B21A8\],
+[data-field-mode] .text-\[\#7E22CE\],
+[data-field-mode] .text-\[\#6B21A8\] {
+  color: #C1C7CD !important;
 }
 
-[data-field-mode="true"] .hover\:text-\[\#17231F\]:hover {
+.hover\:text-\[\#17231F\]:hover,
+[data-field-mode] .hover\:text-\[\#17231F\]:hover {
   color: #FFFFFF !important;
 }
 
-/* Borders & Rings */
-[data-field-mode="true"] .border-\[\#E4EAE6\],
-[data-field-mode="true"] .border-\[\#D1D5DB\] {
-  border-color: var(--border-light) !important;
+/* Borders & Rings - Global Carbon Hairline */
+.border-\[\#E4EAE6\],
+.border-\[\#D1D5DB\],
+[data-field-mode] .border-\[\#E4EAE6\],
+[data-field-mode] .border-\[\#D1D5DB\] {
+  border-color: #2C313A !important;
 }
 
-[data-field-mode="true"] .border-\[\#A7F3D0\] {
-  border-color: rgba(52, 211, 153, 0.35) !important;
+.border-\[\#12A875\],
+.border-\[\#A7F3D0\],
+[data-field-mode] .border-\[\#12A875\],
+[data-field-mode] .border-\[\#A7F3D0\] {
+  border-color: #009DA5 !important;
 }
 
-[data-field-mode="true"] .border-\[\#BAE6FD\] {
+.border-\[\#BAE6FD\],
+[data-field-mode] .border-\[\#BAE6FD\] {
   border-color: rgba(56, 189, 248, 0.35) !important;
 }
 
-[data-field-mode="true"] .border-\[\#FDE68A\] {
-  border-color: rgba(251, 191, 36, 0.35) !important;
+.border-\[\#FDE68A\],
+[data-field-mode] .border-\[\#FDE68A\] {
+  border-color: #2C313A !important;
 }
 
-[data-field-mode="true"] .border-\[\#FECDD3\] {
+.border-\[\#FECDD3\],
+[data-field-mode] .border-\[\#FECDD3\] {
   border-color: rgba(251, 113, 133, 0.35) !important;
 }
 
-[data-field-mode="true"] .border-\[\#E9D5FF\] {
-  border-color: rgba(192, 132, 252, 0.35) !important;
+.border-\[\#E9D5FF\],
+[data-field-mode] .border-\[\#E9D5FF\] {
+  border-color: #2C313A !important;
 }
 
 /* SVG / Chart adjustments in Dark Mode */
-[data-field-mode="true"] .stroke-\[\#E4EAE6\] {
-  stroke: #22332C !important;
+.stroke-\[\#E4EAE6\],
+[data-field-mode] .stroke-\[\#E4EAE6\] {
+  stroke: #2C313A !important;
 }
 
-[data-field-mode="true"] .recharts-cartesian-grid line {
-  stroke: #22332C !important;
+.recharts-cartesian-grid line,
+[data-field-mode] .recharts-cartesian-grid line {
+  stroke: #2C313A !important;
 }
 
-[data-field-mode="true"] .recharts-cartesian-axis-line {
-  stroke: #22332C !important;
+.recharts-cartesian-axis-line,
+[data-field-mode] .recharts-cartesian-axis-line {
+  stroke: #2C313A !important;
 }
 
-[data-field-mode="true"] .recharts-text {
-  fill: #94A3B8 !important;
+.recharts-text,
+[data-field-mode] .recharts-text {
+  fill: #8A949E !important;
 }
 
 /* Inputs & Selects in Dark Mode */
-[data-field-mode="true"] input,
-[data-field-mode="true"] select,
-[data-field-mode="true"] textarea {
+input,
+select,
+textarea,
+[data-field-mode] input,
+[data-field-mode] select,
+[data-field-mode] textarea {
   color: var(--text-main);
+  background-color: #16191E;
+  border-color: #2C313A;
 }
 
-/* Keep Exportable 1080x1350 Poster Clean in Dark Mode or Match Theme */
-[data-field-mode="true"] ::-webkit-scrollbar-track {
-  background: #0B1210;
-}
-
-[data-field-mode="true"] ::-webkit-scrollbar-thumb {
-  background: #2A3F36;
-  border-radius: 3px;
-}
-
-/* Custom Scrollbar Default */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F5F7F4;
+  background: #121417;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 3px;
+  background: #2C313A;
+  border-radius: 2px;
 }

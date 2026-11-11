@@ -6,6 +6,24 @@ import { getAppEnv } from '@/lib/env';
 
 const soilCache = new Map<string, { data: SoilData; timestamp: number }>();
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 Hari
+const MAX_CACHE_SIZE = 500;
+
+function setBoundedSoilCache(key: string, data: SoilData, now: number) {
+  if (soilCache.size >= MAX_CACHE_SIZE && !soilCache.has(key)) {
+    for (const [k, v] of soilCache.entries()) {
+      if (now - v.timestamp >= CACHE_TTL_MS) {
+        soilCache.delete(k);
+      }
+    }
+    if (soilCache.size >= MAX_CACHE_SIZE) {
+      const oldestKey = soilCache.keys().next().value;
+      if (oldestKey !== undefined) {
+        soilCache.delete(oldestKey);
+      }
+    }
+  }
+  soilCache.set(key, { data, timestamp: now });
+}
 
 export async function GET(request: Request) {
   const env = getAppEnv();
@@ -41,8 +59,21 @@ export async function GET(request: Request) {
   }
 
   try {
-    const properties = 'clay,sand,silt,soc,phh2o,cec';
-    const url = `${env.soilGridsBaseUrl}/properties/query?lat=${lat}&lon=${lon}&property=${properties}&depth=0-30cm&value=mean`;
+    const queryParams = [
+      `lat=${lat}`,
+      `lon=${lon}`,
+      'property=clay',
+      'property=sand',
+      'property=silt',
+      'property=soc',
+      'property=phh2o',
+      'property=cec',
+      'depth=0-5cm',
+      'depth=5-15cm',
+      'depth=15-30cm',
+      'value=mean'
+    ].join('&');
+    const url = `${env.soilGridsBaseUrl}/properties/query?${queryParams}`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), env.soilGridsTimeoutMs);
@@ -60,26 +91,63 @@ export async function GET(request: Request) {
     const json = await response.json();
     const layers = json.properties?.layers;
 
-    if (!layers || !Array.isArray(layers)) {
+    if (!layers || !Array.isArray(layers) || layers.length === 0) {
       throw new Error('Format respon ISRIC SoilGrids tidak sesuai');
     }
 
-    // Helper untuk mengekstrak nilai mean 0-30cm
-    const extractMean = (propName: string, defaultValue: number): number => {
+    // Helper untuk mengekstrak nilai mean 0-30cm (mendukung label langsung 0-30cm maupun rata-rata tertimbang 0-5, 5-15, 15-30cm)
+    const extractMean = (propName: string, defaultValue: number): { value: number; hasRealValue: boolean } => {
       const layer = layers.find((l: { name: string }) => l.name === propName);
-      const depthData = layer?.depths?.find((d: { label: string }) => d.label === '0-30cm');
-      const val = depthData?.values?.mean;
-      return typeof val === 'number' ? val : defaultValue;
+      const depths: Array<{ label: string; values?: { mean?: number | null } }> = layer?.depths ?? [];
+
+      const direct = depths.find((d) => d.label === '0-30cm')?.values?.mean;
+      if (typeof direct === 'number' && !isNaN(direct)) {
+        return { value: direct, hasRealValue: true };
+      }
+
+      const depthWeights: Record<string, number> = {
+        '0-5cm': 5,
+        '5-15cm': 10,
+        '15-30cm': 15
+      };
+
+      let weightedSum = 0;
+      let totalWeight = 0;
+      for (const d of depths) {
+        const w = depthWeights[d.label];
+        const val = d.values?.mean;
+        if (w && typeof val === 'number' && !isNaN(val)) {
+          weightedSum += val * w;
+          totalWeight += w;
+        }
+      }
+
+      if (totalWeight > 0) {
+        return { value: weightedSum / totalWeight, hasRealValue: true };
+      }
+
+      return { value: defaultValue, hasRealValue: false };
     };
 
     // Konversi Satuan sesuai PRD:
     // clay, sand, silt: g/kg / 10 = %
-    const clayRaw = extractMean('clay', 280);
-    const sandRaw = extractMean('sand', 420);
-    const siltRaw = extractMean('silt', 300);
-    const socRaw = extractMean('soc', 120);     // dg/kg
-    const phRaw = extractMean('phh2o', 65);     // pH * 10
-    const cecRaw = extractMean('cec', 180);     // mmol(c)/kg
+    const clayRes = extractMean('clay', 280);
+    const sandRes = extractMean('sand', 420);
+    const siltRes = extractMean('silt', 300);
+    const socRes = extractMean('soc', 120);     // dg/kg
+    const phRes = extractMean('phh2o', 65);     // pH * 10
+    const cecRes = extractMean('cec', 180);     // mmol(c)/kg
+
+    if (!clayRes.hasRealValue && !sandRes.hasRealValue && !siltRes.hasRealValue) {
+      throw new Error('Data observasi daratan ISRIC SoilGrids kosong untuk titik koordinat ini');
+    }
+
+    const clayRaw = clayRes.value;
+    const sandRaw = sandRes.value;
+    const siltRaw = siltRes.value;
+    const socRaw = socRes.value;
+    const phRaw = phRes.value;
+    const cecRaw = cecRes.value;
 
     let clay = Math.round((clayRaw / 10) * 10) / 10;
     let sand = Math.round((sandRaw / 10) * 10) / 10;
@@ -116,7 +184,7 @@ export async function GET(request: Request) {
       observationPeriod: 'Standard Depth Layer 0-30cm (ISRIC SoilGrids v2.0)'
     };
 
-    soilCache.set(cacheKey, { data: soilResult, timestamp: now });
+    setBoundedSoilCache(cacheKey, soilResult, now);
     return NextResponse.json(soilResult);
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'ISRIC SoilGrids API timeout / network failure';
@@ -131,14 +199,17 @@ function generateFallbackSoil(
   lon: number,
   fallbackReason: string | null = 'Koneksi ISRIC SoilGrids tidak tersedia / timeout (failover model regional)'
 ): SoilData {
-  // Karakteristik tanah terkalibrasi regional (Nusa Tenggara / Karst / Aluvial / Lahan Kering Tropis)
-  const isEasternIslands = lat < -8.0 && lon > 115.0; // NTT / NTB / Kawasan Timur
-  const sand = isEasternIslands ? 36.0 : 38.0;
-  const silt = isEasternIslands ? 30.0 : 32.0;
-  const clay = isEasternIslands ? 34.0 : 30.0;
-  const soc = isEasternIslands ? 1.05 : 1.15; // C-Organik lahan semi-arid
-  const ph = isEasternIslands ? 6.7 : 6.4;
-  const cec = isEasternIslands ? 21.0 : 19.5;
+  // Karakteristik tanah terkalibrasi regional berdasarkan zona lintang & geografi
+  const absLat = Math.abs(lat);
+  const isEasternIslands = lat < -8.0 && lat > -15.0 && lon > 115.0 && lon < 135.0;
+  const isSubtropicalDryland = absLat >= 20.0; // California, Punjab, Murray-Darling, Sahel utara
+
+  const sand = isSubtropicalDryland ? 44.0 : isEasternIslands ? 36.0 : 38.0;
+  const silt = isSubtropicalDryland ? 32.0 : isEasternIslands ? 30.0 : 32.0;
+  const clay = isSubtropicalDryland ? 24.0 : isEasternIslands ? 34.0 : 30.0;
+  const soc = isSubtropicalDryland ? 0.95 : isEasternIslands ? 1.05 : 1.15;
+  const ph = isSubtropicalDryland ? 7.1 : isEasternIslands ? 6.7 : 6.4;
+  const cec = isSubtropicalDryland ? 17.5 : isEasternIslands ? 21.0 : 19.5;
   const awc = calculateAWC(sand, silt, clay, soc);
   const textureClass = classifySoilTexture(sand, silt, clay);
   const nowIso = new Date().toISOString();

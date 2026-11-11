@@ -6,9 +6,9 @@ import dynamic from 'next/dynamic';
 const WaterBalanceCard = dynamic(() => import('@/components/water/WaterBalanceCard'), {
   ssr: false,
   loading: () => (
-    <div className="agri-card p-12 flex items-center justify-center text-xs text-[#7B8681] bg-white">
+    <div className="bg-[#20242B] border border-[#2C313A] rounded-[4px] p-12 flex items-center justify-center text-xs text-[#8A949E]">
       <div className="flex items-center gap-2.5">
-        <div className="w-5 h-5 border-2 border-[#0284C7] border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#009DA5] border-t-transparent rounded-full animate-spin" />
         <span>Memuat Analisis Neraca Air Lahan...</span>
       </div>
     </div>

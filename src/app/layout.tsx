@@ -4,13 +4,16 @@ import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import AppShell from "@/components/shell/AppShell";
 
 export const metadata: Metadata = {
-  title: "TerraShaft — Modern Farm Intelligence & Climate-Resilient Crop Rotation",
+  title: "TerraShaft: Modern Farm Intelligence & Climate-Resilient Crop Rotation",
   description:
     "Workspace cerdas eksplorasi pola rotasi tanaman 4 musim adaptif iklim berbasis biofisik satelit NASA POWER dan profil tanah ISRIC SoilGrids v2.0.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icons/icon-192.svg",
-    apple: "/icons/icon-192.svg"
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/terrashaft-icon.png", sizes: "192x192", type: "image/png" }
+    ],
+    apple: "/terrashaft-icon.png"
   },
   keywords: [
     "TerraShaft",
@@ -26,10 +29,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#12A875",
+  themeColor: "#121417",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1
+  maximumScale: 5
 };
 
 export default function RootLayout({
@@ -38,13 +41,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className="h-full antialiased">
+    <html lang="id" className="h-full antialiased dark" style={{ backgroundColor: '#181B20', color: '#F1F3F5' }} data-field-mode="true">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="min-h-full flex flex-col bg-[#F5F7F4] text-[#17231F] selection:bg-[#E7F5EE] selection:text-[#12A875]">
+      <body className="min-h-full flex flex-col bg-[#181B20] text-[#F1F3F5] selection:bg-[#163A40] selection:text-[#00C2CC]" data-field-mode="true">
         <AppShell>{children}</AppShell>
         <ServiceWorkerRegister />
       </body>
