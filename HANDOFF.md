@@ -1,10 +1,11 @@
 # Project Handoff Status
 
-- **Tanggal & Waktu**: 2026-11-13 01:50 WITA
+- **Tanggal & Waktu**: 2026-11-14 15:20 WITA
 - **Workspace**: `/home/ravi/Projects/TerraShaft`
 - **Repository**: `https://github.com/vellumgracia-del/TerraShaft.git`
-- **Branch Aktif**: `main`
-- **Status Sesi**: Selesai (Semua fitur dan perbaikan telah terverifikasi)
+- **Branch Aktif**: `feat/nasa-challenge-resources-and-field-advisor`
+- **Pull Request**: `https://github.com/vellumgracia-del/TerraShaft/pull/2` (Target: `main`)
+- **Status Sesi**: Selesai (Semua fitur, commit, push, dan PR telah berhasil dibuat)
 
 ---
 
