@@ -103,8 +103,8 @@ export default function PlanetFooter() {
             See. Decide. Act.
           </h2>
           <p className="mt-4 text-sm sm:text-base text-[#9AA5B5] max-w-2xl mx-auto leading-relaxed">
-            TerraShaft Insights Platform adalah pusat komputasi biofisik di mana data observasi bumi harian,
-            analitik baterai tanah, dan rekomendasi rotasi adaptif berpadu menjaga ketahanan pangan.
+            TerraShaft Insights Platform is a biophysical compute engine where daily Earth observation telemetry,
+            soil battery predictive modeling, and adaptive rotation pathways converge to safeguard food resilience.
           </p>
           <div className="mt-8 flex justify-center">
             <Link
@@ -251,17 +251,17 @@ export default function PlanetFooter() {
                 </li>
                 <li>
                   <Link href="/overview" className="hover:text-white transition-colors">
-                    Dinas Pertanian Daerah
+                    Regional Agricultural Services
                   </Link>
                 </li>
                 <li>
                   <Link href="/action-sheet" className="hover:text-white transition-colors">
-                    Balai Penyuluhan Pertanian (BPP)
+                    Agricultural Extension Centers
                   </Link>
                 </li>
                 <li>
                   <Link href="/data-sources" className="hover:text-white transition-colors">
-                    Badan Pangan Nasional (Bapanas)
+                    National Food Logistics Agency
                   </Link>
                 </li>
                 <li>
@@ -491,7 +491,7 @@ export default function PlanetFooter() {
             </Link>
             <span>|</span>
             <Link href="/settings" className="hover:text-white transition-colors">
-              Ketentuan Layanan
+              Terms of Service
             </Link>
             <span>|</span>
             <Link href="/data-sources" className="hover:text-white transition-colors">
@@ -499,7 +499,7 @@ export default function PlanetFooter() {
             </Link>
             <span>|</span>
             <Link href="/settings" className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
-              <span>Pilihan Privasi</span>
+              <span>Your Privacy Choices</span>
               {/* Privacy / Opt-Out Icon */}
               <svg className="w-6 h-3 inline-block" viewBox="0 0 30 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="0.5" y="0.5" width="29" height="13" rx="6.5" stroke="#00C2CC" fill="#0E232E" />
@@ -513,7 +513,7 @@ export default function PlanetFooter() {
             </Link>
             <span>|</span>
             <Link href="/data-sources" className="hover:text-white transition-colors">
-              Sitasi Ilmiah (BRIN / FAO)
+              Scientific Citations (BRIN / FAO)
             </Link>
             <span>|</span>
             <Link href="/overview" className="hover:text-white transition-colors">

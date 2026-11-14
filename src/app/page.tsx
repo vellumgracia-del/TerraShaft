@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import PlanetFooter from '@/components/landing/PlanetFooter';
 import {
   ArrowRight,
@@ -10,7 +12,6 @@ import {
   Layers,
   BatteryCharging,
   Bot,
-  Sparkles,
   MapPin,
   Compass,
   CheckCircle2,
@@ -24,13 +25,70 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolledRef = useRef(false);
+  const lenisRef = useRef<Lenis | null>(null);
+
+  useEffect(() => {
+    // Cubic bezier easing matching antislop.ai.id (1 - (1 - t)^3)
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    const lenis = new Lenis({
+      duration: 0.9,
+      easing: easeOutCubic,
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.0,
+      infinite: false,
+    });
+
+    lenisRef.current = lenis;
+
+    // Only update React state when threshold boundary crosses (0 unnecessary renders)
+    lenis.on('scroll', (e: { scroll: number }) => {
+      const scrolled = e.scroll > 50;
+      if (scrolled !== isScrolledRef.current) {
+        isScrolledRef.current = scrolled;
+        setIsScrolled(scrolled);
+      }
+    });
+
+    let animationFrameId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+    animationFrameId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
+  // Smooth scroll handler for anchor links matching antislop easing
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    const el = document.getElementById(targetId);
+    if (el) {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(el, { offset: -70, duration: 0.9 });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   const globalHotspots = [
     {
       name: 'Kupang Timur',
       country: 'Indonesia',
       climate: 'Semi-Arid Dryland',
       soil: 'Vertisol Clay 48%',
-      crop: 'Jagung · Kedelai · Sorgum'
+      crop: 'Corn · Soybean · Sorghum'
     },
     {
       name: 'Machakos County',
@@ -56,9 +114,15 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#121417] text-[#F1F3F5] flex flex-col font-sans selection:bg-[#163A40] selection:text-[#00C2CC]">
-      {/* 1. Top Marketing Header (Planet.com style) */}
-      <header className="h-16 lg:h-20 border-b border-[#242831] px-4 lg:px-10 flex items-center justify-between sticky top-0 z-50 bg-[#121417]/90 backdrop-blur-md">
+    <div className="relative min-h-screen bg-[#121417] text-[#F1F3F5] font-sans selection:bg-[#163A40] selection:text-[#00C2CC]">
+      {/* 1. Top Marketing Header (Adaptive Antislop style) */}
+      <header
+        className={`fixed top-0 left-0 right-0 h-16 lg:h-20 px-4 lg:px-10 flex items-center justify-between z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-[#121417]/90 backdrop-blur-md border-b border-[#242831]/80 shadow-lg'
+            : 'bg-transparent border-b border-transparent'
+        }`}
+      >
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 group">
             <Image
@@ -72,21 +136,36 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-6 text-[13px] text-[#A6AFB8]">
-            <a href="#capabilities" className="hover:text-white transition-colors">
+            <a
+              href="#capabilities"
+              onClick={(e) => scrollToSection(e, 'capabilities')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               Capabilities
             </a>
-            <a href="#pathways" className="hover:text-white transition-colors">
+            <a
+              href="#pathways"
+              onClick={(e) => scrollToSection(e, 'pathways')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               4-Season Pathways
             </a>
-            <a href="#science" className="hover:text-white transition-colors">
+            <a
+              href="#science"
+              onClick={(e) => scrollToSection(e, 'science')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               Science & Data
             </a>
-            <a href="#hotspots" className="hover:text-white transition-colors">
+            <a
+              href="#hotspots"
+              onClick={(e) => scrollToSection(e, 'hotspots')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
               Global Hotspots
             </a>
-            <Link href="/field-advisor" className="hover:text-[#00C2CC] transition-colors flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#00C2CC]" />
-              <span>Field Advisor AI</span>
+            <Link href="/field-advisor" className="hover:text-[#00C2CC] transition-colors">
+              Field Advisor AI
             </Link>
           </nav>
         </div>
@@ -101,7 +180,11 @@ export default function LandingPage() {
 
           <Link
             href="/overview"
-            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[4px] bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-xs sm:text-[13px] font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            className={`text-xs sm:text-[13px] font-semibold transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+              isScrolled
+                ? 'px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[4px] bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] shadow-xs'
+                : 'px-3 py-1.5 text-[#00C2CC] hover:text-[#33D4DC] bg-transparent'
+            }`}
           >
             <span>Launch Platform</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -109,36 +192,44 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* 2. Hero Section */}
-      <section className="relative px-4 lg:px-10 pt-16 lg:pt-24 pb-20 overflow-hidden border-b border-[#242831]">
-        {/* Subtle background ambient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[#00C2CC]/10 blur-[140px] pointer-events-none rounded-full" />
+      {/* 2. Hero Section: Fixed Underlay with Satellite Mosaic Video (Antislop Pattern) */}
+      <section className="fixed inset-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-0 px-4 lg:px-10 pt-16 lg:pt-20 pb-8 pointer-events-auto">
+        {/* Fullscreen Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none scale-105"
+        >
+          <source src="/videos/hero-satellite-grid.mp4" type="video/mp4" />
+        </video>
 
-        <div className="max-w-[1280px] mx-auto flex flex-col items-center text-center">
-          {/* Eyebrow badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1F26] border border-[#2E3540] text-[11px] font-mono tracking-wider text-[#00C2CC] uppercase mb-6">
-            <Satellite className="w-3.5 h-3.5" />
-            <span>Planetary Agriculture & NASA Orbital Telemetry</span>
-          </div>
+        {/* Cinematic Gradient Scrim Overlay for Maximum Legibility */}
+        <div className="absolute inset-0 bg-[#070A0F]/75 backdrop-brightness-[0.7]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#121417] via-transparent to-[#121417]/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(7,10,15,0.7)_100%)] pointer-events-none" />
 
-          {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#F1F3F5] max-w-4xl leading-[1.15]">
+        {/* Content Container in Front of Video */}
+        <div className="relative z-10 max-w-[1280px] mx-auto flex flex-col items-center text-center">
+          {/* Headline Utama */}
+          <h1 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold tracking-tight text-white max-w-5xl leading-[1.12]">
             See Earth from Space. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C2CC] via-[#52D8E8] to-[#93E6F0]">
               Regenerate Soil on the Ground.
             </span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="mt-6 text-base sm:text-lg text-[#9BA3AE] max-w-2xl leading-relaxed">
-            TerraShaft translates NASA satellite observations (SMAP, GPM, CERES) and ISRIC global soil physics into closed-loop 4-season adaptive crop rotation strategies to prevent crop failure, recharge depleted soil batteries, and stabilize dryland farming economies.
+          {/* Subtitle contextualizing orbital satellite telemetry */}
+          <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-[#C1C7CD] max-w-3xl leading-relaxed font-normal">
+            Synthesizing daily satellite tile grids, NASA SMAP root-zone soil moisture telemetry, and ISRIC 0–30 cm pedology into climate-adaptive 4-season crop rotation pathways. Detecting moisture stress early to prevent crop failure across semi-arid frontiers.
           </p>
 
           {/* Action CTAs */}
-          <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+          <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <Link
               href="/overview"
-              className="px-6 py-3 rounded-[4px] bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-[#00C2CC]/20"
+              className="px-6 py-3 rounded-[4px] bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-[#00C2CC]/25 cursor-pointer"
             >
               <span>Launch Platform</span>
               <ArrowRight className="w-4 h-4" />
@@ -146,148 +237,36 @@ export default function LandingPage() {
 
             <Link
               href="/field-map"
-              className="px-6 py-3 rounded-[4px] bg-[#1A1F26] hover:bg-[#232933] border border-[#2E3540] text-sm font-medium text-[#F1F3F5] transition-colors flex items-center gap-2"
+              className="px-6 py-3 rounded-[4px] bg-[#12161F]/90 hover:bg-[#1A1F26] border border-[#2E3540] hover:border-[#00C2CC]/60 text-sm font-medium text-white transition-all flex items-center gap-2 backdrop-blur-md"
             >
               <Compass className="w-4 h-4 text-[#00C2CC]" />
               <span>Explore GIS Field Map</span>
             </Link>
 
             <Link
-              href="/login"
-              className="px-6 py-3 rounded-[4px] hover:bg-[#1A1F26] text-sm font-medium text-[#C1C7CD] hover:text-white transition-colors"
+              href="/data-sources"
+              className="px-5 py-3 rounded-[4px] bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-sm font-medium text-[#C1C7CD] hover:text-white transition-colors"
             >
-              Sign In to Account
+              Audit Data Provenance
             </Link>
           </div>
-
-          {/* Hero Telemetry Card / HUD Mockup */}
-          <div className="mt-14 w-full max-w-5xl bg-[#16191E] border border-[#282C34] rounded-[8px] overflow-hidden shadow-2xl relative text-left">
-            {/* Top Toolbar */}
-            <div className="px-4 py-2.5 bg-[#1C2026] border-b border-[#282C34] flex items-center justify-between text-xs text-[#9BA3AE]">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#00C2CC] animate-pulse" />
-                <span className="font-mono text-[#F1F3F5]">LIVE SATELLITE TELEMETRY FEED</span>
-                <span className="text-[#6C757D]">·</span>
-                <span>Kupang Timur AOI (-10.1542°, 123.8210°)</span>
-              </div>
-              <div className="font-mono text-[11px] text-[#00C2CC]">
-                1,296 Permutations Evaluated
-              </div>
-            </div>
-
-            {/* Visual Raster Area + Telemetry Overlays */}
-            <div className="relative h-64 sm:h-80 md:h-96 w-full bg-cover bg-center overflow-hidden"
-              style={{ backgroundImage: `url('/images/satellite-ocean.jpg')` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-[#16191E] via-transparent to-black/30 pointer-events-none" />
-
-              {/* Floating Telemetry Glass Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 max-w-xs">
-                <div className="px-3 py-2 rounded-[4px] bg-[#121417]/85 backdrop-blur-md border border-white/10 text-xs">
-                  <div className="text-[10px] uppercase font-mono tracking-wider text-[#00C2CC]">NASA SMAP L4</div>
-                  <div className="font-semibold text-white mt-0.5">Root-Zone Wetness: 0.38</div>
-                  <div className="text-[11px] text-[#A6AFB8]">Kondisi air tanah perakaran aman</div>
-                </div>
-
-                <div className="px-3 py-2 rounded-[4px] bg-[#121417]/85 backdrop-blur-md border border-white/10 text-xs">
-                  <div className="text-[10px] uppercase font-mono tracking-wider text-[#34D399]">SoilGrids v2.0</div>
-                  <div className="font-semibold text-white mt-0.5">Vertisol Clay 48% · pH 6.8</div>
-                  <div className="text-[11px] text-[#A6AFB8]">AWC 125 mm · SOC 1.4%</div>
-                </div>
-              </div>
-
-              {/* Bottom Recommended Sequence Strip */}
-              <div className="absolute bottom-4 left-4 right-4 z-10 p-3 rounded-[6px] bg-[#121417]/90 backdrop-blur-md border border-white/15 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div>
-                  <div className="text-[10.5px] uppercase font-mono text-[#00C2CC] font-semibold">
-                    Optimal Pathway A · 4-Season Sequence
-                  </div>
-                  <div className="font-medium text-[#F1F3F5] mt-0.5 flex flex-wrap items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-[3px] bg-[#20252D] border border-[#2E3540]">M1: Jagung Hibrida</span>
-                    <span className="text-[#6C757D]">→</span>
-                    <span className="px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#164E55]">M2: Kedelai Anjasmoro</span>
-                    <span className="text-[#6C757D]">→</span>
-                    <span className="px-2 py-0.5 rounded-[3px] bg-[#20252D] border border-[#2E3540]">M3: Kacang Hijau Vima</span>
-                    <span className="text-[#6C757D]">→</span>
-                    <span className="px-2 py-0.5 rounded-[3px] bg-[#1E3A2F] text-[#34D399] border border-[#166534]">M4: Orok-orok Cover</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-[10px] uppercase text-[#8A949E]">Baterai Tanah</div>
-                    <div className="text-sm font-bold text-[#34D399]">Recharge +25%</div>
-                  </div>
-                  <Link
-                    href="/overview"
-                    className="px-3 py-1.5 rounded-[4px] bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-xs font-semibold transition-colors"
-                  >
-                    Simulasikan
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* 3. Impact & Physical Metrics Bar */}
-      <section className="py-10 bg-[#16191E] border-b border-[#242831] px-4 lg:px-10">
-        <div className="max-w-[1280px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center lg:text-left">
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">1.296</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Kombinasi 4 Musim
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              Evaluasi permutasi lengkap untuk setiap koordinat lahan
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">250m</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Resolusi Fisika Tanah
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              ISRIC SoilGrids v2.0 lapisan olah perakaran 0-30 cm
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#34D399]">+160 kg</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Fiksasi N Alami / Ha
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              Injeksi hara bintil akar legum menghemat pupuk kimia
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">40% - 60%</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Penghematan Air
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              Efisiensi neraca air terukur dibanding monokultur sereal
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Core Capabilities (4-Pillar Grid) */}
-      <section id="capabilities" className="py-20 px-4 lg:px-10 border-b border-[#242831]">
+      {/* 3. Overlapping Sheet (Curtain Effect / Fixed Underlay Transition - Antislop Pattern) */}
+      <main className="relative z-10 bg-[#121417] mt-[100vh] mt-[100dvh] mt-[100svh] shadow-[0_-30px_60px_rgba(0,0,0,0.9)]">
+        {/* Core Capabilities (4-Pillar Grid) */}
+        <section id="capabilities" className="scroll-mt-24 py-20 lg:py-24 px-4 lg:px-10 border-t border-b border-[#242831]">
         <div className="max-w-[1280px] mx-auto flex flex-col gap-12">
           <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
             <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-              KEMAMPUAN PLATFORM
+              CORE CAPABILITIES
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#F1F3F5]">
-              Arsitektur Telemetri Berstandar Antariksa
+              Space-Grade Telemetry Architecture
             </h2>
             <p className="text-xs sm:text-sm text-[#9BA3AE] mt-3 leading-relaxed">
-              Menghubungkan sensor satelit antariksa, model pedotransfer tanah internasional, dan kecerdasan buatan berbasis SOP ilmiah.
+              Bridging orbital satellite constellations, international pedotransfer models, and agronomic AI grounded in peer-reviewed scientific SOPs.
             </p>
           </div>
 
@@ -300,7 +279,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-semibold text-[#F1F3F5]">NASA Earth Telemetry</h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Asimilasi langsung satelit SMAP L4 (air tanah perakaran), GPM IMERG (curah hujan harian), CERES (radiasi surya), dan MERRA-2.
+                  Direct assimilation of SMAP L4 (root-zone soil moisture), GPM IMERG (daily precipitation), CERES (solar irradiance), and MERRA-2.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
@@ -316,7 +295,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-semibold text-[#F1F3F5]">ISRIC Soil Physics (0-30cm)</h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Model tekstur pasir-debu-lempung, Karbon Organik (SOC), pH H2O, KTK, dan kerapatan bulk density dari Wageningen University.
+                  Sand-silt-clay texture grading, Soil Organic Carbon (SOC), pH H2O, CEC, and bulk density calibrated by Wageningen University.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
@@ -332,7 +311,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-semibold text-[#F1F3F5]">The Soil Battery Engine</h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Konsep Baterai Tanah intuitif: Monokultur menguras baterai (-20%/musim), tanaman legum dan penutup tanah mengisi ulang baterai (+15%).
+                  Intuitive Soil Battery dynamic: Monoculture drains soil reserves (-20%/season), while legumes and cover crops actively recharge fertility (+15%).
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
@@ -348,7 +327,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-semibold text-[#F1F3F5]">Field Advisor AI (RAG)</h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Konsultasi agronomi cerdas berbasis telemetri lahan riil dan 11 dokumen acuan terverifikasi dari BRIN, Balittanah, dan standar FAO-56.
+                  Intelligent agronomic advisory grounded in real-time land telemetry and 11 verified benchmarks from BRIN, Balittanah, and FAO-56 standards.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
@@ -360,17 +339,17 @@ export default function LandingPage() {
       </section>
 
       {/* 5. 4-Season Pathways Deep-Dive */}
-      <section id="pathways" className="py-20 px-4 lg:px-10 bg-[#16191E] border-b border-[#242831]">
+      <section id="pathways" className="scroll-mt-24 py-20 px-4 lg:px-10 bg-[#16191E] border-b border-[#242831]">
         <div className="max-w-[1280px] mx-auto flex flex-col gap-10">
           <div className="max-w-2xl">
             <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-              3 SKENARIO OPTIMASI
+              3 OPTIMIZATION PATHWAYS
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-[#F1F3F5]">
-              Pilih Strategi Berdasarkan Prioritas Petani
+              Choose Strategy Based on Farm Priorities
             </h2>
             <p className="text-xs sm:text-sm text-[#9BA3AE] mt-2">
-              Mesin menghitung trade-off seimbang antara profit tunai, kelestarian baterai tanah, dan ketahanan terhadap kemarau El Nino.
+              The engine computes balanced trade-offs between cash profitability, soil battery longevity, and El Niño drought resilience.
             </p>
           </div>
 
@@ -385,16 +364,16 @@ export default function LandingPage() {
                   Max Soil Regeneration
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Fokus memulihkan tanah tandus dan memecah lapisan padas olah melalui tanaman berakar dalam (Orok-orok) dan legum pengikat nitrogen tinggi.
+                  Restores degraded soil and breaks plow pans using deep-taproot cover crops (Sunn Hemp) and high-efficiency nitrogen-fixing legumes.
                 </p>
                 <ul className="mt-4 flex flex-col gap-2 text-xs text-[#C1C7CD]">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Baterai tanah terisi penuh (+25% s.d. +35%)</span>
+                    <span>Fully recharged soil battery (+25% to +35%)</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Injeksi biomasa dan pemecah lapisan padas</span>
+                    <span>Deep biomass injection and plow pan remediation</span>
                   </li>
                 </ul>
               </div>
@@ -402,7 +381,7 @@ export default function LandingPage() {
                 href="/rotation-planner"
                 className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1"
               >
-                <span>Lihat Simulasi Pathway A</span>
+                <span>Explore Pathway A Simulation</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -410,7 +389,7 @@ export default function LandingPage() {
             {/* Pathway B */}
             <div className="p-6 rounded-[6px] bg-[#121417] border border-[#00C2CC]/40 flex flex-col justify-between relative shadow-lg">
               <div className="absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#164E55]">
-                REKOMENDASI IKLIM KERING
+                DRYLAND RECOMMENDATION
               </div>
               <div>
                 <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
@@ -420,16 +399,16 @@ export default function LandingPage() {
                   Drought Resilience
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Siaga menghadapi musim kemarau panjang. Memblokir komoditas rakus air pada puncak kemarau dan mengutamakan sorgum serta palawija genjah.
+                  Fortified against prolonged dry spells. Blocks water-intensive crops during peak drought, prioritizing grain sorghum and drought-tolerant legumes.
                 </p>
                 <ul className="mt-4 flex flex-col gap-2 text-xs text-[#C1C7CD]">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Zero risiko puso kekeringan (Wdeficit aman)</span>
+                    <span>Zero crop failure risk (safe water deficit thresholds)</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Penghematan air hingga 60% dibanding monokultur</span>
+                    <span>Up to 60% water savings versus monoculture</span>
                   </li>
                 </ul>
               </div>
@@ -437,7 +416,7 @@ export default function LandingPage() {
                 href="/rotation-planner"
                 className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1"
               >
-                <span>Lihat Simulasi Pathway B</span>
+                <span>Explore Pathway B Simulation</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -452,16 +431,16 @@ export default function LandingPage() {
                   Cash-Flow Optimized
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Memaksimalkan pendapatan tunai petani per musim namun tetap membatasi defisit air dalam batas toleransi agar tidak gagal panen.
+                  Maximizes seasonal farmer cash revenue while keeping cumulative water deficit within safe tolerance limits to safeguard yields.
                 </p>
                 <ul className="mt-4 flex flex-col gap-2 text-xs text-[#C1C7CD]">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Indeks profit ekonomi tertinggi</span>
+                    <span>Highest economic profitability index</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Rotasi komoditas bernilai pasar tinggi</span>
+                    <span>Strategic rotation of high-market-value crops</span>
                   </li>
                 </ul>
               </div>
@@ -469,7 +448,7 @@ export default function LandingPage() {
                 href="/rotation-planner"
                 className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1"
               >
-                <span>Lihat Simulasi Pathway C</span>
+                <span>Explore Pathway C Simulation</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -477,19 +456,64 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 5. Quantitative Science & Physical Metrics Bar */}
+      <section id="science" className="scroll-mt-24 py-14 bg-[#121417] border-b border-[#242831] px-4 lg:px-10">
+        <div className="max-w-[1280px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center lg:text-left">
+          <div className="flex flex-col">
+            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">1,296</span>
+            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
+              4-Season Permutations
+            </span>
+            <span className="text-xs text-[#8A949E] mt-0.5">
+              Exhaustive permutation evaluation for every land coordinate
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">250m</span>
+            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
+              Soil Physics Resolution
+            </span>
+            <span className="text-xs text-[#8A949E] mt-0.5">
+              ISRIC SoilGrids v2.0 root-zone layer (0–30 cm)
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#34D399]">+160 kg</span>
+            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
+              Natural N Fixation / Ha
+            </span>
+            <span className="text-xs text-[#8A949E] mt-0.5">
+              Legume root nodule bio-injection reducing synthetic fertilizer
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">40% - 60%</span>
+            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
+              Water Conservation
+            </span>
+            <span className="text-xs text-[#8A949E] mt-0.5">
+              Quantified water balance savings versus cereal monoculture
+            </span>
+          </div>
+        </div>
+      </section>
+
       {/* 6. Global Agricultural Hotspots */}
-      <section id="hotspots" className="py-20 px-4 lg:px-10 border-b border-[#242831]">
+      <section id="hotspots" className="scroll-mt-24 py-20 px-4 lg:px-10 border-b border-[#242831]">
         <div className="max-w-[1280px] mx-auto flex flex-col gap-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-                CAKUPAN GLOBAL
+                GLOBAL COVERAGE
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#F1F3F5]">
-                Dapat Digunakan di Mana Saja di Muka Bumi
+                Deployable Anywhere on Earth
               </h2>
               <p className="text-xs sm:text-sm text-[#9BA3AE] mt-2">
-                Sensor satelit NASA dan ISRIC mencakup seluruh koordinat daratan dunia (-90° s.d. +90° Lat).
+                NASA and ISRIC satellite telemetry covers global terrestrial coordinates from -90° to +90° latitude.
               </p>
             </div>
 
@@ -497,7 +521,7 @@ export default function LandingPage() {
               href="/field-map"
               className="inline-flex items-center gap-1.5 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-semibold"
             >
-              <span>Buka Peta Satelit Global</span>
+              <span>Explore Global Satellite Map</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -515,13 +539,13 @@ export default function LandingPage() {
                   </div>
                   <div className="mt-3 flex flex-col gap-1 text-[11px] text-[#A6AFB8]">
                     <div>
-                      <span className="text-[#6C757D]">Iklim:</span> {h.climate}
+                      <span className="text-[#6C757D]">Climate:</span> {h.climate}
                     </div>
                     <div>
-                      <span className="text-[#6C757D]">Tanah:</span> {h.soil}
+                      <span className="text-[#6C757D]">Soil:</span> {h.soil}
                     </div>
                     <div>
-                      <span className="text-[#6C757D]">Rotasi:</span> {h.crop}
+                      <span className="text-[#6C757D]">Rotation:</span> {h.crop}
                     </div>
                   </div>
                 </div>
@@ -529,7 +553,7 @@ export default function LandingPage() {
                   href="/field-map"
                   className="mt-4 pt-3 border-t border-[#242831] text-[11px] text-[#00C2CC] hover:underline flex items-center justify-between"
                 >
-                  <span>Eksplorasi AOI</span>
+                  <span>Explore AOI</span>
                   <ExternalLink className="w-3 h-3" />
                 </Link>
               </div>
@@ -540,6 +564,7 @@ export default function LandingPage() {
 
       {/* 7. Planet.com Style Footer & Pre-Footer CTA */}
       <PlanetFooter />
-    </div>
-  );
+    </main>
+  </div>
+);
 }
