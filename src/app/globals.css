@@ -383,16 +383,90 @@ aside .bg-\[\#F5F7F4\],
   fill: #8A949E !important;
 }
 
-/* Inputs & Selects in Dark Mode */
-input,
+/* Inputs & Selects in Dark Mode (Excluding Auth Card) */
+input:not(.auth-input),
 select,
 textarea,
-[data-field-mode] input,
+[data-field-mode] input:not(.auth-input),
 [data-field-mode] select,
 [data-field-mode] textarea {
   color: var(--text-main);
   background-color: #16191E;
   border-color: #2C313A;
+}
+
+/* ========================================================
+   STANDALONE CRISP WHITE AUTH CARD (PLANET.COM LOGIN)
+   Immune to dark mode overrides
+   ======================================================== */
+.auth-white-card,
+[data-field-mode] .auth-white-card,
+[data-field-mode="true"] .auth-white-card {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  color-scheme: light !important;
+  border-color: #F3F4F6 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45) !important;
+}
+
+.auth-white-card input.auth-input,
+[data-field-mode] .auth-white-card input.auth-input,
+[data-field-mode="true"] .auth-white-card input.auth-input {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border: 1px solid #D1D5DB !important;
+  color-scheme: light !important;
+}
+
+.auth-white-card input.auth-input:focus,
+[data-field-mode] .auth-white-card input.auth-input:focus,
+[data-field-mode="true"] .auth-white-card input.auth-input:focus {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border-color: #007079 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px #007079 !important;
+}
+
+.auth-white-card input.auth-input::placeholder {
+  color: #9CA3AF !important;
+}
+
+.auth-white-card h1,
+[data-field-mode] .auth-white-card h1 {
+  color: #111827 !important;
+}
+
+.auth-white-card p,
+[data-field-mode] .auth-white-card p {
+  color: #6B7280 !important;
+}
+
+.auth-white-card .auth-footer-text,
+[data-field-mode] .auth-white-card .auth-footer-text {
+  color: #4B5563 !important;
+}
+
+.auth-white-card .auth-emblem,
+[data-field-mode] .auth-white-card .auth-emblem {
+  background-color: #FFFFFF !important;
+  border: 1px solid #007079 !important;
+}
+
+.auth-white-card .auth-emblem-text,
+[data-field-mode] .auth-white-card .auth-emblem-text {
+  color: #111827 !important;
+}
+
+.auth-white-card .auth-btn-continue,
+[data-field-mode] .auth-white-card .auth-btn-continue {
+  background-color: #007079 !important;
+  color: #FFFFFF !important;
+}
+
+.auth-white-card .auth-btn-continue:hover,
+[data-field-mode] .auth-white-card .auth-btn-continue:hover {
+  background-color: #005C63 !important;
 }
 
 /* Scrollbar styling */

@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import {
   RefreshCw,
@@ -10,8 +11,8 @@ import {
   HelpCircle,
   Settings,
   Menu,
-  ChevronDown,
-  LayoutGrid
+  UserCog,
+  LogOut
 } from 'lucide-react';
 
 interface TopHeaderProps {
@@ -21,20 +22,81 @@ interface TopHeaderProps {
 export default function TopHeader({
   onToggleMobileMenu
 }: TopHeaderProps) {
+  const router = useRouter();
   const {
     location,
-    elevation_m,
     isLoadingBioData,
     fetchBioPhysicalData,
     provenance
   } = useTerraShaftStore();
 
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [profile, setProfile] = useState({
+    name: 'RAVI ARNAN IRIANTO',
+    email: 'raviarnankeren@gmail.com',
+    initials: 'RI'
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('terrashaft_user_profile');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.name || parsed.email) {
+          const rawName = (parsed.name || 'Ravi Arnan Irianto').trim();
+          const initials = rawName
+            .split(' ')
+            .filter(Boolean)
+            .map((w: string) => w[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() || 'RI';
+          setProfile({
+            name: rawName.toUpperCase(),
+            email: parsed.email || 'raviarnankeren@gmail.com',
+            initials
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Close dropdown on click outside or escape key
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsProfileMenuOpen(false);
+      }
+    }
+
+    if (isProfileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isProfileMenuOpen]);
+
   const badge = provenance.headerBadge;
-  const shortPlace = location.district || location.placeName.split(',')[0] || 'Kupang Timur';
 
   return (
     <header className="h-16 bg-[#121417] border-b border-[#282C34] px-4 lg:px-6 sticky top-0 z-40 select-none flex items-center justify-between text-[#F1F3F5] transition-all">
-      {/* Left: Brand Mark + Divider + Data Module Selector */}
+      {/* Left: Brand Mark */}
       <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
         {onToggleMobileMenu && (
           <button
@@ -47,7 +109,7 @@ export default function TopHeader({
           </button>
         )}
 
-        <Link href="/" className="flex items-center shrink-0 group py-1">
+        <Link href="/overview" className="flex items-center shrink-0 group py-1">
           {/* Official TerraShaft Orbital Agriculture Logo: Prominent & High Clarity */}
           <Image
             src="/terrashaft-logo.png"
@@ -57,24 +119,6 @@ export default function TopHeader({
             className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-[1.02]"
             priority
           />
-        </Link>
-
-        <div className="h-7 w-px bg-[#282C34] mx-1 sm:mx-1.5 shrink-0" />
-
-        {/* Active Workspace / Data Switcher Pill */}
-        <Link
-          href="/field-map"
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[5px] bg-[#1C2026] hover:bg-[#242931] border border-[#2C313A] text-xs sm:text-[13px] font-medium text-[#F1F3F5] transition-colors truncate"
-          title={`AOI Aktif: ${location.placeName} (${location.lat.toFixed(4)}°, ${location.lon.toFixed(4)}° | ${elevation_m}m dpl)`}
-        >
-          <span className="w-4 h-4 rounded-[3px] bg-[#0284C7] flex items-center justify-center text-white shrink-0">
-            <LayoutGrid className="w-2.5 h-2.5" />
-          </span>
-          <span className="font-semibold text-white">Data</span>
-          <span className="hidden md:inline text-[#8A949E] font-normal truncate max-w-[240px]">
-            · {shortPlace} ({location.lat.toFixed(2)}°, {location.lon.toFixed(2)}°)
-          </span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#8A949E] shrink-0" />
         </Link>
       </div>
 
@@ -112,22 +156,76 @@ export default function TopHeader({
         </Link>
 
         {/* Settings / Workbench Preference */}
-        <button
-          type="button"
-          title="Pengaturan Workbench Planet"
+        <Link
+          href="/settings"
+          title="Pengaturan Workbench & Profil Pengguna"
           className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors"
         >
           <Settings className="w-4 h-4" />
-        </button>
-
-        {/* Profile Avatar Badge with Solid Color & Text Placeholder (Planet Style) */}
-        <Link
-          href="/action-sheet"
-          title="Profil Pengguna & Lembar Ekspor"
-          className="w-8 h-8 rounded-full bg-[#42CADB] hover:bg-[#52D8E8] text-[#121417] font-bold text-xs inline-flex items-center justify-center ml-1 transition-all select-none shadow-xs shrink-0"
-        >
-          <span>RI</span>
         </Link>
+
+        {/* Profile Avatar Badge with Dropdown Menu */}
+        <div className="relative" ref={profileMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+            aria-expanded={isProfileMenuOpen}
+            aria-haspopup="true"
+            title={`Profil Akun: ${profile.name}`}
+            className={`p-1 rounded-[6px] transition-colors flex items-center justify-center focus:outline-hidden ${
+              isProfileMenuOpen ? 'bg-[#2A2F3A]' : 'hover:bg-[#20242B]'
+            }`}
+          >
+            <span className="w-8 h-8 rounded-full bg-[#42CADB] hover:bg-[#52D8E8] text-[#121417] font-bold text-xs inline-flex items-center justify-center select-none shadow-xs shrink-0 transition-colors">
+              {profile.initials}
+            </span>
+          </button>
+
+          {/* Profile Dropdown Popover */}
+          {isProfileMenuOpen && (
+            <div className="absolute right-0 top-full mt-2 w-72 bg-[#20242C] border border-[#2F3642] rounded-[8px] shadow-2xl z-50 overflow-hidden flex flex-col py-1 text-left animate-in fade-in duration-100">
+              {/* Header: Avatar + User Details */}
+              <div className="p-3.5 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#42CADB] text-[#121417] font-bold text-sm inline-flex items-center justify-center shrink-0 shadow-xs select-none">
+                  {profile.initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[13px] font-bold text-white tracking-wide truncate">
+                    {profile.name}
+                  </div>
+                  <div className="text-xs text-[#8A949E] truncate">
+                    {profile.email}
+                  </div>
+                </div>
+              </div>
+
+              {/* Hairline Divider */}
+              <div className="h-px bg-[#2C313A] my-1" />
+
+              {/* Navigation Options */}
+              <Link
+                href="/settings"
+                onClick={() => setIsProfileMenuOpen(false)}
+                className="group flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#E1E4EA] hover:text-white hover:bg-[#282E38] transition-colors"
+              >
+                <UserCog className="w-4 h-4 text-[#8A949E] group-hover:text-[#42CADB] transition-colors shrink-0" />
+                <span>My Profile & Settings</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  router.push('/login');
+                }}
+                className="group w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-[#E1E4EA] hover:text-white hover:bg-[#282E38] transition-colors text-left"
+              >
+                <LogOut className="w-4 h-4 text-[#8A949E] group-hover:text-[#EF4444] transition-colors shrink-0" />
+                <span>Log Out</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

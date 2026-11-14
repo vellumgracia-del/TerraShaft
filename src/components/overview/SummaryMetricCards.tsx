@@ -62,7 +62,15 @@ export default function SummaryMetricCards() {
             </span>
             <span className="text-xs font-mono text-[#8A949E]">/ 1.00</span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
+          {/* Micro Progress Bar */}
+          <div className="w-full bg-[#16191E] h-1.5 rounded-full overflow-hidden flex my-0.5">
+            <div
+              className={`h-full transition-all duration-500 rounded-full ${moistureDot}`}
+              style={{ width: `${Math.min(Math.max(gwetroot * 100, 5), 100)}%` }}
+              title={`SMAP L4 GWETROOT: ${formatNumber(gwetroot, 2)}`}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-0.5">
             <span className="inline-flex items-center gap-1.5 text-[#C1C7CD]">
               <span className={`w-1.5 h-1.5 rounded-full ${moistureDot}`} />
               <span>{isLoadingBioData ? 'Syncing...' : moistureStatus}</span>
@@ -89,9 +97,18 @@ export default function SummaryMetricCards() {
               {isCharging ? `+${batteryDelta}%` : `${batteryDelta}%`}
             </span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
-            <span>Baseline: {initialBattery}%</span>
-            <span className="font-mono">Jalur {selectedPathway}</span>
+          {/* Micro Contrast Progress Bar */}
+          <div className="w-full bg-[#16191E] h-1.5 rounded-full overflow-hidden flex my-0.5" title={`Rotasi Adaptif: ${finalBattery}% vs Monokultur: 10%`}>
+            <div
+              className="h-full bg-[#00C2CC] transition-all duration-500 rounded-full"
+              style={{ width: `${Math.min(Math.max(finalBattery, 5), 100)}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-0.5">
+            <span>Base: {initialBattery}%</span>
+            <span className="font-mono text-[#E06C75]" title="Jika monokultur terus menerus">
+              Monokultur: 10%
+            </span>
           </div>
         </div>
 

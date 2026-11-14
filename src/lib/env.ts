@@ -14,6 +14,7 @@ export interface AppEnvConfig {
   isricSoilGridsTimeoutMs: number;
   appName: string;
   defaultLocation: string;
+  geminiApiKey: string;
 }
 
 const DEFAULT_NASA_POWER_BASE = 'https://power.larc.nasa.gov/api';
@@ -56,6 +57,7 @@ export function getAppEnv(): AppEnvConfig {
     soilGridsTimeoutMs,
     isricSoilGridsTimeoutMs: soilGridsTimeoutMs,
     appName,
-    defaultLocation
+    defaultLocation,
+    geminiApiKey: process.env.GEMINI_API_KEY?.trim() || ''
   };
 }

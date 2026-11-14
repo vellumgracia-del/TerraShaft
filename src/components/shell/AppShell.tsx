@@ -13,6 +13,7 @@ interface AppShellProps {
 
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const isPublicRoute = pathname === '/' || pathname === '/landing' || pathname === '/login';
   const isFieldMapPage = pathname === '/field-map';
   const {
     location,
@@ -42,6 +43,25 @@ export default function AppShell({ children }: AppShellProps) {
     document.documentElement.setAttribute('data-field-mode', isFieldMode ? 'true' : 'false');
     document.body.setAttribute('data-field-mode', isFieldMode ? 'true' : 'false');
   }, [isFieldMode]);
+
+  if (pathname === '/login') {
+    return (
+      <div className="min-h-screen antialiased selection:bg-[#007079] selection:text-white">
+        {children}
+      </div>
+    );
+  }
+
+  if (isPublicRoute) {
+    return (
+      <div
+        data-field-mode="true"
+        className="min-h-screen bg-[#181B20] text-[#F1F3F5] antialiased selection:bg-[#163A40] selection:text-[#00C2CC]"
+      >
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div
