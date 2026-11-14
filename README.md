@@ -1,201 +1,912 @@
-# TerraShaft (TerraRotate) 
-### Adaptive Crop Rotation & Closed-Loop Soil Regeneration Telemetry Engine
+TerraShaft (TerraRotate)
 
-> **Aplikasi web pintar yang menerjemahkan observasi biofisik satelit NASA (SMAP, GPM, CERES, MERRA-2) dan profil tanah spasial (ISRIC SoilGrids) menjadi rekomendasi pola rotasi tanaman 4 musim adaptif guna mencegah gagal panen akibat kekeringan, memulihkan kesuburan tanah, dan menjaga kestabilan ekonomi petani.**
+Adaptive Crop Rotation & Soil Regeneration Decision-Support Engine
 
----
+TerraShaft adalah aplikasi web untuk membantu petani dan Penyuluh Pertanian Lapangan (PPL) menyusun skenario rotasi tanaman adaptif berdasarkan observasi satelit, data cuaca, kelembapan tanah, topografi, karakteristik tanah, dan konteks pertanian lokal.
 
-## 1. Latar Belakang & Permasalahan Lapangan
+Sistem mengubah data geospasial yang kompleks menjadi rekomendasi rotasi tanaman yang lebih mudah dipahami, dilengkapi estimasi kebutuhan air, indikator kesehatan tanah, risiko kekeringan, alternatif tanaman, serta alasan ilmiah di balik setiap rekomendasi.
 
-Pertanian di Indonesia—khususnya di kawasan lahan kering dan sentra pangan tadah hujan (seperti Nusa Tenggara, Gunungkidul, Madura, hingga pesisir utara Jawa)—menghadapi permasalahan sistemik:
 
-1. **Jadwal Tanam Berbasis "Tebak-tebakan"**  
-   Perubahan iklim global (seperti anomali El Niño dan pergeseran musim) membuat kalender tanam tradisional (*pranata mangsa*) tidak lagi akurat. Petani sering menanam tanaman di waktu yang salah, sehingga tanaman mati kekeringan sebelum panen.
+Catatan penting: TerraShaft adalah sistem pendukung keputusan. Sistem tidak menggantikan pengukuran tanah langsung, penyuluh, agronom, atau keputusan petani. Nilai seperti kebutuhan air, kontribusi nitrogen, dan indeks Soil Battery merupakan estimasi model yang memiliki asumsi dan ketidakpastian.
 
-2. **Tanah 'Lelah', Tandus, dan Mengeras Akibat Monokultur**  
-   Menanam komoditas yang sama secara berulang-ulang tanpa jeda (misalnya jagung terus atau padi terus) menguras habis hara tanah. Hal ini memaksa petani membeli pupuk kimia sintetis dalam dosis yang makin mahal, sementara struktur tanah kian rusak dan memadat menyerupai lapisan padas.
 
-3. **Petani Tidak Mengetahui Cadangan Air di Dalam Tanah**  
-   Tanah bagian permukaan sering kali tampak basah setelah hujan gerimis sesaat, padahal di zona perakaran (*root-zone* kedalaman 0–100 cm), tanah mengalami defisit air kritis. Tanpa alat ukur, petani memaksakan menanam komoditas rakus air yang berujung pada puso (gagal panen).
 
-4. **Kesenjangan Informasi Antara Teknologi Antariksa dan Petani**  
-   Badan antariksa dunia (NASA) memantau bumi setiap detik, namun data satelit tersebut berbentuk format angka ilmiah yang sangat rumit dan berukuran raksasa sehingga tidak dapat diakses secara langsung oleh petani kecil maupun Penyuluh Pertanian Lapangan (PPL).
 
----
+Daftar Isi
 
-## 2. Solusi yang Dihadirkan TerraShaft
+•
+Latar Belakang
 
-TerraShaft hadir menjembatani teknologi antariksa NASA langsung ke layar ponsel petani dan penyuluh dengan pendekatan yang sangat mudah dipahami.
+•
+Solusi
 
-### Konsep Kunci: "Baterai Tanah" (*The Soil Battery*)
-TerraShaft memperkenalkan cara pandang baru yang intuitif: **Anggaplah tanah Anda seperti baterai ponsel!**
-* **Menguras Baterai (*Discharging*):** Menanam padi atau jagung secara monokultur berturut-turut akan **menguras baterai tanah ($-20\%$ per musim)** karena tanaman tersebut rakus unsur hara.
-* **Mengisi Ulang Baterai (*Charging*):** Menyelingi musim tanam dengan tanaman kacang-kacangan (kedelai, kacang hijau) atau tanaman penutup tanah (*cover crop* seperti orok-orok) akan **mengisi ulang baterai tanah ($+15\%$ per musim)**. Bintil akar tanaman ini menangkap nitrogen gratis dari udara, sedangkan akarnya yang dalam memecah lapisan tanah padas dan mengembalikan kesuburan tanah secara alami.
+•
+Cakupan Geografis dan Strategi Dataset
 
-Sistem komputasi TerraShaft secara otomatis mengevaluasi **$6^4 = 1.296$ kemungkinan rotasi** untuk menemukan kombinasi 4 musim terbaik yang menyeimbangkan **keuntungan uang petani**, **ketersediaan air tanah**, dan **kesehatan baterai tanah**.
+•
+Dataset Global Core
 
----
+•
+Dataset Indonesia Profile
 
-## 3. Fitur-Fitur Utama Aplikasi
+•
+Dataset Regional Amerika Serikat
 
-```
-[ Peta Satelit Lahan ] ──► [ Deteksi Biofisik Satelit NASA ] ──► [ Rekomendasi 4 Musim Siap WhatsApp ]
-```
+•
+Alur Kerja Sistem
 
-### ① Peta Digital Lahan, Deteksi Lokasi Spasial Global & Input GPS
-* Cari nama desa/kabupaten/kota di seluruh dunia (via **OpenStreetMap Nominatim**), geser pin lokasi di peta, masukkan koordinat manual (Latitude/Longitude), gunakan tombol **Lokasi GPS Saya**, atau pilih tombol preset wilayah lahan kering **Indonesia** (**Kupang Timur**, **Gunungkidul**, **Sumba Timur**, **Indramayu**, **Lombok Timur**) maupun **Sentra Global** (**Machakos Kenya**, **Central Valley USA**, **Murray-Darling Australia**, **Petrolina Brazil**, **Punjab India**).
-* Sistem langsung mendeteksi nama administratif wilayah, ketinggian lahan aktual berbasis model elevasi digital (**Open-Meteo Copernicus DEM / SRTM**), dan memuat data satelit terkait dalam hitungan detik.
+•
+Fitur Utama
 
-### ② Pantauan Telemetri Satelit NASA & Tanah *Real-Time*
-Tanpa perlu memasang sensor fisik mahal di sawah, TerraShaft langsung terhubung dengan asimilasi satelit NASA POWER dan ISRIC SoilGrids v2.0:
-* **NASA SMAP (`GWETROOT`):** Memantau kelembapan air tanah zona perakaran (skala 0.00 – 1.00) lengkap dengan garis takik merah batas kritis di angka $0.25$.
-* **NASA GPM (`PRECTOTCORR`):** Mengukur laju curah hujan harian (mm/hari) dan akumulasi presipitasi musiman (dilengkapi filter otomatis nilai fill `-999`).
-* **NASA CERES (`ALLSKY_SFC_SW_DWN`):** Mengukur intensitas radiasi matahari untuk menghitung laju penguapan air tanah ($ET_0$).
-* **ISRIC SoilGrids (Lapisan 0–30 cm):** Menghitung Kapasitas Menahan Air Tanah ($AWC$), Cadangan Air Aktif, kadar Karbon Organik ($SOC\%$), bar komposisi Pasir-Debu-Liat, kelas tekstur segitiga USDA, derajat keasaman ($\text{pH H}_2\text{O}$), Kapasitas Tukar Kation ($CEC$), dan Kerapatan Lindak (*Bulk Density* / indikasi padas olah).
+•
+Metodologi dan Asumsi
 
-### ③ Indikator Baterai Tanah (*The Soil Battery Gauge*)
-* Tabung visual status kapasitas kesuburan tanah ($0–100\%$).
-* Menampilkan status secara langsung apakah pola rotasi sedang *Charging* (terisi hara) atau *Discharging* (terkuras).
-* Menghitung pasokan **Neraca Nitrogen Alami ($\Delta N$, $\text{kg N/ha}$)** dan estimasi penghematan air dibanding monokultur.
+•
+Arsitektur Teknologi
 
-### ④ Tiga Jalur Skenario Rotasi Optimal (Pathway A, B, C) & 5-Axis Radar Chart
-1. **Pathway A (Max Soil Regeneration):**  
-   *Pilihan terbaik untuk memulihkan tanah tandus.* Wajib menyisipkan tanaman penutup berakar dalam dan legum penambat N tinggi untuk menambah pupuk alami dan memperbaiki struktur tanah.
-2. **Pathway B (Drought Resilience):**  
-   *Pilihan siaga menghadapi kemarau panjang atau El Niño.* Mendeteksi kuartal musim terkering secara dinamis di belahan bumi utara maupun selatan, memblokir tanaman boros air pada puncak kemarau, dan hanya mengizinkan komoditas tahan kering (seperti sorgum atau kacang hijau).
-3. **Pathway C (Cash-Flow Optimized):**  
-   *Pilihan untuk memaksimalkan keuntungan tunai hasil panen*, namun tetap dibatasi batas aman ketersediaan air tanah agar tidak terjadi gagal panen.
-* Dilengkapi **Komparasi Multi-Objektif 5-Axis Spider Radar Chart** untuk mengevaluasi *trade-off* antara Baterai Tanah, Efisiensi Air, Aman Kemarau, Indeks Profit, dan Fiksasi Nitrogen.
+•
+Provenansi Data
 
-### ⑤ Matriks Kalender 4 Musim Lengkap dengan Varietas Benih
-Membagi siklus budidaya ke dalam 4 musim berkesinambungan:
-* **Musim 1 (Nov–Feb / Rendeng):** Musim hujan utama (misal: Jagung Hibrida varietas Bisi-18).
-* **Musim 2 (Mar–Mei / Gadu 1):** Pancaroba (misal: Kedelai varietas Anjasmoro untuk injeksi nitrogen tanah).
-* **Musim 3 (Jun–Agu / Kemarau Awal):** Awal kemarau (misal: Kacang Hijau Vima atau Sorgum Bioguma).
-* **Musim 4 (Sep–Okt / Puncak Kemarau):** Masa paling kering (misal: Orok-orok Crotalaria untuk biomasa penutup tanah).
-* Setiap musim dilengkapi rincian kebutuhan air, status defisit, efek baterai hara, dan anjuran varietas bibit unggul lokal.
+•
+Keterbatasan
 
-### ⑥ Grafik Dual-Axis Neraca Air (*Water Balance Chart*)
-* Grafik komparasi antara **Curah Hujan Harian GPM** (batang biru) dan **Kebutuhan Air Tanaman $ET_c$** (garis amber).
-* Area defisit air ($W_{deficit} > 100\text{ mm}$) otomatis diarsir merah sebagai peringatan dini bahaya kekeringan.
+•
+Menjalankan Proyek
 
-### ⑦ Kotak Transparansi Alasan Ilmiah (*Algorithmic Audit Log*)
-* Standar penilaian dewan juri NASA: Sistem menjelaskan secara terbuka mengapa suatu tanaman **dipilih** atau **didiskualifikasi**.
-* *Contoh:* Jagung Hibrida didiskualifikasi pada Puncak Kemarau karena terpicu aturan:  
-  `Rule: Wdeficit = 142mm (> 100mm) & SMAP GWETROOT = 0.18 (< 0.25). Risiko gagal panen tinggi.`
+•
+Sitasi dan Sumber Data
 
-### ⑧ Mode Lapangan Tahan Silau Matahari (*High-Contrast Outdoor Mode*)
-* Penyuluh pertanian sering mengoperasikan ponsel di tengah sawah di bawah terik matahari yang menyilaukan.
-* Cukup klik tombol **"Mode Lapangan"**, tampilan seketika berganti menjadi *Technical Monochrome High-Contrast* (latar putih murni, teks hitam tajam, border tegas) sehingga data tetap terbaca sangat jelas.
+•
+Tim
 
-### ⑨ Ekspor Lembar Panduan WhatsApp (*Action Sheet* 1080×1350 px)
-* Hasil rekomendasi dapat diubah menjadi **selembar poster gambar resolusi tinggi (rasio 4:5)** yang pas di layar ponsel dan status WhatsApp.
-* Dilengkapi tombol instan **"Unduh Gambar PNG"** dan **"Kirim ke WhatsApp"** untuk memudahkan penyebaran ke grup petani.
 
-### ⑩ Pustaka Komoditas & Tambah Varietas Lokal
-* Memuat basis data tanaman bawaan lengkap dengan durasi tanam, kebutuhan air, dan nilai pasar.
-* Petani atau PPL dapat menambahkan varietas lokal baru yang langsung diikutsertakan ke dalam mesin optimasi 1.296 kombinasi.
 
-### ⑪ Penasihat Lapangan AI Terverifikasi Ilmiah (Field Advisor & RAG Knowledge Base)
-* Fitur asisten cerdas agronomi (`/field-advisor`) berbasis Retrieval-Augmented Generation (RAG) yang berlandaskan literatur ilmiah resmi dari **BRIN**, **Balai Penelitian Tanah**, dan **FAO 56**.
-* Menjawab konsultasi mengenai pengelolaan tanah Vertisol, strategi rotasi legum penambat N, pemulihan retak tanah saat kemarau, dan penanganan defisit air dengan sitasi ilmiah transparan.
-* Dilengkapi failover mesin heuristik deterministik saat beroperasi tanpa koneksi kunci API eksternal.
 
-### ⑫ Beranda Publik Elegan (Landing Page) & Halaman Autentikasi (Login Page)
-* **Landing Page (`/`, `/landing`):** Desain visual modern dan kredibel bergaya *Planet.com*, menampilkan narasi pertanian antariksa, metrik kunci, dan call-to-action yang responsif.
-* **Halaman Login (`/login`):** Visual bertema citra satelit terumbu karang resolusi tinggi dengan kartu login putih bersih, logo resmi TerraShaft, serta atribusi fotografer.
+Latar Belakang
 
-### ⑬ Pengaturan Workbench & Profil Pengguna (Settings Hub)
-* Halaman pengaturan (`/settings`) dengan 4 tab komprehensif: Profil Pengguna, Preferensi (Mode Lapangan & Presets), Integrasi (kunci Gemini API), dan Keamanan.
-* Menu dropdown profil interaktif di bar navigasi atas (`TopHeader`) memudahkan akses cepat ke pengaturan dan aksi *Log Out*.
+Pertanian di wilayah lahan kering dan sentra pangan tadah hujan menghadapi beberapa tantangan:
 
----
+•
+Perubahan pola hujan membuat kalender tanam historis semakin sulit dipakai tanpa penyesuaian.
 
-## 4. Manfaat Nyata bagi Petani & Lingkungan
+•
+Monokultur dapat meningkatkan pengambilan hara, tekanan penyakit, dan kerentanan terhadap stres air.
 
-| Parameter | Sebelum Menggunakan TerraShaft | Sesudah Menggunakan TerraShaft |
-|---|---|---|
-| **Pencegahan Gagal Panen** | Mengandalkan tebakan kalender biasa; rawan puso saat kemarau mendadak. | Terpandu data riil kelembapan air tanah zona perakaran satelit NASA SMAP. |
-| **Biaya Pupuk Kimia** | Terus membengkak setiap musim karena tanah semakin tandus. | Hemat pupuk berkat pasokan fiksasi nitrogen alami hingga **$+160\text{ kg N/ha}$**. |
-| **Kesehatan Tanah** | Tanah mengeras seperti batu akibat monokultur sereal berulang. | Baterai tanah terisi kembali; karbon organik tanah ($SOC$) meningkat berkala. |
-| **Konsumsi Air Pertanian** | Boros air di musim kering untuk tanaman yang tidak sesuai. | Penghematan air terukur hingga **$40\% - 60\%$** dibanding monokultur. |
-| **Kecepatan Tindakan PPL** | Perlu waktu berhari-hari untuk menyusun kalkulasi pola tanam. | Lembar panduan WhatsApp 4 musim selesai dihitung dalam **1 detik**. |
+•
+Kondisi permukaan tanah tidak selalu menggambarkan kelembapan yang tersedia di sekitar zona perakaran.
 
----
+•
+Data satelit, iklim, dan tanah tersedia dalam jumlah besar tetapi sulit diterjemahkan menjadi keputusan lapangan.
 
-## 5. Arsitektur Teknologi
+•
+Rekomendasi agronomi perlu mempertimbangkan faktor teknis, ekonomi, ketersediaan air, dan kondisi lokal secara bersamaan.
 
-* **Frontend Framework:** Next.js 16 (App Router, React 19, TypeScript).
-* **Styling & Design System:** Tailwind CSS v4 (NASA-Grade 60-30-10 Telemetry Theme, Dark Mode & High-Contrast Outdoor Mode).
-* **Mesin Peta:** Leaflet.js dengan basemap CartoDB Dark Matter & Esri Satellite World Imagery.
-* **Visualisasi Data:** Recharts (Dual-Axis ComposedChart & 5-Axis Spider Radar Chart).
-* **State Management & Offline:** Zustand + Web App Manifest + Service Worker PWA.
-* **Mesin Ekspor Gambar:** `html-to-image` (Client-side Canvas rendering 1080×1350 px).
-* **Data Plumbing Layer & Provenansi Ilmiah:** Next.js Route Handlers sebagai proxy API terintegrasi dengan pelacakan metadata ketat:
-  - `/api/nasa-climate` (NASA POWER Agroclimatology: SMAP L4, GPM IMERG, CERES, MERRA-2).
-  - `/api/soil-profile` (ISRIC SoilGrids v2.0 REST API).
-  - **Kontrak Provenansi Data (`source`, `fetchedAt`, `cached`, `fallbackReason`, `observationPeriod`):**
-    - `source`: Menandai asal data (`NASA_POWER_LIVE`, `ISRIC_SOILGRIDS_LIVE`, `FALLBACK_CLIMATOLOGY`, `REGIONAL_FALLBACK`).
-    - `fetchedAt`: Waktu stempel pengambilan jaringan / cache lokal (bukan periode observasi fisik).
-    - `observationPeriod`: Menandai rentang waktu observasi fisik sensor/satelit (misal: "Historical 1-Year Baseline" atau "Standard Depth Layer 0-30cm").
-    - `cached`: Menandai data berasal dari in-memory cache TTL (UI menampilkan badge "CACHED DATA").
-    - `fallbackReason`: Penjelasan ilmiah transparan saat failover regional aktif akibat kendala jaringan/timeout.
-  - **Validasi Koordinat Tanpa Silent Clamping:**
-    - Parameter koordinat `lat` dan `lon` wajib diisi. Input di luar batas (-90°..90° latitude, -180°..180° longitude) ditolak dengan HTTP 400 Bad Request dan pesan kesalahan terkontrol, mencegah pergeseran lokasi diam-diam (*silent clamping*).
+TerraShaft dirancang untuk menjembatani observasi bumi dengan tindakan pertanian yang lebih mudah dipahami.
 
----
 
-## 6. Panduan Menjalankan Proyek (Getting Started)
 
-### Prasyarat
-* Node.js v20+ atau v24+
-* npm atau yarn / pnpm
 
-### Langkah Instalasi
-```bash
-# 1. Masuk ke direktori proyek
+Solusi
+
+TerraShaft menggabungkan empat lapisan analisis:
+
+1.
+Observasi lahan: kondisi vegetasi, perubahan tutupan lahan, kelembapan tanah, dan suhu permukaan.
+
+2.
+Kondisi lingkungan: hujan, temperatur, radiasi, evapotranspirasi, elevasi, dan kemiringan lahan.
+
+3.
+Kondisi tanah dan pertanian: tekstur, pH, karbon organik, kapasitas air, jenis tanaman, dan histori produksi.
+
+4.
+Optimasi keputusan: penyaringan tanaman berdasarkan batas air, kalender tanam, tujuan regenerasi tanah, dan potensi ekonomi.
+
+Hasil akhirnya berupa beberapa skenario rotasi, bukan satu jawaban mutlak. Setiap skenario menunjukkan manfaat, risiko, confidence score, asumsi, dan sumber data yang digunakan.
+
+
+
+
+Cakupan Geografis dan Strategi Dataset
+
+TerraShaft menggunakan pendekatan Global Core + Regional Enhancement.
+
+Global Core
+
+Dataset global yang tersedia untuk Indonesia dan sebagian besar wilayah dunia digunakan sebagai fondasi utama:
+
+Plain Text
+
+
+Landsat
+MODIS/VIIRS
+SMAP
+GPM/IMERG
+NASA POWER
+SRTM
+SoilGrids
+GLDAS
+FAO GAEZ
+
+
+
+Indonesia Profile
+
+Untuk Indonesia, Global Core dilengkapi dengan dataset dan konteks regional yang tersedia:
+
+Plain Text
+
+
+Global Core
++ ECOSTRESS
++ GEDI untuk agroforestri atau vegetasi tinggi
++ data tanah nasional jika tersedia
++ data BPS/Kementerian Pertanian
++ data BMKG atau stasiun lokal jika tersedia
++ data harga komoditas lokal
+
+
+
+United States Profile
+
+Dataset USDA dan sumber regional Amerika Serikat hanya digunakan ketika lokasi berada di wilayah yang didukung:
+
+Plain Text
+
+
+Global Core
++ SSURGO/WSS
++ CDL/CropScape
++ USDA NASS
++ PRISM
++ NAIP
++ NLCD
++ NLDAS
++ USGS NWIS
++ OpenET
++ USDA AMS Market News
+
+
+
+Dengan strategi ini, TerraShaft tidak memaksakan dataset Amerika Serikat ke lokasi Indonesia atau negara lain.
+
+
+
+
+Dataset Global Core
+
+Landsat
+
+Digunakan untuk memantau reflektansi permukaan, NDVI, EVI, kondisi vegetasi, tanah terbuka, perubahan musiman, dan histori lahan. Landsat berperan sebagai sumber observasi spasial dengan histori panjang.
+
+MODIS/VIIRS
+
+Digunakan sebagai pelengkap Landsat untuk pemantauan temporal yang lebih sering dan analisis wilayah yang lebih luas. MODIS/VIIRS membantu mendeteksi perubahan kehijauan, transisi musim, dan pola stres tanaman ketika citra resolusi tinggi tidak tersedia atau tertutup awan.
+
+SMAP
+
+Digunakan untuk indikator kelembapan tanah dan kekeringan. Produk root-zone soil moisture merupakan estimasi berbasis observasi satelit dan asimilasi/model, bukan pengukuran langsung di seluruh kedalaman tanah.
+
+Nilai SMAP tidak boleh diperlakukan sebagai kebenaran absolut pada tingkat petak kecil. Sistem perlu memperhitungkan resolusi spasial, kualitas piksel, dan confidence score.
+
+GPM/IMERG
+
+Digunakan untuk estimasi curah hujan, akumulasi hujan, variasi antarperiode, dan deteksi hujan ekstrem. Data digunakan untuk menghitung input air, risiko limpasan, dan potensi defisit air.
+
+Untuk analisis historis, sistem memprioritaskan produk yang telah dikalibrasi atau memiliki kualitas lebih tinggi. Untuk pemantauan cepat, sistem dapat menggunakan produk near-real-time dengan label latency yang jelas.
+
+NASA POWER
+
+Digunakan untuk data meteorologi dan radiasi seperti temperatur, kelembapan, angin, dan radiasi matahari. Data ini mendukung perhitungan ET0, kondisi musim tumbuh, risiko panas, dan kesesuaian iklim.
+
+NASA POWER merupakan sumber data cuaca dan energi global. Variabel dan periode observasi yang digunakan harus dicatat pada metadata setiap respons API.
+
+SRTM
+
+Digunakan untuk elevasi, kemiringan, arah aliran air, posisi relatif pada lanskap, serta estimasi risiko limpasan dan erosi.
+
+SoilGrids
+
+SoilGrids menjadi sumber tanah global utama untuk lokasi di luar wilayah yang memiliki data tanah nasional atau regional yang lebih detail.
+
+Properti yang dapat digunakan meliputi:
+
+•
+pasir, debu, dan liat;
+
+•
+pH;
+
+•
+karbon organik tanah;
+
+•
+bulk density;
+
+•
+kapasitas tukar kation;
+
+•
+nitrogen total;
+
+•
+coarse fragments;
+
+•
+estimasi properti tanah pada beberapa interval kedalaman.
+
+SoilGrids memiliki resolusi sekitar 250 meter dan menyediakan ketidakpastian prediksi per piksel. Karena itu, data ini cocok untuk analisis regional dan screening awal, tetapi tidak selalu cukup untuk keputusan presisi pada petak kecil.
+
+GLDAS
+
+GLDAS digunakan sebagai deret waktu lingkungan global untuk melengkapi SMAP dan NASA POWER. Variabelnya dapat mencakup kelembapan tanah, evapotranspirasi, temperatur, radiasi, dan kondisi permukaan.
+
+GLDAS membantu mengisi konteks temporal ketika satu sumber data memiliki gap, resolusi kasar, atau latency berbeda.
+
+FAO GAEZ
+
+FAO Global Agro-Ecological Zones digunakan untuk mengevaluasi kesesuaian agroklimat, keterbatasan tanah, ketersediaan air, dan potensi produktivitas berbagai tanaman.
+
+GAEZ berfungsi sebagai lapisan validasi dan constraint agronomi. Data ini tidak digunakan sebagai jaminan hasil panen aktual.
+
+
+
+
+Dataset Indonesia Profile
+
+Untuk Indonesia, dataset berikut digunakan sebagai penguat apabila tersedia dan relevan untuk lokasi yang dipilih:
+
+ECOSTRESS
+
+Digunakan untuk mendeteksi suhu permukaan, hotspot panas, dan indikasi stres air pada skala yang lebih detail. ECOSTRESS sangat berguna untuk membandingkan microclimate antarbagian lahan, tetapi ketersediaan observasi dan tutupan awan harus diperiksa.
+
+GEDI
+
+Digunakan secara opsional untuk wilayah agroforestri, perkebunan, hutan tepi lahan, dan lanskap dengan vegetasi tinggi. GEDI membantu memberikan konteks struktur kanopi dan biomassa sekitar lahan.
+
+GEDI bukan dataset utama untuk lahan terbuka dengan tanaman pendek.
+
+Data tanah nasional dan regional
+
+Jika tersedia, data tanah nasional atau hasil survei lokal diprioritaskan di atas SoilGrids karena biasanya lebih relevan terhadap kondisi setempat. Setiap sumber lokal harus menyimpan resolusi, tahun pemetaan, metode pengukuran, dan cakupan wilayahnya.
+
+Statistik dan data pertanian Indonesia
+
+Untuk konteks produksi dan ekonomi, sistem dapat mengintegrasikan:
+
+•
+BPS untuk statistik luas panen, produktivitas, dan produksi;
+
+•
+Kementerian Pertanian untuk komoditas, kalender tanam, dan informasi agronomi;
+
+•
+BMKG atau stasiun cuaca untuk validasi iklim lokal jika tersedia;
+
+•
+sumber harga lokal untuk estimasi pendapatan;
+
+•
+data varietas dari lembaga penelitian atau rekomendasi wilayah.
+
+Dataset lokal tidak boleh dianggap selalu tersedia. Jika tidak tersedia, UI harus menampilkan bahwa sistem menggunakan sumber global atau estimasi regional.
+
+
+
+
+Dataset Regional Amerika Serikat
+
+Dataset berikut dipakai sebagai enhancement ketika lokasi berada di Amerika Serikat atau wilayah yang secara resmi didukung:
+
+•
+SSURGO/WSS: peta dan atribut tanah detail.
+
+•
+CDL/CropScape: klasifikasi jenis tanaman tahunan.
+
+•
+USDA NASS: statistik luas tanam, hasil panen, dan produksi.
+
+•
+PRISM: data iklim yang memperhitungkan pengaruh topografi.
+
+•
+NAIP: citra udara resolusi tinggi untuk validasi batas dan kondisi lahan.
+
+•
+NLCD: tutupan dan penggunaan lahan.
+
+•
+NLDAS: deret waktu cuaca dan variabel permukaan Amerika Utara.
+
+•
+USGS NWIS: data sungai, air tanah, debit, dan kualitas air.
+
+•
+OpenET: estimasi evapotranspirasi untuk wilayah yang didukung.
+
+•
+USDA AMS Market News: harga dan kondisi pasar komoditas Amerika Serikat.
+
+SSURGO, WSS, CDL, dan USDA NASS tidak digunakan sebagai dataset global. Jika lokasi berada di luar cakupan, sistem menggunakan provider global atau regional lain dan mencatat fallback tersebut.
+
+
+
+
+Alur Kerja Sistem
+
+Plain Text
+
+
+Input koordinat dan profil lahan
+              ↓
+Validasi lokasi dan resolusi data
+              ↓
+Pemilihan provider berdasarkan negara/wilayah
+              ↓
+Pengambilan data cuaca, tanah, vegetasi, air, dan topografi
+              ↓
+Quality control, normalisasi unit, dan masking nilai invalid
+              ↓
+Perhitungan ET0, ETc, water balance, dan indikator kekeringan
+              ↓
+Penyusunan Soil Battery Index dan indikator regenerasi
+              ↓
+Penyaringan tanaman berdasarkan constraint agronomi
+              ↓
+Evaluasi seluruh skenario rotasi yang valid
+              ↓
+Ranking Pathway A, B, dan C
+              ↓
+Audit log, confidence score, dan action sheet
+              ↓
+Feedback hasil aktual untuk evaluasi musim berikutnya
+
+
+
+
+
+
+Fitur Utama
+
+1. Peta dan Input Lokasi
+
+•
+Pencarian lokasi melalui nama wilayah.
+
+•
+Input koordinat manual.
+
+•
+Pemilihan lokasi melalui peta.
+
+•
+Deteksi lokasi perangkat jika diizinkan pengguna.
+
+•
+Preset wilayah Indonesia dan lokasi global.
+
+•
+Validasi latitude -90..90 dan longitude -180..180 tanpa silent clamping.
+
+2. Multi-Source Telemetry
+
+Sistem menggabungkan data kelembapan tanah, hujan, cuaca, radiasi, vegetasi, topografi, dan tanah. Setiap nilai memiliki sumber, satuan, waktu pengambilan, periode observasi, dan kualitas data.
+
+3. Soil Battery Index
+
+Soil Battery adalah indeks komposit untuk membantu komunikasi dan simulasi, bukan pengukuran langsung kesuburan tanah.
+
+Komponen indikatifnya dapat mencakup:
+
+•
+kondisi karbon organik;
+
+•
+kontribusi bahan organik/residu;
+
+•
+pengambilan hara oleh tanaman;
+
+•
+kontribusi legum;
+
+•
+tekanan kekeringan;
+
+•
+potensi erosi;
+
+•
+kualitas dan keterbatasan tanah.
+
+Skor harus ditampilkan bersama formula, asumsi, dan confidence score.
+
+4. Tiga Skenario Rotasi
+
+Pathway A — Soil Regeneration
+
+Memprioritaskan peningkatan tutupan tanah, pengembalian residu, legum, dan pengurangan tekanan pada tanah.
+
+Pathway B — Drought Resilience
+
+Memprioritaskan tanaman dengan kebutuhan air lebih rendah, umur panen lebih sesuai, dan risiko lebih rendah pada periode defisit air.
+
+Pathway C — Cash-Flow Optimized
+
+Memprioritaskan potensi pendapatan setelah memperhitungkan biaya benih, pupuk, irigasi, tenaga kerja, transportasi, harga lokal, dan risiko gagal panen.
+
+5. Rotasi Empat Periode Adaptif
+
+Sistem menggunakan empat planning windows, bukan mengasumsikan bahwa semua wilayah memiliki empat musim yang sama.
+
+Periode dapat ditentukan dari:
+
+•
+pola hujan lokal;
+
+•
+temperatur;
+
+•
+tanggal awal dan akhir musim tanam;
+
+•
+lintang dan belahan bumi;
+
+•
+sistem irigasi;
+
+•
+umur tanaman;
+
+•
+preferensi petani.
+
+6. Water Balance Chart
+
+Grafik membandingkan input air dan kebutuhan tanaman:
+
+Plain Text
+
+
+Water Balance = precipitation + irrigation - ETc - runoff - drainage
+
+
+
+Nilai ETc dihitung dari ET0 dan koefisien tanaman atau parameter tanaman yang tersedia. Threshold defisit harus dikonfigurasi berdasarkan tanaman, tanah, dan tujuan analisis, bukan dianggap universal.
+
+7. Algorithmic Audit Log
+
+Setiap rekomendasi menampilkan:
+
+•
+alasan tanaman dipilih;
+
+•
+alasan tanaman ditolak;
+
+•
+data yang memicu keputusan;
+
+•
+nilai threshold;
+
+•
+asumsi yang digunakan;
+
+•
+sumber data;
+
+•
+timestamp;
+
+•
+confidence score.
+
+8. Confidence Score
+
+Confidence score mempertimbangkan:
+
+•
+kelengkapan data;
+
+•
+usia data;
+
+•
+resolusi spasial;
+
+•
+kualitas piksel;
+
+•
+kesesuaian provider dengan wilayah;
+
+•
+konsistensi antar-sumber;
+
+•
+ketersediaan data lokal;
+
+•
+ketidakpastian model.
+
+9. Action Sheet
+
+Hasil rekomendasi dapat diekspor sebagai lembar panduan yang mudah dibaca di ponsel dan dibagikan melalui WhatsApp. Action sheet harus menampilkan bahwa angka-angka tertentu merupakan estimasi model.
+
+10. Field Advisor
+
+Asisten agronomi dapat menggunakan RAG berbasis sumber yang dikurasi, seperti FAO, publikasi lembaga penelitian, dan dokumentasi resmi. Jawaban harus menyertakan sitasi, tanggal sumber, dan peringatan ketika bukti lokal tidak cukup.
+
+
+
+
+Metodologi dan Asumsi
+
+Estimasi evapotranspirasi
+
+Sistem harus menyatakan metode yang dipakai, misalnya Hargreaves-Samani atau FAO-56 Penman-Monteith. Pemilihan metode bergantung pada ketersediaan temperatur, kelembapan, angin, dan radiasi.
+
+Radiasi matahari saja tidak cukup untuk mengklaim ET0 yang presisi pada semua kondisi.
+
+Estimasi kebutuhan tanaman
+
+Plain Text
+
+
+ETc = ET0 × Kc
+
+
+
+Nilai Kc bergantung pada jenis tanaman dan fase pertumbuhan. Jika varietas atau fase pertumbuhan tidak diketahui, sistem harus menampilkan nilai sebagai estimasi berbasis default.
+
+Soil Battery
+
+Skor Soil Battery tidak boleh ditulis sebagai kg hara aktual tanpa model neraca hara dan data lapangan yang memadai. Angka perubahan musiman harus diberi label sebagai skor heuristik atau hasil simulasi.
+
+Kontribusi nitrogen
+
+Fiksasi nitrogen legum bergantung pada spesies, biomassa, bakteri simbion, pH, air, fosfor, dan apakah residu dikembalikan ke lahan. Nitrogen yang difiksasi tidak otomatis seluruhnya tersedia untuk tanaman berikutnya.
+
+Profit
+
+Plain Text
+
+
+Estimated Profit =
+expected yield × local price
+− seed cost
+− fertilizer cost
+− pesticide cost
+− labor cost
+− irrigation cost
+− transport cost
+− risk penalty
+
+
+
+Jika harga atau biaya lokal tidak tersedia, sistem harus menggunakan skenario harga dan menampilkan keterbatasan tersebut.
+
+
+
+
+Provenansi Data
+
+Setiap provider mengembalikan metadata minimal berikut:
+
+JSON
+
+
+{
+  "source": "SOILGRIDS_GLOBAL",
+  "provider": "ISRIC",
+  "product": "SoilGrids 250m v2.0",
+  "fetchedAt": "2026-11-14T00:00:00Z",
+  "observationPeriod": "standard depth layer 0-30cm",
+  "spatialResolution": "250m",
+  "temporalResolution": "static soil map",
+  "cached": false,
+  "fallback": false,
+  "fallbackReason": null,
+  "uncertaintyAvailable": true
+}
+
+
+
+Contoh nilai source:
+
+Plain Text
+
+
+LANDSAT_GLOBAL
+MODIS_GLOBAL
+SMAP_GLOBAL
+GPM_IMERG_GLOBAL
+NASA_POWER_GLOBAL
+SRTM_GLOBAL
+SOILGRIDS_GLOBAL
+GLDAS_GLOBAL
+FAO_GAEZ_GLOBAL
+SSURGO_US
+CDL_US
+NASS_US
+LOCAL_INDONESIA
+REGIONAL_FALLBACK
+
+
+
+fetchedAt adalah waktu pengambilan data dari jaringan atau cache. Field ini tidak boleh dianggap sebagai waktu observasi fisik.
+
+
+
+
+Arsitektur Teknologi
+
+•
+Frontend: Next.js App Router, React, TypeScript.
+
+•
+Styling: Tailwind CSS.
+
+•
+Peta: Leaflet dengan basemap yang sesuai lisensi.
+
+•
+Visualisasi: Recharts atau library chart setara.
+
+•
+State management: Zustand.
+
+•
+Offline support: Web App Manifest dan Service Worker.
+
+•
+Ekspor gambar: html-to-image atau renderer server-side.
+
+•
+API layer: Next.js Route Handlers sebagai proxy provider.
+
+•
+Cache: in-memory atau persistent cache dengan TTL dan metadata stale time.
+
+•
+Validation: schema validation untuk koordinat, unit, missing values, dan response provider.
+
+•
+Security: API key hanya disimpan di server-side environment variable dan tidak dikirim langsung dari browser ke provider.
+
+Contoh endpoint:
+
+Plain Text
+
+
+/api/location
+/api/telemetry
+/api/soil-profile
+/api/vegetation
+/api/water-balance
+/api/rotation-scenarios
+/api/provenance
+/api/field-advisor
+
+
+
+
+
+
+Keterbatasan
+
+•
+Data satelit memiliki resolusi spasial dan temporal yang berbeda.
+
+•
+SMAP dan sebagian data meteorologi tidak cocok dianggap sebagai pengukuran presisi untuk setiap petak kecil.
+
+•
+SoilGrids adalah prediksi global, bukan pengganti survei tanah lokal.
+
+•
+Data hujan satelit dapat memiliki bias dan sebaiknya divalidasi dengan stasiun atau data lokal jika tersedia.
+
+•
+Citra optik dapat terganggu awan, asap, dan bayangan.
+
+•
+Data tanaman global tidak selalu dapat membedakan jenis komoditas secara akurat.
+
+•
+SSURGO, CDL, dan USDA NASS hanya digunakan pada cakupan regional yang didukung.
+
+•
+Harga komoditas, biaya input, dan estimasi hasil dapat berubah cepat.
+
+•
+Indeks Soil Battery bukan pengukuran laboratorium kesuburan tanah.
+
+•
+Estimasi penghematan air dan kontribusi nitrogen adalah hasil model, bukan jaminan lapangan.
+
+•
+Rekomendasi perlu divalidasi oleh petani, PPL, dan agronom setempat sebelum diterapkan pada skala besar.
+
+
+
+
+Menjalankan Proyek
+
+Prasyarat
+
+•
+Node.js 20 atau lebih baru.
+
+•
+npm, pnpm, atau yarn.
+
+•
+API key provider yang diperlukan, jika digunakan.
+
+Instalasi
+
+Bash
+
+
+git clone <repository-url>
 cd terrashaft-app
-
-# 2. Pasang dependensi
 npm install
 
-# 3. Jalankan pengujian unit test dan integrasi proxy (1.296 permutasi + 12 kriteria API)
+
+
+Environment variables
+
+Buat file .env.local dan isi hanya dengan provider yang digunakan:
+
+Plain Text
+
+
+NASA_POWER_BASE_URL=https://power.larc.nasa.gov/api/temporal
+SOILGRIDS_BASE_URL=<soilgrids-endpoint>
+GPM_BASE_URL=<gpm-endpoint>
+LANDSAT_PROVIDER=<provider>
+MAP_TILE_URL=<tile-url>
+
+
+
+Jangan commit file .env.local atau API key ke repository.
+
+Menjalankan test dan development server
+
+Bash
+
+
 npm test
-
-# 4. Jalankan linting kode
 npm run lint
-
-# 5. Jalankan server pengembangan lokal
 npm run dev
-```
 
-Buka peramban Anda di [http://localhost:3000](http://localhost:3000).
 
-### Membangun Versi Produksi
-```bash
+
+Buka:
+
+Plain Text
+
+
+http://localhost:3000
+
+
+
+Production build
+
+Bash
+
+
 npm run build
 npm run start
-```
 
----
 
-## 7. Sitasi & Sumber Data Ilmiah
 
-* **NASA POWER Agroclimatology Community**: Data harian cuaca, radiasi matahari harian permukaan bumi (CERES), dan asimilasi atmosfer (GMAO MERRA-2).
-* **NASA SMAP (Soil Moisture Active Passive)**: Asimilasi Level-4 *Root-Zone Soil Wetness* (`GWETROOT`, 0–100 cm).
-* **NASA GPM (Global Precipitation Measurement)**: Algoritma presipitasi global IMERG (`PRECTOTCORR`).
-* **ISRIC World Soil Information**: SoilGrids 250m v2.0 (Tekstur pasir/debu/liat, C-Organik, pH, KTK).
-* **FAO Irrigation and Drainage Paper No. 56**: Metodologi Hargreaves-Samani ($ET_0$) dan Koefisien Tanaman ($K_c$).
+Test yang disarankan
 
----
+•
+Validasi koordinat.
 
-## 8. Tim Pengembang (NASA Space Apps Challenge)
+•
+Unit conversion dan missing-value handling.
 
-* **Zulfa Fahmiy Al Murtadlo** (`@varosaghasi`) - Team Owner
-* **Mohammad Arga** (`@rifaldhi`)
-* **Moch. Hafidz zawawi** (`@zawacaprio`)
-* **Stiven Josh Peter Siburian** (`@stevenjoshburian`)
-* **Ravi Arnan Irianto** (`@raviarnan`)
+•
+Provider fallback berdasarkan negara.
 
----
-*© 2026 TerraShaft Team - Built for Resilient Agriculture & Space-to-Field Impact.*
+•
+Perhitungan ET0 dan ETc.
+
+•
+Perhitungan water balance.
+
+•
+Ranking skenario rotasi.
+
+•
+Audit log dan provenance.
+
+•
+Respons ketika provider timeout atau tidak tersedia.
+
+•
+Tidak adanya API key pada bundle frontend.
+
+
+
+
+Sitasi dan Sumber Data
+
+•
+NASA Earthdata untuk katalog data observasi bumi.
+
+•
+NASA Landsat untuk pengamatan permukaan dan vegetasi.
+
+•
+NASA SMAP untuk estimasi kelembapan tanah.
+
+•
+NASA GPM IMERG untuk estimasi presipitasi global.
+
+•
+NASA POWER untuk data solar dan meteorologi global.
+
+•
+NASA SRTM untuk elevasi dan topografi.
+
+•
+ISRIC SoilGrids untuk data tanah global.
+
+•
+NASA GLDAS untuk deret waktu kondisi permukaan global.
+
+•
+FAO GAEZ untuk kesesuaian agroekologi.
+
+•
+USDA NRCS SSURGO/WSS untuk data tanah Amerika Serikat.
+
+•
+USDA NASS CDL/CropScape untuk klasifikasi tanaman Amerika Serikat.
+
+•
+USDA NASS QuickStats untuk statistik pertanian Amerika Serikat.
+
+•
+BPS, Kementerian Pertanian, BMKG, dan sumber lokal terkait untuk data Indonesia jika tersedia.
+
+•
+FAO-56 untuk metodologi evapotranspirasi dan koefisien tanaman.
+
+
+
+
+Tim
+
+•
+Zulfa Fahmiy Al Murtadlo (@varosaghasi) — Team Owner
+
+•
+Mohammad Arga (@rifaldhi)
+
+•
+Moch. Hafidz Zawawi (@zawacaprio)
+
+•
+Stiven Josh Peter Siburian (@stevenjoshburian)
+
+•
+Ravi Arnan Irianto (@raviarnan)
+
+
+
+
+Lisensi
+
+Tambahkan lisensi proyek dan atribusi masing-masing provider data sesuai ketentuan penggunaan sumber yang dipakai.
+
+© 2026 TerraShaft Team — Built for resilient agriculture and space-to-field impact.
+
