@@ -2,6 +2,41 @@
 
 All notable changes to the TerraShaft project are documented in this file.
 
+## [Milestone 3.3] - 2026-11-15 - Landing Page Polish, Lenis Smooth Curtain Transition, Scroll-Expand Morph & Video Showcase
+
+### Summary
+Elevated the public landing page experience with an architectural curtain transition powered by Lenis smooth scroll, an adaptive high-performance navbar, a 3D archipelago telemetry slab with glowing quantitative metrics, the "Scroll-Expand" fullscreen morph section transitioning from "Observe. Simulate. Harvest." into 3 Optimization Pathways, subtle aurora gradient text styling, and an interactive floating window video showcase in the Global Coverage section.
+
+### Added
+- **Lenis Smooth Scroll Engine & Curtain Transition (`src/app/page.tsx`, `globals.css`)**:
+  - Inertial smooth scrolling engine with custom cubic bezier easing and wheel multiplier.
+  - Architectural curtain overlap transition: fixed hero underlay with an overlapping dark content sheet and top ambient drop shadow.
+  - Enforced `overscroll-behavior-y: none` to eliminate rubber-band bounce issues.
+- **Adaptive Sticky Header / Navigation Bar (`src/app/page.tsx`)**:
+  - Scroll-threshold transition from transparent minimal header to frosted carbon glass with solid cyan CTA button and threshold-ref guarding to eliminate per-tick re-renders.
+- **3D Archipelago Telemetry Visualization (`#science`, `indonesia-3d-telemetry.webp`)**:
+  - High-resolution transparent 3D telemetry slab of the Indonesian archipelago positioned between headline and numerical benchmarks.
+  - Hero-gradient typography on quantitative benchmarks with strict non-wrapping numbers.
+- **The "Scroll-Expand" Fullscreen Morph (`ScrollExpandSection.tsx`, `#pathways`)**:
+  - Scrollytelling interactive module utilizing Hermite smoothstep curve `e = p² * (3 - 2p)`.
+  - Expanding outer window from centered card to 100dvh fullscreen with media counter-scaling (`zoom/sx, zoom/sy`) and corner radius morph (24px to 0px).
+  - Fixed-scale overlapping headline `Observe. Simulate. Harvest.` with responsive viewport bounds.
+  - Faded reveal of the 3 Optimization Pathways (Max Soil Regeneration, Drought Resilience, Cash-Flow Optimized) with clean precision telemetry pips (anti-slop).
+  - 110ms deferred backdrop blur after scrolling stops for sustained 60fps rendering performance.
+- **Subtle Atmospheric Aurora Headline Gradient (`.aurora-text`, `globals.css`)**:
+  - Shifting gradient animation spanning 14 seconds across pure Cyan, Teal, Sky Blue, and Ice Blue without lime/green pollution.
+- **Interactive Global Coverage Video Showcase (`#hotspots`, `demo-field-map.mp4`)**:
+  - 20-second web-ready 60fps video demo compressed from 44.6 MB to 5.7 MB with `+faststart` streaming.
+  - Floating glassmorphism window frame with native 16:10 aspect ratio and deep drop shadow, set against Planet-style orbital ocean satellite imagery (`satellite-ocean.jpg`).
+
+### Changed & Cleaned
+- **Cleaned Redundant Sections**:
+  - Removed duplicate standalone `#pathways` section and duplicate pre-footer card in `PlanetFooter.tsx`.
+  - Removed unused `CheckCircle2` imports from page components.
+  - Replaced generic SaaS checkmark icons with precision telemetry status indicators.
+- **Performance & Thermal Optimization**:
+  - Wrapped CPU-intensive builds and tests with `nice -n 19`.
+
 ## [Milestone 3.2] - 2026-11-14 - NASA Space Apps Challenge 2026 Resource Hub, Enriched RAG & Overview Dashboard Refinements
 
 ### Summary
