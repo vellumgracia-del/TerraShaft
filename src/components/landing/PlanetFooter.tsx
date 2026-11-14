@@ -97,26 +97,7 @@ export default function PlanetFooter() {
       </div>
 
       <div className="relative max-w-[1280px] mx-auto px-6 lg:px-12 pt-16 pb-12 z-10">
-        {/* 1. Pre-Footer Floating CTA Card (See. Decide. Act.) */}
-        <div className="mb-20 rounded-xl bg-[#101622]/90 border border-[#1E2738] p-8 sm:p-12 md:p-14 text-center shadow-2xl backdrop-blur-sm max-w-4xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl md:text-[42px] font-bold text-white tracking-tight">
-            See. Decide. Act.
-          </h2>
-          <p className="mt-4 text-sm sm:text-base text-[#9AA5B5] max-w-2xl mx-auto leading-relaxed">
-            TerraShaft Insights Platform is a biophysical compute engine where daily Earth observation telemetry,
-            soil battery predictive modeling, and adaptive rotation pathways converge to safeguard food resilience.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <Link
-              href="/overview"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-[4px] bg-[#008A93] hover:bg-[#00A1AB] text-white text-sm font-semibold transition-all shadow-md active:scale-[0.98]"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-
-        {/* 2. Main 4-Column Directory Grid */}
+        {/* Main 4-Column Directory Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 text-[12.5px] leading-relaxed">
           {/* Column 1: PRODUCTS & SOLUTIONS */}
           <div className="flex flex-col gap-8">

@@ -499,8 +499,34 @@ async function runTests() {
       console.log('✓ Acceptance Criterion 14 (Public Geocoding & DEM Elevation) verified.');
     }
 
+    // -------------------------------------------------------------
+    // CRITERION 15: DUAL-LAYER CONUS SSURGO VS GLOBAL SOIL FALLBACK
+    // -------------------------------------------------------------
+    console.log('\n[CRITERION 15] Testing Dual-Layer CONUS SSURGO vs Global Soil Fallback...');
+    {
+      globalThis.fetch = async () => {
+        throw new Error('SoilGrids timeout simulation');
+      };
+
+      // CONUS coordinates: Iowa Corn Belt (lat 41.5, lon -93.6)
+      const conusReq = new Request('http://localhost:3000/api/soil-profile?lat=41.50&lon=-93.60');
+      const conusRes = await getSoilProfile(conusReq);
+      const conusData = await conusRes.json();
+      assert.strictEqual(conusData.source, 'REGIONAL_FALLBACK');
+      assert.ok(conusData.observationPeriod.includes('USDA SSURGO'));
+      assert.strictEqual(conusData.soc, 1.65);
+
+      // Non-CONUS coordinates: Sumba Timur (lat -9.65, lon 120.26)
+      const nonConusReq = new Request('http://localhost:3000/api/soil-profile?lat=-9.65&lon=120.26');
+      const nonConusRes = await getSoilProfile(nonConusReq);
+      const nonConusData = await nonConusRes.json();
+      assert.strictEqual(nonConusData.source, 'REGIONAL_FALLBACK');
+      assert.strictEqual(nonConusData.observationPeriod, 'Regional Tropical Soil Profile Estimate (Depth 0-30cm)');
+      console.log('✓ Acceptance Criterion 15 (Dual-Layer CONUS SSURGO vs Global Soil Fallback) verified.');
+    }
+
     console.log('\n================================================================');
-    console.log('ALL 14 ACCEPTANCE CRITERIA UNIT & INTEGRATION TESTS PASSED 100%!');
+    console.log('ALL 15 ACCEPTANCE CRITERIA UNIT & INTEGRATION TESTS PASSED 100%!');
     console.log('================================================================');
   } finally {
     globalThis.fetch = originalFetch;

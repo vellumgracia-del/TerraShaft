@@ -19,6 +19,9 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 
+export type DatasetDomainGroup = 'soil' | 'weather' | 'crop-land' | 'water-topo' | 'agri-econ';
+export type GeographicProfile = 'global-core' | 'indonesia-profile' | 'us-regional';
+
 export interface ChallengeDataset {
   id: string;
   name: string;
@@ -26,6 +29,10 @@ export interface ChallengeDataset {
   agency: string;
   agencyCategory: 'NASA' | 'ESA' | 'USDA' | 'USGS' | 'ECMWF' | 'FAO' | 'OSU / Partners';
   category: 'nasa-satellites' | 'space-partners' | 'usda-usgs' | 'climate-reanalysis';
+  domainGroup: DatasetDomainGroup;
+  geographicProfile: GeographicProfile;
+  geographicScopeNote: string;
+  isCoreBaseline: boolean;
   resolution: string;
   frequency: string;
   variables: string[];
@@ -45,6 +52,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA JPL & GSFC',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
+    domainGroup: 'soil',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Estimasi kelembapan zona perakaran berbasis asimilasi model L4.',
+    isCoreBaseline: true,
     resolution: '9 km / 36 km (L4 root-zone model)',
     frequency: '2–3 hari',
     variables: ['Surface Soil Moisture (0-5 cm)', 'Root-Zone Soil Wetness (0-100 cm)', 'Freeze/Thaw State'],
@@ -61,6 +72,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA GSFC & JAXA',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
+    domainGroup: 'weather',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Akumulasi hujan dan deteksi presipitasi ekstrem resolusi 0.1° (~10 km).',
+    isCoreBaseline: true,
     resolution: '0.1° (~10 km)',
     frequency: '30 menit / Harian',
     variables: ['Precipitation Rate (mm/jam)', 'Accumulated Rainfall (mm)', 'Storm Frequency'],
@@ -77,6 +92,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA & USGS EROS',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
+    domainGroup: 'crop-land',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Landsat 30m untuk detail spasial, MODIS/VIIRS untuk dinamika temporal harian.',
+    isCoreBaseline: true,
     resolution: '30m (Landsat) · 250m–1km (MODIS/VIIRS)',
     frequency: 'Harian (MODIS) / 8–16 hari (Landsat)',
     variables: ['Surface Reflectance', 'NDVI (Normalized Difference Veg Index)', 'EVI', 'Bare Ground Windows'],
@@ -93,6 +112,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA Langley Research Center (LaRC)',
     agencyCategory: 'NASA',
     category: 'climate-reanalysis',
+    domainGroup: 'weather',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Suhu, radiasi surya, dan kelembapan global untuk perhitungan ET0 FAO-56.',
+    isCoreBaseline: true,
     resolution: '0.5° x 0.5° (~50 km)',
     frequency: 'Harian & Klimatologi Historis',
     variables: ['Solar Radiation (ALLSKY_SFC_SW_DWN)', 'T2M (Min/Max/Mean)', 'RH2M', 'PRECTOTCORR', 'Wind Speed'],
@@ -109,6 +132,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA & NGA',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
+    domainGroup: 'water-topo',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Topografi 30m global untuk analisis lereng, limpasan, dan risiko erosi.',
+    isCoreBaseline: true,
     resolution: '1 arc-second (~30 meter)',
     frequency: 'Model Topografi Global Terstandarisasi',
     variables: ['Elevation (m)', 'Slope Gradient (%)', 'Aspect', 'Flow Accumulation'],
@@ -125,6 +152,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA JPL (ISS Payload)',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
+    domainGroup: 'crop-land',
+    geographicProfile: 'indonesia-profile',
+    geographicScopeNote: 'Penguatan Indonesia: Deteksi hotspot panas dan stres air tanaman di wilayah tadah hujan (NTT, Madura).',
+    isCoreBaseline: false,
     resolution: '70 meter',
     frequency: '1–5 hari (Orbit ISS)',
     variables: ['Land-Surface Temperature (LST)', 'Evapotranspiration (ET)', 'Evaporative Stress Index (ESI)'],
@@ -141,6 +172,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA & University of Maryland',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
+    domainGroup: 'crop-land',
+    geographicProfile: 'indonesia-profile',
+    geographicScopeNote: 'Penguatan Indonesia: Struktur vertikal kanopi LiDAR untuk agroforestri dan perkebunan pohon pelindung.',
+    isCoreBaseline: false,
     resolution: '25 meter footprint LiDAR',
     frequency: 'Misi LiDAR ISS Terkalibrasi',
     variables: ['Canopy Height Profile', 'Leaf Area Index (LAI)', 'Above-Ground Biomass Density (AGBD)'],
@@ -159,6 +194,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'European Space Agency (ESA)',
     agencyCategory: 'ESA',
     category: 'space-partners',
+    domainGroup: 'crop-land',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Citra optik 10m bebas akses untuk delineasi petak mikro dan analisis klorofil.',
+    isCoreBaseline: false,
     resolution: '10m / 20m / 60m',
     frequency: '5 hari (Konstelasi 2A/2B)',
     variables: ['13 Spectral Bands', 'Red-Edge Chlorophyll Bands', 'SWIR Moisture Bands', 'NDWI'],
@@ -175,6 +214,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'ECMWF / Copernicus C3S',
     agencyCategory: 'ECMWF',
     category: 'space-partners',
+    domainGroup: 'weather',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Reanalisis atmosfer global 31km kontinu untuk validasi dan fitur deret waktu.',
+    isCoreBaseline: false,
     resolution: '31 km grid',
     frequency: 'Per Jam (Hourly) Continuous',
     variables: ['Hourly Temperature', 'Soil Temperature (4 Layers)', 'Relative Humidity', 'Solar Radiation', 'Wind Vector'],
@@ -193,6 +236,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA Agricultural Research Service (ARS)',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'agri-econ',
+    geographicProfile: 'indonesia-profile',
+    geographicScopeNote: 'Konteks Sekunder: Sumber data riset percobaan lapang untuk kurva serapan hara N-P-K.',
+    isCoreBaseline: false,
     resolution: 'Multi-scale Field Experiments',
     frequency: 'Open Access Repository',
     variables: ['Soil Property Measurements', 'Crop Phenology', 'Management Practices', 'Yield Trial Datasets'],
@@ -209,6 +256,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA Natural Resources Conservation Service (NRCS)',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'soil',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Peta tanah survei resmi USDA khusus teritori Amerika Serikat.',
+    isCoreBaseline: false,
     resolution: '1:12.000 hingga 1:24.000 Map Scale',
     frequency: 'Pembaruan Tahunan Resmi',
     variables: ['Soil Maps', 'Texture by Horizon', 'Drainage Class', 'Hydrologic Rating', 'Compaction Risk'],
@@ -225,6 +276,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA National Agricultural Statistics Service (NASS)',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'crop-land',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Klasifikasi tutupan tanaman pangan tahunan 30m khusus daratan AS.',
+    isCoreBaseline: false,
     resolution: '30 meter',
     frequency: 'Tahunan (Annual Census)',
     variables: ['Cropland Classifications', 'Crop Types (Corn, Soy, Sorghum, Wheat, Alfalfa)', 'Rotation Sequence History'],
@@ -241,6 +296,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA NRCS',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'soil',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Database fisika tanah detail survei lapang khusus Amerika Serikat.',
+    isCoreBaseline: false,
     resolution: 'Field-scale (SSURGO) · Regional (STATSGO2)',
     frequency: 'Database Terkalibrasi Berkelanjutan',
     variables: ['Soil Texture Fractions', 'Organic Matter (SOC %)', 'Available Water Capacity (AWC)', 'Restrictive Hardpan Layers'],
@@ -257,6 +316,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA Farm Service Agency (FSA)',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'crop-land',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Foto udara ortofoto sub-meter khusus puncak musim tanam AS.',
+    isCoreBaseline: false,
     resolution: '0.5 – 1 meter (Sub-Meter Ortofoto)',
     frequency: 'Siklus 2–3 Tahun Masa Tanam',
     variables: ['Sub-Meter True Color / NIR Imagery', 'Field Boundary Delineation', 'Micro-Terrace Verification'],
@@ -273,6 +336,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'Multi-Agency Consortium (MRLC) / USGS',
     agencyCategory: 'USGS',
     category: 'usda-usgs',
+    domainGroup: 'crop-land',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Klasifikasi tutupan dan transisi lahan 30m khusus Amerika Serikat.',
+    isCoreBaseline: false,
     resolution: '30 meter',
     frequency: 'Rilis Berkala Multi-Dekade',
     variables: ['Land Cover Types', 'Impervious Surface %', 'Tree Canopy %', 'Agricultural Land Transition'],
@@ -289,6 +356,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA GSFC & NOAA NCEP',
     agencyCategory: 'NASA',
     category: 'climate-reanalysis',
+    domainGroup: 'weather',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: GLDAS aktif untuk deret waktu hidrologi global. NLDAS khusus regional Amerika Utara.',
+    isCoreBaseline: true,
     resolution: '0.125° (NLDAS) / 0.25° (GLDAS)',
     frequency: 'Sub-harian hingga Harian Deret Waktu',
     variables: ['Layered Soil Moisture (0-10, 10-40, 40-100, 100-200cm)', 'Soil Temperature', 'Surface Runoff', 'ET Fluxes'],
@@ -305,6 +376,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'NASA, USGS, DRI & EDF Consortium',
     agencyCategory: 'USGS',
     category: 'usda-usgs',
+    domainGroup: 'water-topo',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Estimasi evapotranspirasi aktual ensemble 6 model satelit kawasan barat AS.',
+    isCoreBaseline: false,
     resolution: '30 meter (Field-Scale)',
     frequency: 'Harian / Bulanan',
     variables: ['Actual Evapotranspiration (ETa)', 'Reference ET (ETr/ETo)', 'Ensemble Satellite ET (6 Models)'],
@@ -321,6 +396,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'US Forest Service & USGS',
     agencyCategory: 'USGS',
     category: 'usda-usgs',
+    domainGroup: 'crop-land',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Lapisan vegetasi dan potensi bahan bakar biomassa khusus Amerika Serikat.',
+    isCoreBaseline: false,
     resolution: '30 meter',
     frequency: 'Pembaruan Berkala Terjadwal',
     variables: ['Existing Vegetation Type (EVT)', 'Canopy Bulk Density', 'Fuel Models', 'Landscape Structure'],
@@ -337,6 +416,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA Agricultural Marketing Service',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'agri-econ',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Tren harga dan perdagangan komoditas pertanian domestik Amerika Serikat.',
+    isCoreBaseline: false,
     resolution: 'Pasar Regional & Pusat Distribusi',
     frequency: 'Harian / Mingguan',
     variables: ['Commodity Prices', 'Wholesale Volume Trends', 'Supply-Demand Indicators'],
@@ -353,6 +436,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USDA NASS',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
+    domainGroup: 'agri-econ',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Sensus statistik produktivitas dan hasil panen per county Amerika Serikat.',
+    isCoreBaseline: false,
     resolution: 'Tingkat Kabupaten (County) & Negara Bagian',
     frequency: 'Sensus & Survei Tahunan',
     variables: ['Historical Crop Yields', 'Planted & Harvested Acreage', 'Crop Rotation Frequency', 'Irrigation Adoption'],
@@ -371,6 +458,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'Oregon State University (OSU)',
     agencyCategory: 'OSU / Partners',
     category: 'climate-reanalysis',
+    domainGroup: 'weather',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Normal iklim terkoreksi topografi mikro khusus daratan AS.',
+    isCoreBaseline: false,
     resolution: '800m – 4km Topographically Corrected',
     frequency: 'Harian, Bulanan, Normal 30-Tahun',
     variables: ['PRISM Precipitation', 'Mean/Min/Max Temperature', 'Dewpoint', 'Frost/Freeze Thresholds'],
@@ -387,6 +478,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'FAO & IIASA',
     agencyCategory: 'FAO',
     category: 'climate-reanalysis',
+    domainGroup: 'agri-econ',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Zonasi agro-ekologis dan kesesuaian biofisik lahan puluhan komoditas global.',
+    isCoreBaseline: true,
     resolution: '5 arc-minute (~9 km)',
     frequency: 'Edisi Global v4',
     variables: ['Agro-Climatic Crop Suitability', 'Soil Constraints (Salinity, Depth, Texture)', 'Potential Yield Indices'],
@@ -403,6 +498,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'Colorado State University & NOAA NWS',
     agencyCategory: 'OSU / Partners',
     category: 'climate-reanalysis',
+    domainGroup: 'weather',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Jaringan observasi curah hujan warga dan penyuluh di Amerika Utara.',
+    isCoreBaseline: false,
     resolution: 'Titik Stasiun Pengamat Relawan',
     frequency: 'Harian (Crowdsourced In-Situ)',
     variables: ['Daily Ground Precipitation (Rain/Snow)', 'Micro-Rainstorm Events', 'Field Accumulation'],
@@ -419,6 +518,10 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     agency: 'USGS Water Resources Mission Area',
     agencyCategory: 'USGS',
     category: 'usda-usgs',
+    domainGroup: 'water-topo',
+    geographicProfile: 'us-regional',
+    geographicScopeNote: 'Regional Enhancement AS: Data debit aliran sungai dan tinggi muka air tanah stasiun terestrial AS.',
+    isCoreBaseline: false,
     resolution: 'Ribuan Stasiun Pengukur Aliran & Sumur Bor',
     frequency: 'Near-Realtime (15-menit) & Harian',
     variables: ['Groundwater Levels', 'Streamflow Discharge (cfs/m3s)', 'River Gauge Stages', 'Water Quality'],
@@ -431,38 +534,82 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
 ];
 
 export default function NasaChallengeResources() {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeProfile, setActiveProfile] = useState<'all' | 'global-core' | 'indonesia' | 'us-regional'>('all');
+  const [activeGroup, setActiveGroup] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const categories = [
-    { id: 'all', label: 'Semua Dataset', count: NASA_CHALLENGE_DATASETS.length },
+  const domainGroups = [
+    { id: 'all', label: 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
     {
-      id: 'nasa-satellites',
-      label: 'Satelit NASA',
-      count: NASA_CHALLENGE_DATASETS.filter((d) => d.category === 'nasa-satellites').length
+      id: 'soil',
+      label: 'Kondisi Tanah',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'soil').length
     },
     {
-      id: 'space-partners',
-      label: 'Mitra Antariksa (ESA & ECMWF)',
-      count: NASA_CHALLENGE_DATASETS.filter((d) => d.category === 'space-partners').length
+      id: 'weather',
+      label: 'Cuaca & Iklim',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'weather').length
     },
     {
-      id: 'usda-usgs',
-      label: 'USDA & USGS Lahan/Tanah',
-      count: NASA_CHALLENGE_DATASETS.filter((d) => d.category === 'usda-usgs').length
+      id: 'crop-land',
+      label: 'Tanaman & Lahan',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'crop-land').length
     },
     {
-      id: 'climate-reanalysis',
-      label: 'Iklim & Global Normals',
-      count: NASA_CHALLENGE_DATASETS.filter((d) => d.category === 'climate-reanalysis').length
+      id: 'water-topo',
+      label: 'Air & Topografi',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'water-topo').length
+    },
+    {
+      id: 'agri-econ',
+      label: 'Kelayakan & Ekonomi',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'agri-econ').length
+    }
+  ];
+
+  const profilePills = [
+    { id: 'all', label: 'Semua (24 Dataset)', count: NASA_CHALLENGE_DATASETS.length },
+    {
+      id: 'global-core',
+      label: 'Global Core (Wajib)',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'global-core').length
+    },
+    {
+      id: 'indonesia',
+      label: 'Profil Indonesia (+ ECOSTRESS & GEDI)',
+      count: NASA_CHALLENGE_DATASETS.filter(
+        (d) => d.geographicProfile === 'global-core' || d.geographicProfile === 'indonesia-profile'
+      ).length
+    },
+    {
+      id: 'us-regional',
+      label: 'Regional Amerika Serikat (Enhancement)',
+      count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'us-regional').length
     }
   ];
 
   const filteredDatasets = useMemo(() => {
     return NASA_CHALLENGE_DATASETS.filter((item) => {
-      const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-      if (!matchesCategory) return false;
+      // Profile Filter
+      if (activeProfile === 'global-core' && item.geographicProfile !== 'global-core') {
+        return false;
+      }
+      if (
+        activeProfile === 'indonesia' &&
+        item.geographicProfile !== 'global-core' &&
+        item.geographicProfile !== 'indonesia-profile'
+      ) {
+        return false;
+      }
+      if (activeProfile === 'us-regional' && item.geographicProfile !== 'us-regional') {
+        return false;
+      }
 
+      // Domain Group Filter
+      const matchesGroup = activeGroup === 'all' || item.domainGroup === activeGroup;
+      if (!matchesGroup) return false;
+
+      // Text Search
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
       return (
@@ -472,10 +619,11 @@ export default function NasaChallengeResources() {
         item.description.toLowerCase().includes(q) ||
         item.adaptationValue.toLowerCase().includes(q) ||
         item.terraShaftRole.toLowerCase().includes(q) ||
+        item.geographicScopeNote.toLowerCase().includes(q) ||
         item.variables.some((v) => v.toLowerCase().includes(q))
       );
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeProfile, activeGroup, searchQuery]);
 
   const getStatusColor = (status: ChallengeDataset['statusBadge']) => {
     switch (status) {
@@ -488,6 +636,41 @@ export default function NasaChallengeResources() {
       case 'Calibrated Reference':
       default:
         return 'bg-[#20242B] text-[#A6AFB8] border-[#2C313A]';
+    }
+  };
+
+  const getProfileBadge = (profile: GeographicProfile) => {
+    switch (profile) {
+      case 'global-core':
+        return {
+          label: 'GLOBAL CORE',
+          style: 'bg-[#163A40] text-[#00C2CC] border-[#00C2CC]/40 font-semibold'
+        };
+      case 'indonesia-profile':
+        return {
+          label: 'INDONESIA FIT',
+          style: 'bg-[#133324] text-[#34D399] border-[#34D399]/40 font-semibold'
+        };
+      case 'us-regional':
+        return {
+          label: 'US REGIONAL',
+          style: 'bg-[#252836] text-[#A5B4FC] border-[#A5B4FC]/30'
+        };
+    }
+  };
+
+  const getDomainLabel = (group: DatasetDomainGroup) => {
+    switch (group) {
+      case 'soil':
+        return 'Kondisi Tanah';
+      case 'weather':
+        return 'Cuaca & Iklim';
+      case 'crop-land':
+        return 'Tanaman & Lahan';
+      case 'water-topo':
+        return 'Air & Topografi';
+      case 'agri-econ':
+        return 'Kelayakan & Ekonomi';
     }
   };
 
@@ -523,7 +706,7 @@ export default function NasaChallengeResources() {
           <p className="mt-2 text-sm text-[#9BA3AE] leading-relaxed max-w-4xl">
             Arsitektur data lengkap TerraShaft yang mengintegrasikan 24 dataset resmi tantangan NASA Space Apps 2026:
             mulai dari observasi satelit perakaran SMAP, presipitasi GPM IMERG, indeks multispektral Landsat dan Sentinel-2,
-            hingga model tanah SSURGO/SoilGrids dan neraca agroklimat FAO GAEZ.
+            hingga model tanah SoilGrids/SSURGO dan neraca agroklimat FAO GAEZ.
           </p>
         </div>
 
@@ -539,28 +722,91 @@ export default function NasaChallengeResources() {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
+      {/* Geographic Profiling & Dataset Optimization Callout */}
+      <div className="p-5 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-3.5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#242831] pb-3">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-[#00C2CC]" />
+            <h2 className="text-sm font-semibold text-white tracking-tight">
+              Arsitektur Profil Wilayah: Global Core, Penguatan Indonesia, & Regional AS
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 bg-[#20242B] p-1 rounded-[3px] border border-[#2C313A]">
+            {profilePills.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setActiveProfile(p.id as any)}
+                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium transition-all ${
+                  activeProfile === p.id
+                    ? 'bg-[#00C2CC] text-[#121417] font-semibold shadow-xs'
+                    : 'text-[#A6AFB8] hover:text-white'
+                }`}
+              >
+                <span>{p.label}</span>
+                <span className={`ml-1 text-[10px] font-mono px-1 py-0.2 rounded-full ${
+                  activeProfile === p.id ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#16191E] text-[#8A949E]'
+                }`}>
+                  {p.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
+          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#00C2CC] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#00C2CC]" />
+              1. Global Core (Universal)
+            </span>
+            <p className="text-[#8A949E]">
+              Selalu aktif di semua lokasi dunia termasuk Indonesia: Landsat, MODIS/VIIRS, SMAP, GPM/IMERG, NASA POWER, SRTM, ISRIC SoilGrids, GLDAS, dan FAO GAEZ.
+            </p>
+          </div>
+          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#34D399] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#34D399]" />
+              2. Penguatan Indonesia
+            </span>
+            <p className="text-[#8A949E]">
+              Global Core ditambah ECOSTRESS (deteksi hotspot suhu & stres air di wilayah semi-arid NTT/Madura/Gunungkidul) serta GEDI (struktur kanopi agroforestri).
+            </p>
+          </div>
+          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#A5B4FC] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#A5B4FC]" />
+              3. Regional Amerika Serikat
+            </span>
+            <p className="text-[#8A949E]">
+              Modul enhancement khusus daratan AS (CONUS): SSURGO/WSS, CDL, USDA NASS, PRISM, NAIP, NLCD, NLDAS, OpenET, dan USGS NWIS. Tidak dipaksakan ke Indonesia.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Domain Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#16191E] border border-[#2C313A] p-3 rounded-[4px]">
-        {/* Category Pills */}
+        {/* Domain Group Pills */}
         <div className="flex flex-wrap items-center gap-1.5">
-          {categories.map((c) => (
+          {domainGroups.map((g) => (
             <button
-              key={c.id}
+              key={g.id}
               type="button"
-              onClick={() => setActiveCategory(c.id)}
+              onClick={() => setActiveGroup(g.id)}
               className={`px-3 py-1.5 rounded-[3px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                activeCategory === c.id
+                activeGroup === g.id
                   ? 'bg-[#00C2CC] text-[#121417] font-semibold'
                   : 'bg-[#20242B] text-[#A6AFB8] hover:text-white hover:bg-[#282E37]'
               }`}
             >
-              <span>{c.label}</span>
+              <span>{g.label}</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  activeCategory === c.id ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#16191E] text-[#8A949E]'
+                  activeGroup === g.id ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#16191E] text-[#8A949E]'
                 }`}
               >
-                {c.count}
+                {g.count}
               </span>
             </button>
           ))}
@@ -573,7 +819,7 @@ export default function NasaChallengeResources() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari dataset, sensor, atau variabel..."
+            placeholder="Cari dataset, sensor, atau cakupan..."
             className="w-full bg-[#20242B] border border-[#2C313A] rounded-[3px] pl-9 pr-3 py-1.5 text-xs text-[#F1F3F5] placeholder-[#6C757D] focus:outline-none focus:border-[#00C2CC]"
           />
         </div>
@@ -581,98 +827,121 @@ export default function NasaChallengeResources() {
 
       {/* Datasets Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filteredDatasets.map((item) => (
-          <div
-            key={item.id}
-            className="p-5 rounded-[4px] bg-[#16191E] border border-[#2C313A] hover:border-[#384252] transition-colors flex flex-col justify-between gap-4 shadow-sm"
-          >
-            <div className="flex flex-col gap-3">
-              {/* Header row: Acronym + Agency + Status */}
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-white tracking-wide">
-                      {item.acronym}
-                    </span>
-                    <span className="text-xs text-[#8A949E]">·</span>
-                    <span className="text-xs font-medium text-[#C1C7CD]">{item.agency}</span>
+        {filteredDatasets.map((item) => {
+          const profileBadge = getProfileBadge(item.geographicProfile);
+          return (
+            <div
+              key={item.id}
+              className={`p-5 rounded-[4px] bg-[#16191E] border transition-colors flex flex-col justify-between gap-4 shadow-sm ${
+                item.geographicProfile === 'global-core'
+                  ? 'border-[#00C2CC]/30 hover:border-[#00C2CC]/60'
+                  : item.geographicProfile === 'indonesia-profile'
+                  ? 'border-[#34D399]/30 hover:border-[#34D399]/60'
+                  : 'border-[#2C313A] hover:border-[#384252]'
+              }`}
+            >
+              <div className="flex flex-col gap-3">
+                {/* Header row: Acronym + Agency + Badges */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm font-bold text-white tracking-wide">
+                        {item.acronym}
+                      </span>
+                      <span className="text-xs text-[#8A949E]">·</span>
+                      <span className="text-xs font-medium text-[#C1C7CD]">{item.agency}</span>
+                    </div>
+                    <h3 className="text-[13.5px] font-semibold text-[#00C2CC] mt-0.5">{item.name}</h3>
                   </div>
-                  <h3 className="text-[13.5px] font-semibold text-[#00C2CC] mt-0.5">{item.name}</h3>
+
+                  <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0 max-w-[200px]">
+                    <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10px] ${profileBadge.style}`}>
+                      {profileBadge.label}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${getStatusColor(item.statusBadge)}`}>
+                      {item.statusBadge}
+                    </span>
+                  </div>
                 </div>
 
-                <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] shrink-0 ${getStatusColor(item.statusBadge)}`}>
-                  {item.statusBadge}
-                </span>
-              </div>
-
-              {/* Technical Specifications Pills */}
-              <div className="flex flex-wrap gap-2 text-[11px] font-mono text-[#8A949E]">
-                <span className="bg-[#20242B] px-2 py-0.5 rounded-[2px] border border-[#2C313A]">
-                  Res: <span className="text-[#F1F3F5]">{item.resolution}</span>
-                </span>
-                <span className="bg-[#20242B] px-2 py-0.5 rounded-[2px] border border-[#2C313A]">
-                  Frekuensi: <span className="text-[#F1F3F5]">{item.frequency}</span>
-                </span>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-[#9BA3AE] leading-relaxed">
-                {item.description}
-              </p>
-
-              {/* Variables */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {item.variables.map((v, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10.5px] font-mono px-2 py-0.5 rounded-[2px] bg-[#20242B] border border-[#2A313C] text-[#C1C7CD]"
-                  >
-                    {v}
+                {/* Technical Specifications Pills */}
+                <div className="flex flex-wrap gap-2 text-[11px] font-mono text-[#8A949E]">
+                  <span className="bg-[#20242B] px-2 py-0.5 rounded-[2px] border border-[#2C313A]">
+                    Domain: <span className="text-[#00C2CC]">{getDomainLabel(item.domainGroup)}</span>
                   </span>
-                ))}
+                  <span className="bg-[#20242B] px-2 py-0.5 rounded-[2px] border border-[#2C313A]">
+                    Res: <span className="text-[#F1F3F5]">{item.resolution}</span>
+                  </span>
+                  <span className="bg-[#20242B] px-2 py-0.5 rounded-[2px] border border-[#2C313A]">
+                    Frekuensi: <span className="text-[#F1F3F5]">{item.frequency}</span>
+                  </span>
+                </div>
+
+                {/* Scope & Applicability Callout */}
+                <div className="p-2.5 rounded-[3px] bg-[#10141D] border border-[#1E2636] flex items-start gap-2 text-[11.5px] text-[#A6AFB8]">
+                  <Globe className="w-3.5 h-3.5 text-[#00C2CC] shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{item.geographicScopeNote}</span>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs text-[#9BA3AE] leading-relaxed">
+                  {item.description}
+                </p>
+
+                {/* Variables */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {item.variables.map((v, idx) => (
+                    <span
+                      key={idx}
+                      className="text-[10.5px] font-mono px-2 py-0.5 rounded-[2px] bg-[#20242B] border border-[#2A313C] text-[#C1C7CD]"
+                    >
+                      {v}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Adaptation Value Callout */}
+                <div className="p-3 rounded-[3px] bg-[#20242B]/80 border border-[#282F3A] flex flex-col gap-1 text-[11.5px]">
+                  <div className="flex items-center gap-1.5 font-medium text-[#F1F3F5]">
+                    <Sprout className="w-3.5 h-3.5 text-[#00C2CC]" />
+                    <span>Nilai Adaptasi Pertanian:</span>
+                  </div>
+                  <p className="text-[#9BA3AE] leading-relaxed">
+                    {item.adaptationValue}
+                  </p>
+                </div>
+
+                {/* Integration in TerraShaft */}
+                <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#1F2735] flex flex-col gap-1 text-[11.5px]">
+                  <div className="flex items-center gap-1.5 font-medium text-[#38BDF8]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
+                    <span>Implementasi di TerraShaft:</span>
+                  </div>
+                  <p className="text-[#A6AFB8] leading-relaxed">
+                    {item.terraShaftRole}
+                  </p>
+                </div>
               </div>
 
-              {/* Adaptation Value Callout */}
-              <div className="p-3 rounded-[3px] bg-[#20242B]/80 border border-[#282F3A] flex flex-col gap-1 text-[11.5px]">
-                <div className="flex items-center gap-1.5 font-medium text-[#F1F3F5]">
-                  <Sprout className="w-3.5 h-3.5 text-[#00C2CC]" />
-                  <span>Nilai Adaptasi Pertanian:</span>
-                </div>
-                <p className="text-[#9BA3AE] leading-relaxed">
-                  {item.adaptationValue}
-                </p>
-              </div>
+              {/* Footer with link */}
+              <div className="pt-3 border-t border-[#262C36] flex items-center justify-between text-xs">
+                <span className="font-mono text-[11px] text-[#6C757D]">
+                  Agensi: {item.agencyCategory}
+                </span>
 
-              {/* Integration in TerraShaft */}
-              <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#1F2735] flex flex-col gap-1 text-[11.5px]">
-                <div className="flex items-center gap-1.5 font-medium text-[#38BDF8]">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
-                  <span>Implementasi di TerraShaft:</span>
-                </div>
-                <p className="text-[#A6AFB8] leading-relaxed">
-                  {item.terraShaftRole}
-                </p>
+                <a
+                  href={item.officialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00C2CC] hover:text-[#33D4DC] flex items-center gap-1 font-medium transition-colors"
+                >
+                  <span>Dokumentasi Resmi</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
               </div>
             </div>
-
-            {/* Footer with link */}
-            <div className="pt-3 border-t border-[#262C36] flex items-center justify-between text-xs">
-              <span className="font-mono text-[11px] text-[#6C757D]">
-                Kategori: {item.agencyCategory}
-              </span>
-
-              <a
-                href={item.officialUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#00C2CC] hover:text-[#33D4DC] flex items-center gap-1 font-medium transition-colors"
-              >
-                <span>Dokumentasi Resmi</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {filteredDatasets.length === 0 && (

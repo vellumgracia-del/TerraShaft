@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import PlanetFooter from '@/components/landing/PlanetFooter';
+import ScrollExpandSection from '@/components/landing/ScrollExpandSection';
 import {
   ArrowRight,
   Satellite,
@@ -14,7 +15,6 @@ import {
   Bot,
   MapPin,
   Compass,
-  CheckCircle2,
   ExternalLink,
   ShieldCheck,
   ChevronRight,
@@ -144,18 +144,18 @@ export default function LandingPage() {
               Capabilities
             </a>
             <a
-              href="#pathways"
-              onClick={(e) => scrollToSection(e, 'pathways')}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              4-Season Pathways
-            </a>
-            <a
               href="#science"
               onClick={(e) => scrollToSection(e, 'science')}
               className="hover:text-white transition-colors cursor-pointer"
             >
               Science & Data
+            </a>
+            <a
+              href="#pathways"
+              onClick={(e) => scrollToSection(e, 'pathways')}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              4-Season Pathways
             </a>
             <a
               href="#hotspots"
@@ -215,7 +215,7 @@ export default function LandingPage() {
           {/* Headline Utama */}
           <h1 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold tracking-tight text-white max-w-5xl leading-[1.12]">
             See Earth from Space. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C2CC] via-[#52D8E8] to-[#93E6F0]">
+            <span className="aurora-text">
               Regenerate Soil on the Ground.
             </span>
           </h1>
@@ -272,236 +272,181 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Pillar 1 */}
-            <div className="p-6 rounded-[6px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-colors flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-[4px] bg-[#163A40] text-[#00C2CC] flex items-center justify-center mb-4">
-                  <Satellite className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-semibold text-[#F1F3F5]">NASA Earth Telemetry</h3>
+            <div className="group rounded-[10px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-lg hover:shadow-[#00C2CC]/5">
+              {/* Visual Preview Header with Image */}
+              <div className="relative h-48 w-full overflow-hidden bg-[#0D1015]">
+                <Image
+                  src="/images/capability-nasa.jpg"
+                  alt="NASA Earth Telemetry"
+                  fill
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#16191E] via-[#16191E]/30 to-black/20 pointer-events-none" />
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
+                  NASA Earth Telemetry
+                </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
                   Direct assimilation of SMAP L4 (root-zone soil moisture), GPM IMERG (daily precipitation), CERES (solar irradiance), and MERRA-2.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
-                /api/nasa-climate
-              </div>
             </div>
 
             {/* Pillar 2 */}
-            <div className="p-6 rounded-[6px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-colors flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-[4px] bg-[#163A40] text-[#00C2CC] flex items-center justify-center mb-4">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-semibold text-[#F1F3F5]">ISRIC Soil Physics (0-30cm)</h3>
+            <div className="group rounded-[10px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-lg hover:shadow-[#00C2CC]/5">
+              {/* Visual Preview Header with Image */}
+              <div className="relative h-48 w-full overflow-hidden bg-[#0D1015]">
+                <Image
+                  src="/images/capability-soil.jpg"
+                  alt="ISRIC Soil Physics"
+                  fill
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#16191E] via-[#16191E]/30 to-black/20 pointer-events-none" />
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
+                  ISRIC Soil Physics (0-30cm)
+                </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
                   Sand-silt-clay texture grading, Soil Organic Carbon (SOC), pH H2O, CEC, and bulk density calibrated by Wageningen University.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
-                /api/soil-profile
-              </div>
             </div>
 
             {/* Pillar 3 */}
-            <div className="p-6 rounded-[6px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-colors flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-[4px] bg-[#163A40] text-[#00C2CC] flex items-center justify-center mb-4">
-                  <BatteryCharging className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-semibold text-[#F1F3F5]">The Soil Battery Engine</h3>
+            <div className="group rounded-[10px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-lg hover:shadow-[#00C2CC]/5">
+              {/* Visual Preview Header with Image */}
+              <div className="relative h-48 w-full overflow-hidden bg-[#0D1015]">
+                <Image
+                  src="/images/capability-battery.jpg"
+                  alt="The Soil Battery Engine"
+                  fill
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#16191E] via-[#16191E]/30 to-black/20 pointer-events-none" />
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
+                  The Soil Battery Engine
+                </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
                   Intuitive Soil Battery dynamic: Monoculture drains soil reserves (-20%/season), while legumes and cover crops actively recharge fertility (+15%).
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
-                Closed-Loop Model
-              </div>
             </div>
 
             {/* Pillar 4 */}
-            <div className="p-6 rounded-[6px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-colors flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-[4px] bg-[#163A40] text-[#00C2CC] flex items-center justify-center mb-4">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-semibold text-[#F1F3F5]">Field Advisor AI (RAG)</h3>
+            <div className="group rounded-[10px] bg-[#16191E] border border-[#282C34] hover:border-[#00C2CC]/50 transition-all duration-300 overflow-hidden flex flex-col justify-between shadow-lg hover:shadow-[#00C2CC]/5">
+              {/* Visual Preview Header with Image */}
+              <div className="relative h-48 w-full overflow-hidden bg-[#0D1015]">
+                <Image
+                  src="/images/capability-advisor.jpg"
+                  alt="Field Advisor AI"
+                  fill
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#16191E] via-[#16191E]/30 to-black/20 pointer-events-none" />
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
+                  Field Advisor AI (RAG)
+                </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
                   Intelligent agronomic advisory grounded in real-time land telemetry and 11 verified benchmarks from BRIN, Balittanah, and FAO-56 standards.
                 </p>
               </div>
-              <div className="mt-6 pt-4 border-t border-[#242831] text-[11px] font-mono text-[#00C2CC]">
-                /field-advisor
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. 4-Season Pathways Deep-Dive */}
-      <section id="pathways" className="scroll-mt-24 py-20 px-4 lg:px-10 bg-[#16191E] border-b border-[#242831]">
-        <div className="max-w-[1280px] mx-auto flex flex-col gap-10">
-          <div className="max-w-2xl">
-            <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-              3 OPTIMIZATION PATHWAYS
+      {/* 4. Science & Quantitative Physical Metrics (Layout inspired by reference) */}
+      <section id="science" className="scroll-mt-24 py-20 px-4 lg:px-10 bg-[#121417] border-b border-[#242831]">
+        <div className="max-w-[1280px] mx-auto flex flex-col gap-12">
+          {/* Top Headline & Description */}
+          <div className="max-w-4xl">
+            <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-3">
+              SCIENCE & DATA BENCHMARKS
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#F1F3F5]">
-              Choose Strategy Based on Farm Priorities
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#F1F3F5] leading-snug">
+              <span className="text-white">Scientific precision at planetary scale.</span>{' '}
+              <span className="text-[#9BA3AE] font-normal">
+                Evaluating every land coordinate across 1,296 rotation permutations, 250-meter soil profiles, and satellite moisture indices to eliminate crop failure.
+              </span>
             </h2>
-            <p className="text-xs sm:text-sm text-[#9BA3AE] mt-2">
-              The engine computes balanced trade-offs between cash profitability, soil battery longevity, and El Niño drought resilience.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Pathway A */}
-            <div className="p-6 rounded-[6px] bg-[#121417] border border-[#282C34] flex flex-col justify-between">
-              <div>
-                <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
-                  Pathway A
-                </div>
-                <h3 className="text-lg font-semibold text-[#F1F3F5] mt-1">
-                  Max Soil Regeneration
-                </h3>
-                <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Restores degraded soil and breaks plow pans using deep-taproot cover crops (Sunn Hemp) and high-efficiency nitrogen-fixing legumes.
-                </p>
-                <ul className="mt-4 flex flex-col gap-2 text-xs text-[#C1C7CD]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Fully recharged soil battery (+25% to +35%)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Deep biomass injection and plow pan remediation</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/rotation-planner"
-                className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1"
-              >
-                <span>Explore Pathway A Simulation</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+          {/* 3D Perspective Geospatial Visual (Floating Transparent Slab) */}
+          <div className="relative w-full aspect-[3362/1870] my-2">
+            <Image
+              src="/images/indonesia-3d-telemetry.webp"
+              alt="3D Perspective Indonesian Archipelago Data Slab"
+              fill
+              priority
+              className="object-contain object-center"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+            />
+          </div>
+
+          {/* 4 Quantitative Scale Metrics Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 pt-6 border-t border-[#242831]">
+            <div className="flex flex-col">
+              <span className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-mono tracking-tight whitespace-nowrap bg-gradient-to-r from-[#00C2CC] via-[#52D8E8] to-[#93E6F0] bg-clip-text text-transparent">
+                1,296
+              </span>
+              <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
+                4-Season Permutations
+              </span>
             </div>
 
-            {/* Pathway B */}
-            <div className="p-6 rounded-[6px] bg-[#121417] border border-[#00C2CC]/40 flex flex-col justify-between relative shadow-lg">
-              <div className="absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#164E55]">
-                DRYLAND RECOMMENDATION
-              </div>
-              <div>
-                <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
-                  Pathway B
-                </div>
-                <h3 className="text-lg font-semibold text-[#F1F3F5] mt-1">
-                  Drought Resilience
-                </h3>
-                <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Fortified against prolonged dry spells. Blocks water-intensive crops during peak drought, prioritizing grain sorghum and drought-tolerant legumes.
-                </p>
-                <ul className="mt-4 flex flex-col gap-2 text-xs text-[#C1C7CD]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Zero crop failure risk (safe water deficit thresholds)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Up to 60% water savings versus monoculture</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/rotation-planner"
-                className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1"
-              >
-                <span>Explore Pathway B Simulation</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+            <div className="flex flex-col">
+              <span className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-mono tracking-tight whitespace-nowrap bg-gradient-to-r from-[#00C2CC] via-[#52D8E8] to-[#93E6F0] bg-clip-text text-transparent">
+                250m
+              </span>
+              <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
+                Soil Physics Resolution
+              </span>
             </div>
 
-            {/* Pathway C */}
-            <div className="p-6 rounded-[6px] bg-[#121417] border border-[#282C34] flex flex-col justify-between">
-              <div>
-                <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
-                  Pathway C
-                </div>
-                <h3 className="text-lg font-semibold text-[#F1F3F5] mt-1">
-                  Cash-Flow Optimized
-                </h3>
-                <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Maximizes seasonal farmer cash revenue while keeping cumulative water deficit within safe tolerance limits to safeguard yields.
-                </p>
-                <ul className="mt-4 flex flex-col gap-2 text-xs text-[#C1C7CD]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Highest economic profitability index</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#34D399]" />
-                    <span>Strategic rotation of high-market-value crops</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/rotation-planner"
-                className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1"
-              >
-                <span>Explore Pathway C Simulation</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+            <div className="flex flex-col">
+              <span className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-mono tracking-tight whitespace-nowrap bg-gradient-to-r from-[#00C2CC] via-[#52D8E8] to-[#93E6F0] bg-clip-text text-transparent">
+                +160 kg
+              </span>
+              <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
+                Natural N Fixation / Ha
+              </span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-mono tracking-tight whitespace-nowrap bg-gradient-to-r from-[#00C2CC] via-[#52D8E8] to-[#93E6F0] bg-clip-text text-transparent">
+                40%-60%
+              </span>
+              <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
+                Water Conservation
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. Quantitative Science & Physical Metrics Bar */}
-      <section id="science" className="scroll-mt-24 py-14 bg-[#121417] border-b border-[#242831] px-4 lg:px-10">
-        <div className="max-w-[1280px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center lg:text-left">
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">1,296</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              4-Season Permutations
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              Exhaustive permutation evaluation for every land coordinate
-            </span>
-          </div>
+      {/* The "Scroll-Expand" Fullscreen Morph Section (3 Optimization Pathways) */}
+      <ScrollExpandSection />
 
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">250m</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Soil Physics Resolution
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              ISRIC SoilGrids v2.0 root-zone layer (0–30 cm)
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#34D399]">+160 kg</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Natural N Fixation / Ha
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              Legume root nodule bio-injection reducing synthetic fertilizer
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-3xl lg:text-4xl font-bold font-mono text-[#00C2CC]">40% - 60%</span>
-            <span className="text-xs uppercase font-medium tracking-wider text-[#F1F3F5] mt-1">
-              Water Conservation
-            </span>
-            <span className="text-xs text-[#8A949E] mt-0.5">
-              Quantified water balance savings versus cereal monoculture
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Global Agricultural Hotspots */}
+      {/* 5. Global Agricultural Hotspots */}
       <section id="hotspots" className="scroll-mt-24 py-20 px-4 lg:px-10 border-b border-[#242831]">
         <div className="max-w-[1280px] mx-auto flex flex-col gap-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -524,6 +469,40 @@ export default function LandingPage() {
               <span>Explore Global Satellite Map</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
+          </div>
+
+          {/* Interactive Field Map Showcase: Floating Window on Impressionist Canvas */}
+          <div className="relative w-full rounded-[16px] sm:rounded-[24px] overflow-hidden border border-[#282C34] bg-[#0E1217] flex items-center justify-center p-4 sm:p-8 md:p-12 lg:p-16">
+            {/* Background Image: Satellite Ocean Image (Planet Insights Style) */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src="/images/satellite-ocean.jpg"
+                alt="Orbital Satellite Ocean Telemetry Canvas"
+                fill
+                priority
+                className="object-cover scale-105"
+                sizes="(max-width: 1280px) 100vw, 1280px"
+              />
+              <div className="absolute inset-0 bg-[#070A0F]/20" />
+              <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#070A0F]/20 to-[#070A0F]/60" />
+            </div>
+
+            {/* Floating Glassmorphism Window Frame */}
+            <div className="relative z-10 w-full max-w-[1080px] p-1.5 sm:p-2.5 bg-white/10 backdrop-blur-md border border-white/40 rounded-[16px] sm:rounded-[22px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] flex flex-col transition-transform duration-300 hover:scale-[1.005]">
+              {/* Inner Video Container */}
+              <div className="relative w-full rounded-[12px] sm:rounded-[16px] overflow-hidden bg-[#10141A] border border-black/10 shadow-inner aspect-[16/10]">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover rounded-[12px] sm:rounded-[16px]"
+                >
+                  <source src="/videos/demo-field-map.mp4" type="video/mp4" />
+                </video>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -26,7 +26,7 @@ export default function DataSourcesPage() {
           <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
             activeTab === 'catalog' ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#20242B] text-[#8A949E]'
           }`}>
-            24
+            24 (Global + Regional ID/US)
           </span>
         </button>
 
