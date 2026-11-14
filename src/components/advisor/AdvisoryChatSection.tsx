@@ -90,11 +90,19 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
     setIsLoading(true);
 
     try {
+      let customKey: string | null = null;
+      try {
+        customKey = localStorage.getItem('terrashaft_gemini_key');
+      } catch {
+        // ignore
+      }
+
       const response = await fetch('/api/ai/advisor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: query,
+          apiKey: customKey || undefined,
           telemetry: {
             location,
             elevation_m,

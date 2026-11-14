@@ -20,6 +20,7 @@ interface TelemetryContext {
 interface AdvisorRequestBody {
   message?: string;
   telemetry?: TelemetryContext;
+  apiKey?: string;
 }
 
 export async function POST(request: Request) {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
 
     const telemetry = body.telemetry || {};
     const env = getAppEnv();
+    const activeApiKey = body.apiKey || request.headers.get('x-gemini-key') || env.geminiApiKey;
 
     // 1. RAG Retrieval - Search verified knowledge base
     // Combine user query with telemetry clues for comprehensive grounding
@@ -62,10 +64,10 @@ export async function POST(request: Request) {
     const fieldSummary = formatTelemetrySummary(telemetry);
 
     // 3. Execution: If Gemini API Key exists, call Gemini REST API
-    if (env.geminiApiKey) {
+    if (activeApiKey) {
       try {
         const aiResponse = await callGeminiWithGrounding(
-          env.geminiApiKey,
+          activeApiKey,
           userMessage,
           fieldSummary,
           finalDocs
@@ -176,7 +178,7 @@ ${telemetrySummary}
 Basis Dokumen Acuan Resmi (RAG):
 ${documentsContext}`;
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   const res = await fetch(endpoint, {
     method: 'POST',
