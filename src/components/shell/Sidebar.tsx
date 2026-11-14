@@ -11,7 +11,8 @@ import {
   FileText,
   Layers,
   Database,
-  Share2
+  Share2,
+  Sparkles
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -23,7 +24,7 @@ interface SidebarProps {
 export const NAV_ITEMS = [
   {
     id: 'overview',
-    href: '/',
+    href: '/overview',
     label: 'Overview',
     icon: LayoutGrid,
     desc: 'Alur kerja spasial, telemetri aktif & ringkasan rotasi',
@@ -82,6 +83,15 @@ export const NAV_ITEMS = [
     icon: Database,
     desc: 'Kurva presipitasi bulanan vs evapotranspirasi Hargreaves ET0',
     apiLabel: 'Hydrology & ET0 API',
+    group: 'delivery'
+  },
+  {
+    id: 'field-advisor',
+    href: '/field-advisor',
+    label: 'Field Advisor AI',
+    icon: Sparkles,
+    desc: 'Konsultasi agronomi berbasis telemetri lahan riil & rujukan pustaka SOP',
+    apiLabel: 'RAG Agronomist Copilot API',
     group: 'delivery'
   },
   {

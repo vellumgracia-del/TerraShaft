@@ -96,6 +96,19 @@ Membagi siklus budidaya ke dalam 4 musim berkesinambungan:
 * Memuat basis data tanaman bawaan lengkap dengan durasi tanam, kebutuhan air, dan nilai pasar.
 * Petani atau PPL dapat menambahkan varietas lokal baru yang langsung diikutsertakan ke dalam mesin optimasi 1.296 kombinasi.
 
+### ⑪ Penasihat Lapangan AI Terverifikasi Ilmiah (Field Advisor & RAG Knowledge Base)
+* Fitur asisten cerdas agronomi (`/field-advisor`) berbasis Retrieval-Augmented Generation (RAG) yang berlandaskan literatur ilmiah resmi dari **BRIN**, **Balai Penelitian Tanah**, dan **FAO 56**.
+* Menjawab konsultasi mengenai pengelolaan tanah Vertisol, strategi rotasi legum penambat N, pemulihan retak tanah saat kemarau, dan penanganan defisit air dengan sitasi ilmiah transparan.
+* Dilengkapi failover mesin heuristik deterministik saat beroperasi tanpa koneksi kunci API eksternal.
+
+### ⑫ Beranda Publik Elegan (Landing Page) & Halaman Autentikasi (Login Page)
+* **Landing Page (`/`, `/landing`):** Desain visual modern dan kredibel bergaya *Planet.com*, menampilkan narasi pertanian antariksa, metrik kunci, dan call-to-action yang responsif.
+* **Halaman Login (`/login`):** Visual bertema citra satelit terumbu karang resolusi tinggi dengan kartu login putih bersih, logo resmi TerraShaft, serta atribusi fotografer.
+
+### ⑬ Pengaturan Workbench & Profil Pengguna (Settings Hub)
+* Halaman pengaturan (`/settings`) dengan 4 tab komprehensif: Profil Pengguna, Preferensi (Mode Lapangan & Presets), Integrasi (kunci Gemini API), dan Keamanan.
+* Menu dropdown profil interaktif di bar navigasi atas (`TopHeader`) memudahkan akses cepat ke pengaturan dan aksi *Log Out*.
+
 ---
 
 ## 4. Manfaat Nyata bagi Petani & Lingkungan

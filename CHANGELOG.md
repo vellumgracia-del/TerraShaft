@@ -2,6 +2,64 @@
 
 All notable changes to the TerraShaft project are documented in this file.
 
+## [Milestone 3.2] - 2026-11-14 - NASA Space Apps Challenge 2026 Resource Hub, Enriched RAG & Overview Dashboard Refinements
+
+### Summary
+Integrated the complete official NASA Space Apps Challenge 2026 resource suite ("Adapting Farms with NASA Data") containing 24 datasets across NASA satellites, international space agency partners (ESA/ECMWF), and USDA/USGS agricultural suites. Enhanced the RAG knowledge base with NASA mission standards, deployed a high-fidelity Planet-style footer with orbital graphics, and refined the main overview dashboard with quick AOI presets, a sensor telemetry ribbon, AI diagnosis strip, and micro battery contrast indicators.
+
+### Added
+- **Official NASA Space Apps Challenge 2026 Resource Catalog (`/data-sources`, `NasaChallengeResources.tsx`)**:
+  - Interactive resource center cataloging all 24 challenge datasets: SMAP, GPM IMERG, Landsat & MODIS/VIIRS, NASA POWER, SRTM DEM, ECOSTRESS, GEDI, ESA Copernicus Sentinel-2, ECMWF ERA5, and USDA/USGS agricultural suites (WSS, CDL, SSURGO/STATSGO2, NAIP, NLCD, NLDAS/GLDAS, OpenET, LANDFIRE, AMS Market News, NASS QuickStats, NWIS, PRISM, FAO GAEZ, CoCoRaHS).
+  - Searchable by keyword, filterable by agency/category, with resolution, revisit, agricultural adaptation values, and exact implementation roles in TerraShaft.
+  - Verbatim official NASA Data Notice inclusion as required by NASA guidelines.
+- **Enriched Agronomy RAG Knowledge Base (`agronomyKnowledgeBase.ts`)**:
+  - 8 new scientific documents covering NASA SMAP L4 root-zone moisture, GPM IMERG extreme precipitation, Landsat/Sentinel-2 NDVI/NDWI, ECOSTRESS thermal LST, SRTM slope erosion, FAO GAEZ v4 agroclimatic suitability, and USDA SSURGO pedotransfer AWC.
+  - Comprehensive unit test assertions in `aiAdvisor.test.ts` verifying multi-agency citations (NASA, ESA, USDA, FAO, BRIN, Balittanah).
+- **Planet-Style Aerospace Footer (`PlanetFooter.tsx`, `/`)**:
+  - Pre-footer "See. Decide. Act." CTA card with deep navy glassmorphism.
+  - 4-column directory layout tailored to TerraShaft orbital agriculture products, solutions, and industries.
+  - Vector SVG background with orbital ellipses, dashed satellite tracks, and coordinate arcs.
+  - Dynamic legal bar with CCPA privacy choices and SVG social icons.
+- **Simplicity-Driven Overview Dashboard Refinements (`/overview`)**:
+  - Quick 1-click AOI preset switcher (Kupang Timur, Sumba Timur, Camplong, Gunungkidul, Indramayu).
+  - Active Sensor Constellation Ribbon showing online satellite feeds.
+  - AI Field Advisor Diagnosis Strip providing dynamic single-line briefings.
+  - Micro progress bars in `SummaryMetricCards.tsx` for SMAP root-zone moisture and Soil Battery contrast (Adaptive 100% vs Monoculture 10%).
+  - Quick action bar linking to field action sheets and AI consultation.
+
+## [Milestone 3.1] - 2026-11-13 - Field Advisor RAG AI, Planet-Style Landing & Login, Settings Hub & Header Profile Navigation
+
+### Summary
+Added an agronomy AI Field Advisor powered by a local RAG knowledge base grounded in BRIN, Balittanah, and FAO standards. Rebuilt the public landing page inspired by Planet.com, created an authentication page with high-resolution satellite imagery, implemented a 4-tab user settings and workbench preferences hub, and integrated a sleek interactive profile dropdown in the navigation header.
+
+### Added
+- **Field Advisor AI & RAG Knowledge Base (`/field-advisor`, `/api/ai/advisor`)**:
+  - Grounded AI consultation engine leveraging domain-specific scientific literature (BRIN, Balai Penelitian Tanah, FAO 56).
+  - Multi-turn conversation interface with streaming responses, scientific citations, token estimation, and contextual field queries.
+  - Fallback deterministic heuristic engine for offline or API-free operations.
+- **Planet-Style Public Landing Page (`/`, `/landing`)**:
+  - High-impact orbital agriculture hero section featuring dark space-grade aesthetics, satellite imagery, telemetry previews, and responsive CTAs.
+  - Interactive feature highlights detailing Soil Battery recovery, drought resilience, and satellite sensor pipelines.
+- **Dedicated Authentication Page (`/login`)**:
+  - Satellite reef backdrop with photo attribution pill (`Photo by Fahrul Razi`), crisp white card container (`auth-white-card`), and official TerraShaft logo.
+  - Form validation with seamless redirect to platform overview.
+- **Settings & Profile Workspace (`/settings`)**:
+  - 4 comprehensive tabs: Profile, Preferences (Mode Lapangan, default presets), Integrations (Gemini API key management), and Security.
+  - Persistent state management via browser storage with toast notifications.
+- **TopHeader Interactive User Profile Dropdown**:
+  - Interactive profile avatar button with cyan circular badge (`RI`).
+  - Dropdown card featuring uppercase user name (`RAVI ARNAN IRIANTO`), email (`raviarnankeren@gmail.com`), direct link to `My Profile & Settings`, and `Log Out` action.
+  - Accessible click-outside listener and keyboard `Escape` closing behavior.
+
+### Changed & Cleaned
+- **Platform Navigation Refinement**:
+  - Moved internal platform workspace to `/overview` while presenting the public landing experience at `/`.
+  - Removed redundant Data switcher pill and divider from `TopHeader.tsx` for a clean, distraction-free header.
+  - Removed Settings from the sidebar navigation rail to maintain a dedicated agronomic workflow focus.
+- **Testing & Verification**:
+  - Added unit test suite `src/lib/__tests__/aiAdvisor.test.ts` for knowledge base retrieval, citation grounding, and prompt synthesis.
+  - Maintained 100% pass rate across all 14 unit and integration test criteria.
+
 ## [Milestone 3.0] - 2026-11-10 - Full-Scope Audit, Security Hardening, Global Seasonality & Agritech UX Upgrade
 
 ### Summary
