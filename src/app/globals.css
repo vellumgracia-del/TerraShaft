@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+html {
+  overscroll-behavior-y: none;
+}
+
 /* ========================================================
    TERRASHAFT - PLANET INSIGHTS PLATFORM DESIGN SYSTEM
    Geospatial & Agronomic Workbench (Dark Carbon-Slate)
@@ -482,4 +486,45 @@ textarea,
 ::-webkit-scrollbar-thumb {
   background: #2C313A;
   border-radius: 2px;
+}
+
+/* ========================================================
+   SUBTLE AURORA GRADIENT TEXT
+   Slow, atmospheric shifting gradient for hero headline
+   ======================================================== */
+@keyframes aurora-text-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.aurora-text {
+  background-image: linear-gradient(
+    115deg,
+    #00C2CC 0%,
+    #52D8E8 20%,
+    #38BDF8 40%,
+    #93E6F0 60%,
+    #22D3EE 80%,
+    #00C2CC 100%
+  );
+  background-size: 260% 260%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: aurora-text-shift 14s ease-in-out infinite;
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-text {
+    animation: none;
+    background-position: 50% 50%;
+  }
 }
