@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+html {
+  overscroll-behavior-y: none;
+}
+
 /* ========================================================
    TERRASHAFT - PLANET INSIGHTS PLATFORM DESIGN SYSTEM
    Geospatial & Agronomic Workbench (Dark Carbon-Slate)
