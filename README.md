@@ -603,6 +603,4 @@ npm run start
 
 ## Lisensi
 
-Tambahkan lisensi proyek dan atribusi masing-masing provider data sesuai ketentuan penggunaan sumber yang dipakai.
-
 © 2026 TerraShaft Team — Built for resilient agriculture and space-to-field impact.
