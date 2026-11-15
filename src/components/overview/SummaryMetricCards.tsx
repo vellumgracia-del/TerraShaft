@@ -54,7 +54,7 @@ export default function SummaryMetricCards() {
         {/* 1. Kelembapan Zona Akar */}
         <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E]" title={smapStatus.detailText}>
-            <span className="whitespace-nowrap">Root-Zone Wetness (SMAP)</span>
+            <span className="whitespace-nowrap">{isEn ? 'Root-Zone Wetness (SMAP)' : 'Kelembapan Zona Akar (SMAP)'}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
@@ -81,7 +81,7 @@ export default function SummaryMetricCards() {
         {/* 2. Baterai Tanah */}
         <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
-            <span>Soil Battery Projection</span>
+            <span>{isEn ? 'Soil Battery Projection' : 'Proyeksi Baterai Tanah'}</span>
             <span className="font-mono text-[11px] text-[#8A949E]">0-30cm</span>
           </div>
           <div className="flex items-baseline gap-2">
@@ -114,7 +114,7 @@ export default function SummaryMetricCards() {
         {/* 3. Kapasitas Air Tanah (ISRIC SoilGrids) */}
         <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
-            <span>Available Water (AWC)</span>
+            <span>{isEn ? 'Available Water (AWC)' : 'Air Tersedia (AWC)'}</span>
             <span className="font-mono text-[11px] text-[#8A949E]">ISRIC v2.0</span>
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -134,8 +134,8 @@ export default function SummaryMetricCards() {
         {/* 4. Defisit Air Puncak */}
         <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
-            <span>Peak Seasonal Deficit</span>
-            <span className="font-mono text-[11px] text-[#8A949E]">ETc vs Rain</span>
+            <span>{isEn ? 'Peak Seasonal Deficit' : 'Defisit Air Puncak'}</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">{isEn ? 'ETc vs Rain' : 'ETc vs Hujan'}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
@@ -144,7 +144,7 @@ export default function SummaryMetricCards() {
           </div>
           <div className="flex items-center justify-between gap-2 text-[11px] text-[#8A949E] pt-1 whitespace-nowrap">
             <span className="text-[#C1C7CD]">{waterDetails.label}</span>
-            <span className="font-mono">Limit 100mm</span>
+            <span className="font-mono">{isEn ? 'Limit 100mm' : 'Batas 100mm'}</span>
           </div>
         </div>
 

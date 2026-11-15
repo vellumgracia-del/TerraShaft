@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Satellite,
   Search,
@@ -304,35 +305,36 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
 ];
 
 export default function NasaChallengeResources() {
+  const { isEn } = useAppI18n();
   const [activeProfile, setActiveProfile] = useState<'all' | 'global-core' | 'indonesia' | 'standard-baseline'>('all');
   const [activeGroup, setActiveGroup] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const domainGroups = [
-    { id: 'all', label: 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
+    { id: 'all', label: isEn ? 'All Domains' : 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'soil',
-      label: 'Kondisi Tanah',
+      label: isEn ? 'Soil Conditions' : 'Kondisi Tanah',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'soil').length
     },
     {
       id: 'weather',
-      label: 'Cuaca & Iklim',
+      label: isEn ? 'Weather & Climate' : 'Cuaca & Iklim',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'weather').length
     },
     {
       id: 'crop-land',
-      label: 'Tanaman & Lahan',
+      label: isEn ? 'Crop & Land' : 'Tanaman & Lahan',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'crop-land').length
     },
     {
       id: 'water-topo',
-      label: 'Air & Topografi',
+      label: isEn ? 'Water & Topography' : 'Air & Topografi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'water-topo').length
     },
     {
       id: 'agri-econ',
-      label: 'Kelayakan & Ekonomi',
+      label: isEn ? 'Feasibility & Economics' : 'Kelayakan & Ekonomi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'agri-econ').length
     }
   ];
@@ -342,7 +344,7 @@ export default function NasaChallengeResources() {
     label: string;
     count: number;
   }> = [
-    { id: 'all', label: 'Semua', count: NASA_CHALLENGE_DATASETS.length },
+    { id: 'all', label: isEn ? 'All' : 'Semua', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'global-core',
       label: 'Global Core',
@@ -350,14 +352,14 @@ export default function NasaChallengeResources() {
     },
     {
       id: 'indonesia',
-      label: 'Penguatan Indonesia',
+      label: isEn ? 'Indonesia Enhancement' : 'Penguatan Indonesia',
       count: NASA_CHALLENGE_DATASETS.filter(
         (d) => d.geographicProfile === 'global-core' || d.geographicProfile === 'indonesia-profile'
       ).length
     },
     {
       id: 'standard-baseline',
-      label: 'Standar Kalibrasi',
+      label: isEn ? 'Calibration Standard' : 'Standar Kalibrasi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'standard-baseline').length
     }
   ];
@@ -464,12 +466,16 @@ export default function NasaChallengeResources() {
       <div className="p-6 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-2">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           <Satellite className="w-6 h-6 text-[#00C2CC] shrink-0" />
-          <span>Katalog Sumber Data Observasi Bumi & Ekosistem Terverifikasi</span>
+          <span>
+            {isEn
+              ? 'Verified Earth Observation & Ecosystem Data Catalog'
+              : 'Katalog Sumber Data Observasi Bumi & Ekosistem Terverifikasi'}
+          </span>
         </h1>
         <p className="text-sm text-[#9BA3AE] leading-relaxed max-w-4xl">
-          Arsitektur data teroptimasi TerraShaft yang berfokus pada 13 dataset aktif dan terverifikasi untuk adaptasi iklim pertanian:
-          mulai dari telemetri live NASA POWER & ISRIC SoilGrids, observasi perakaran SMAP L4, presipitasi GPM IMERG, indeks multispektral Landsat/Sentinel-2,
-          hingga riset agronomi lahan kering BRIN/Balittanah.
+          {isEn
+            ? 'TerraShaft optimized data architecture focused on 13 active and verified datasets for agricultural climate adaptation: from live NASA POWER & ISRIC SoilGrids telemetry, SMAP L4 root-zone moisture, GPM IMERG precipitation, Landsat/Sentinel-2 multispectral indices, to BRIN/Balittanah dryland agronomy research.'
+            : 'Arsitektur data teroptimasi TerraShaft yang berfokus pada 13 dataset aktif dan terverifikasi untuk adaptasi iklim pertanian: mulai dari telemetri live NASA POWER & ISRIC SoilGrids, observasi perakaran SMAP L4, presipitasi GPM IMERG, indeks multispektral Landsat/Sentinel-2, hingga riset agronomi lahan kering BRIN/Balittanah.'}
         </p>
       </div>
 
@@ -479,7 +485,9 @@ export default function NasaChallengeResources() {
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-[#00C2CC]" />
             <h2 className="text-sm font-semibold text-white tracking-tight">
-              Arsitektur Profil Wilayah: Global Core, Penguatan Indonesia, & Standar Kalibrasi
+              {isEn
+                ? 'Regional Profile Architecture: Global Core, Indonesia Enhancement, & Calibration Standard'
+                : 'Arsitektur Profil Wilayah: Global Core, Penguatan Indonesia, & Standar Kalibrasi'}
             </h2>
           </div>
           <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 bg-[#20242B] p-1 rounded-[3px] border border-[#2C313A] shrink-0">
@@ -508,26 +516,32 @@ export default function NasaChallengeResources() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
           <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
             <span className="font-semibold text-[#F1F3F5]">
-              1. Global Core (Universal & Aktif)
+              {isEn ? '1. Global Core (Universal & Active)' : '1. Global Core (Universal & Aktif)'}
             </span>
             <p className="text-[#8A949E]">
-              Selalu aktif di semua lokasi dunia termasuk Indonesia: NASA POWER, SMAP L4, ISRIC SoilGrids, GPM IMERG, Landsat & MODIS/VIIRS, Sentinel-2, SRTM DEM, dan GLDAS/ERA5.
+              {isEn
+                ? 'Active across all global locations including Indonesia: NASA POWER, SMAP L4, ISRIC SoilGrids, GPM IMERG, Landsat & MODIS/VIIRS, Sentinel-2, SRTM DEM, and GLDAS/ERA5.'
+                : 'Selalu aktif di semua lokasi dunia termasuk Indonesia: NASA POWER, SMAP L4, ISRIC SoilGrids, GPM IMERG, Landsat & MODIS/VIIRS, Sentinel-2, SRTM DEM, dan GLDAS/ERA5.'}
             </p>
           </div>
           <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
             <span className="font-semibold text-[#F1F3F5]">
-              2. Penguatan Indonesia
+              {isEn ? '2. Indonesia Enhancement' : '2. Penguatan Indonesia'}
             </span>
             <p className="text-[#8A949E]">
-              Global Core ditambah ECOSTRESS (deteksi hotspot suhu & stres air di wilayah semi-arid NTT/Madura), GEDI (kanopi agroforestri), FAO GAEZ, serta riset agronomi BRIN/Balittanah.
+              {isEn
+                ? 'Global Core plus ECOSTRESS (thermal hotspot & water stress detection in semi-arid NTT/Madura), GEDI (agroforestry canopy), FAO GAEZ, and BRIN/Balittanah agronomy research.'
+                : 'Global Core ditambah ECOSTRESS (deteksi hotspot suhu & stres air di wilayah semi-arid NTT/Madura), GEDI (kanopi agroforestri), FAO GAEZ, serta riset agronomi BRIN/Balittanah.'}
             </p>
           </div>
           <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
             <span className="font-semibold text-[#F1F3F5]">
-              3. Standar Kalibrasi Baku
+              {isEn ? '3. Calibration Standard' : '3. Standar Kalibrasi Baku'}
             </span>
             <p className="text-[#8A949E]">
-              Formula pedotransfer Saxton-Rawls berbasis database USDA SSURGO untuk menghitung AWC tanah dan fallback terkalibrasi CONUS. Dataset regional non-aktif telah dieliminasi.
+              {isEn
+                ? 'Saxton-Rawls pedotransfer formula based on the USDA SSURGO database for soil AWC and CONUS-calibrated fallback. Inactive regional datasets have been eliminated.'
+                : 'Formula pedotransfer Saxton-Rawls berbasis database USDA SSURGO untuk menghitung AWC tanah dan fallback terkalibrasi CONUS. Dataset regional non-aktif telah dieliminasi.'}
             </p>
           </div>
         </div>
@@ -565,7 +579,7 @@ export default function NasaChallengeResources() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari dataset, parameter, atau agensi..."
+            placeholder={isEn ? 'Search dataset, parameter, or agency...' : 'Cari dataset, parameter, atau agensi...'}
             className="w-full pl-9 pr-3 py-1.5 rounded-[3px] bg-[#12161E] border border-[#2C313A] text-xs text-[#F1F3F5] placeholder-[#6C757D] focus:border-[#00C2CC] focus:outline-none font-mono"
           />
         </div>

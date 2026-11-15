@@ -253,14 +253,14 @@ export default function SettingsPage() {
                   <h3 className="text-sm font-semibold text-[#F1F3F5]">{profile.name}</h3>
                   <p className="text-xs text-[#8A949E]">{profile.role}</p>
                   <p className="text-[11px] font-mono text-[#00C2CC] mt-1">
-                    Akun Terverifikasi
+                    {isEn ? 'Verified Account' : 'Akun Terverifikasi'}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Nama Lengkap</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Full Name' : 'Nama Lengkap'}</label>
                   <input
                     type="text"
                     value={profile.name}
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Alamat Email</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Email Address' : 'Alamat Email'}</label>
                   <input
                     type="email"
                     value={profile.email}
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Jabatan / Peran</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Role / Position' : 'Jabatan / Peran'}</label>
                   <input
                     type="text"
                     value={profile.role}
@@ -292,7 +292,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Dinas / Institusi</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Department / Institution' : 'Dinas / Institusi'}</label>
                   <input
                     type="text"
                     value={profile.organization}
@@ -302,7 +302,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Wilayah Kerja Binaan</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Operational Region' : 'Wilayah Kerja Binaan'}</label>
                   <input
                     type="text"
                     value={profile.district}
@@ -312,7 +312,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Catatan / Bio Lapangan</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Field Bio / Notes' : 'Catatan / Bio Lapangan'}</label>
                   <textarea
                     rows={3}
                     value={profile.bio}
@@ -328,7 +328,7 @@ export default function SettingsPage() {
                   className="px-4 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] font-semibold text-xs rounded-[4px] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Simpan Perubahan Profil</span>
+                  <span>{isEn ? 'Save Profile Changes' : 'Simpan Perubahan Profil'}</span>
                 </button>
               </div>
             </form>

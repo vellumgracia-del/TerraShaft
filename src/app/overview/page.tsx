@@ -118,23 +118,22 @@ export default function HomePage() {
     {
       href: '/field-map',
       icon: Search,
-      title: 'Search and locate AOI',
-      hasInfo: true,
+      title: isEn ? 'Search and locate AOI' : 'Cari dan tentukan AOI',
       sublabel: `Nominatim & DEM API · ${location.placeName.split(',')[0]} (${elevation_m}m dpl)`
     },
     {
       href: '/data-sources',
       icon: Rss,
-      title: 'Subscribe to telemetry',
-      hasInfo: true,
+      title: isEn ? 'Subscribe to telemetry' : 'Langganan telemetri satelit',
       sublabel: 'Subscriptions API · NASA POWER & ISRIC SoilGrids v2.0'
     },
     {
       href: '/crop-library',
       icon: MapPin,
-      title: 'Areas of interest & crop varieties',
-      hasInfo: false,
-      sublabel: `Crop Library API · ${crops.length} varietas tanaman terdaftar`
+      title: isEn ? 'Areas of interest & crop varieties' : 'Katalog komoditas & varietas',
+      sublabel: isEn
+        ? `Crop Library API · ${crops.length} registered crop varieties`
+        : `Crop Library API · ${crops.length} varietas tanaman terdaftar`
     }
   ];
 
@@ -142,31 +141,35 @@ export default function HomePage() {
     {
       href: '/rotation-planner',
       icon: FileText,
-      title: '4-Season rotation orders',
-      sublabel: `Optimization API · Jalur ${selectedPathway} (${currentPlan?.title ?? 'Max Soil Regeneration'})`
+      title: isEn ? '4-Season rotation orders' : 'Rencana rotasi 4 musim',
+      sublabel: isEn
+        ? `Optimization API · Pathway ${selectedPathway} (${currentPlan?.title ?? 'Max Soil Regeneration'})`
+        : `Optimization API · Jalur ${selectedPathway} (${currentPlan?.title ?? 'Pemulihan Tanah'})`
     },
     {
       href: '/soil-battery',
       icon: Layers,
-      title: 'Soil battery subscriptions',
-      sublabel: `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
+      title: isEn ? 'Soil battery subscriptions' : 'Pemantauan baterai tanah',
+      sublabel: isEn
+        ? `Pedotransfer 0-30cm API · Score ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
+        : `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
     },
     {
       href: '/water-balance',
       icon: Database,
-      title: 'Data collections (Hydrology & ET0)',
+      title: isEn ? 'Data collections (Hydrology & ET0)' : 'Koleksi data (Hidrologi & ET0)',
       sublabel: `NASA POWER Data, Public DEM, Hargreaves ET0 (${climateData?.annualRainfall_mm ?? 1113} mm/yr)`
     },
     {
       href: '/field-map',
       icon: LayoutGrid,
-      title: 'Mosaics & satellite basemaps',
+      title: isEn ? 'Mosaics & satellite basemaps' : 'Mosaik & peta dasar satelit',
       sublabel: 'Basemaps API · OpenStreetMap & Esri World Imagery'
     },
     {
       href: '/action-sheet',
       icon: Share2,
-      title: 'Destinations & field action sheet',
+      title: isEn ? 'Destinations & field action sheet' : 'Ekspor & lembar aksi lapangan',
       sublabel: 'Destinations API · Poster PNG 1080x1350 & WhatsApp Advisory'
     }
   ];
@@ -176,15 +179,17 @@ export default function HomePage() {
       {/* LEFT COLUMN: DATA WORKFLOWS (Planet Insights Platform Layout) */}
       <div className="lg:col-span-5 lg:pr-10 lg:border-r lg:border-[#2C313A] flex flex-col gap-7">
         <div className="text-[12px] font-medium uppercase tracking-[0.08em] text-[#C1C7CD]">
-          DATA WORKFLOWS
+          {isEn ? 'DATA WORKFLOWS' : 'ALUR KERJA DATA'}
         </div>
 
         {/* Group 1: Add data */}
         <div className="flex flex-col gap-3">
           <div>
-            <h2 className="text-[15px] font-medium text-[#F1F3F5]">Add data</h2>
+            <h2 className="text-[15px] font-medium text-[#F1F3F5]">{isEn ? 'Add data' : 'Tambah data'}</h2>
             <p className="text-[13px] text-[#9BA3AE] mt-1 leading-relaxed">
-              After you select field AOIs, configure satellite telemetry feeds for soil and climate products or register local crop varieties.
+              {isEn
+                ? 'After you select field AOIs, configure satellite telemetry feeds for soil and climate products or register local crop varieties.'
+                : 'Setelah menentukan AOI lahan, atur umpan telemetri satelit untuk data tanah dan iklim atau kelola varietas tanaman lokal.'}
             </p>
           </div>
 
