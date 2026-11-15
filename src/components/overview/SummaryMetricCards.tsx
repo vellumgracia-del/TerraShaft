@@ -79,7 +79,9 @@ export default function SummaryMetricCards() {
               <span className={`w-1.5 h-1.5 rounded-full ${moistureDot}`} />
               <span>{isLoadingBioData ? 'Syncing...' : moistureStatus}</span>
             </span>
-            <span className="font-mono">{smapStatus.shortLabel}</span>
+            <span className="font-mono" title={smapStatus.longLabel}>
+              {smapStatus.isOfficialApiResponse ? 'NASA POWER GWETROOT (Model)' : smapStatus.shortLabel}
+            </span>
           </div>
         </div>
 

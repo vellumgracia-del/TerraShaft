@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { useAppI18n } from '@/lib/i18n';
@@ -21,7 +20,6 @@ import {
   Satellite,
   Layers,
   Sparkles,
-  ShieldCheck,
   Trash2,
   AlertCircle,
   Languages
@@ -66,7 +64,6 @@ export default function SettingsPage() {
     toggleFieldMode,
     selectedPathway,
     setSelectedPathway,
-    priorities,
     setPriorityPreset
   } = useTerraShaftStore();
   const { t, locale, setLocale, isEn } = useAppI18n();

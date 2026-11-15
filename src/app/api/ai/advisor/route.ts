@@ -140,7 +140,7 @@ function formatTelemetrySummary(telemetry: TelemetryContext): string {
 
   if (climate) {
     lines.push(
-      `Observasi Satelit NASA: Curah Hujan Tahunan ${climate.annualRainfall_mm} mm, Rata-rata Kelembapan SMAP GWETROOT: ${climate.rootZoneSoilMoisture}`
+      `Telemetri NASA POWER: Curah Hujan Tahunan (PRECTOTCORR) ${climate.annualRainfall_mm} mm, Rata-rata Indikator Lengas Akar GWETROOT (model-assimilated): ${climate.rootZoneSoilMoisture}`
     );
   }
 

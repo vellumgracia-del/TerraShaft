@@ -108,12 +108,12 @@ export default function HomePage() {
     ? isClayRich
       ? `Heavy clay fraction (${soilData?.clay ?? 48}%) in ${agroecologicalProfile.agroecological_zone}: pair deep-rooted ${dryCropLabel} with cover legumes to mitigate cracking and preserve capillary moisture.`
       : isDroughtRisk
-      ? `Low SMAP root moisture (${climateData?.rootZoneSoilMoisture ?? 0.38} GWETROOT): prioritize drought-resilient ${dryCropLabel} to safeguard seasonal water balance.`
+      ? `Low NASA POWER GWETROOT (${climateData?.rootZoneSoilMoisture ?? 0.38}, model-assimilated): prioritize drought-resilient ${dryCropLabel} to safeguard seasonal water balance.`
       : `Soil AWC (${soilData?.awc ?? 27.8} mm) in ${agroecologicalProfile.country} supports balanced 4-season cereal-legume cycling with ${dryCropLabel}.`
     : isClayRich
     ? `Fraksi liat ${soilData?.clay ?? 48}% pada zona ${agroecologicalProfile.agroecological_zone}: padukan ${dryCropLabel} berakar dalam dengan rotasi legum untuk menjaga kelembapan kapiler.`
     : isDroughtRisk
-    ? `Kelembapan perakaran SMAP rendah (${climateData?.rootZoneSoilMoisture ?? 0.38} GWETROOT): prioritaskan ${dryCropLabel} untuk menjaga neraca air musiman.`
+    ? `Indikator NASA POWER GWETROOT rendah (${climateData?.rootZoneSoilMoisture ?? 0.38}, model-assimilated): prioritaskan ${dryCropLabel} untuk menjaga neraca air musiman.`
     : `Kapasitas simpan air AWC (${soilData?.awc ?? 27.8} mm) di ${agroecologicalProfile.country} mendukung suksesi 4 musim berimbang antara sereal dan legum.`;
 
   const addDataWorkflows = [

@@ -127,7 +127,7 @@ export default function ActiveTelemetrySidebar() {
               <span className="font-mono text-[#F1F3F5]">{climateData.annualRainfall_mm} mm/th</span>
             </div>
             <div className="flex justify-between items-center py-1">
-              <span className="text-[#9BA3AE]">SMAP Root-Zone (GWET)</span>
+              <span className="text-[#9BA3AE]">NASA POWER GWETROOT (Model)</span>
               <span
                 className={`font-mono font-semibold px-2 py-0.5 rounded-[3px] text-[11px] ${
                   climateData.rootZoneSoilMoisture < 0.25

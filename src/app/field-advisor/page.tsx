@@ -18,7 +18,7 @@ export default function FieldAdvisorPage() {
           Field Advisor AI
         </h1>
         <p className="text-xs text-[#9BA3AE] max-w-3xl">
-          Konsultasi agronomi interaktif berbasis data telemetri satelit NASA (curah hujan & kelembapan tanah SMAP) dan profil tanah ISRIC (fraksi tekstur, pH, SOC). Setiap rekomendasi diselaraskan dengan dokumen ilmiah resmi BRIN, Balitkabi, Balittanah, dan standar FAO-56.
+          Konsultasi agronomi interaktif berbasis telemetri NASA POWER (presipitasi PRECTOTCORR &amp; indikator lengas akar GWETROOT model-assimilated) dan profil tanah ISRIC SoilGrids (fraksi tekstur, pH, SOC). Setiap rekomendasi diselaraskan dengan dokumen ilmiah resmi BRIN, Balitkabi, Balittanah, dan standar FAO-56.
         </p>
       </div>
 
