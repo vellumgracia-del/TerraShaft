@@ -794,7 +794,7 @@ export default function InteractiveFieldExplorer() {
                 </div>
                 <div className="flex items-baseline gap-1.5 font-mono">
                   <span className="text-xl font-bold text-[#F1F3F5]">{gwetroot.toFixed(2)}</span>
-                  <span className="text-xs text-[#8A949E]">/ 1.00 GWETROOT (NASA SMAP)</span>
+                  <span className="text-xs text-[#8A949E]">/ 1.00 NASA POWER GWETROOT (Model-Assimilated)</span>
                 </div>
               </div>
 
@@ -1011,7 +1011,7 @@ export default function InteractiveFieldExplorer() {
                     : 'text-[#C1C7CD] hover:bg-[#20252D] hover:text-white'
                 }`}
               >
-                <span>Satelit Riil & Label</span>
+                <span>Satellite Basemap & Labels</span>
                 {mapType === 'satellite' && <Check className="w-3.5 h-3.5" />}
               </button>
               <button

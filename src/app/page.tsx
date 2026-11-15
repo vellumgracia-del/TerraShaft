@@ -10,19 +10,8 @@ import ScrollExpandSection from '@/components/landing/ScrollExpandSection';
 import { useAppI18n } from '@/lib/i18n';
 import {
   ArrowRight,
-  Satellite,
-  Layers,
-  BatteryCharging,
-  Bot,
-  MapPin,
   Compass,
-  ExternalLink,
-  ShieldCheck,
-  ChevronRight,
-  Droplets,
-  Sprout,
-  BarChart3,
-  Globe2
+  ExternalLink
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -245,7 +234,7 @@ export default function LandingPage() {
 
           {/* Subtitle contextualizing orbital satellite telemetry */}
           <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-[#C1C7CD] max-w-3xl leading-relaxed font-normal">
-            Synthesizing daily satellite tile grids, NASA SMAP root-zone soil moisture telemetry, and ISRIC 0–30 cm pedology into climate-adaptive 4-season crop rotation pathways. Detecting moisture stress early to prevent crop failure across semi-arid frontiers.
+            Synthesizing NASA POWER agroclimatology (GWETROOT model-assimilated root-zone wetness, PRECTOTCORR precipitation, solar radiation) and ISRIC 0–30 cm pedology into climate-adaptive 4-season crop rotation pathways to detect moisture stress early across semi-arid frontiers.
           </p>
 
           {/* Action CTAs */}
@@ -314,7 +303,7 @@ export default function LandingPage() {
                   NASA Earth Telemetry
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Direct assimilation of SMAP L4 (root-zone soil moisture), GPM IMERG (daily precipitation), CERES (solar irradiance), and MERRA-2.
+                  NASA POWER live agroclimatology (GWETROOT root-zone wetness indicator, PRECTOTCORR precipitation, T2M temperature, and surface solar irradiance).
                 </p>
               </div>
             </div>

@@ -165,7 +165,7 @@ export default function AdvisoryChatSection() {
       ? `Hello. I am **TerraShaft Agronomist AI**.\n\nI am grounded directly in active NASA POWER climate telemetry, ISRIC SoilGrids v2.0 topsoil fractions, and global AEZ cultivar localization for **${
           location.placeName || 'your selected plot'
         }** (${agroecologicalProfile.country}, ${agroecologicalProfile.agroecological_zone}).\n\nAsk about site-specific crop rotation, soil pH/texture management, drought mitigation, or local cultivar suitability.`
-      : `Halo. Saya adalah **TerraShaft Agronomist AI**.\n\nSaya terhubung langsung dengan telemetri satelit NASA (curah hujan, SMAP) dan profil tanah ISRIC SoilGrids v2.0 untuk lahan aktif Anda di **${
+      : `Halo. Saya adalah **TerraShaft Agronomist AI**.\n\nSaya terhubung langsung dengan telemetri NASA POWER (curah hujan PRECTOTCORR, indikator lengas akar GWETROOT model-assimilated) dan profil tanah ISRIC SoilGrids v2.0 untuk lahan aktif Anda di **${
           location.placeName || 'Kupang Timur'
         }** (${agroecologicalProfile.country}, ${agroecologicalProfile.agroecological_zone}).\n\nSilakan ajukan pertanyaan seputar rekomendasi kultivar terlokalisasi, takaran pemupukan berimbang, perbaikan tanah masam, atau strategi mitigasi kekeringan.`,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -211,13 +211,13 @@ export default function AdvisoryChatSection() {
   const quickChips = isEn
     ? [
         'Recommended fertilizer & pH management for this soil profile',
-        'Why does root-zone moisture drop in dry season and how do we mitigate it?',
+        'Why does NASA POWER GWETROOT (model-assimilated) drop in dry season and how do we mitigate it?',
         'Explain localized cultivar vs phenotype fallback choices for Season 1',
         'How should heavy clay or low-AWC soils be prepared for rainfed planting?'
       ]
     : [
         'Rekomendasi takaran pupuk dan perbaikan pH tanah ini',
-        'Mengapa kelembapan SMAP kritis di musim kemarau dan apa mitigasinya?',
+        'Mengapa indikator NASA POWER GWETROOT (model-assimilated) kritis di musim kemarau dan apa mitigasinya?',
         'Jelaskan pemilihan kultivar lokal vs fallback arketipe untuk Musim 1',
         'Cara menangani tanah lempung berat atau AWC rendah saat tadah hujan'
       ];
@@ -411,11 +411,10 @@ export default function AdvisoryChatSection() {
               >
                 {/* Avatar Icon */}
                 <div
-                  className={`w-7 h-7 rounded-[4px] shrink-0 flex items-center justify-center text-xs ${
-                    isUser
-                      ? 'bg-[#20252D] text-[#C1C7CD] border border-[#2E3540]'
-                      : 'bg-[#163A40] text-[#00C2CC] border border-[#164E55]'
-                  }`}
+                  className={`w-7 h-7 rounded-[4px] shrink-0 flex items-center justify-center text-xs ${isUser
+                    ? 'bg-[#20252D] text-[#C1C7CD] border border-[#2E3540]'
+                    : 'bg-[#163A40] text-[#00C2CC] border border-[#164E55]'
+                    }`}
                 >
                   {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>

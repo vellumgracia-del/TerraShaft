@@ -54,7 +54,7 @@ export default function SummaryMetricCards() {
         {/* 1. Kelembapan Zona Akar */}
         <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E]" title={smapStatus.detailText}>
-            <span className="whitespace-nowrap">{isEn ? 'Root-Zone Wetness (SMAP)' : 'Kelembapan Zona Akar (SMAP)'}</span>
+            <span className="whitespace-nowrap">{isEn ? 'Root-Zone Wetness (GWETROOT)' : 'Kelembapan Zona Akar (GWETROOT)'}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
@@ -67,14 +67,16 @@ export default function SummaryMetricCards() {
             <div
               className={`h-full transition-all duration-500 rounded-full ${moistureDot}`}
               style={{ width: `${Math.min(Math.max(gwetroot * 100, 5), 100)}%` }}
-              title={`SMAP L4 GWETROOT: ${formatNumber(gwetroot, 2)}`}
+              title={`NASA POWER GWETROOT (model-assimilated): ${formatNumber(gwetroot, 2)}`}
             />
           </div>
           <div className="flex items-center justify-between gap-2 text-[11px] text-[#8A949E] pt-0.5 whitespace-nowrap">
             <span className="text-[#C1C7CD]">
               {isLoadingBioData ? 'Syncing...' : moistureStatus}
             </span>
-            <span className="font-mono">{smapStatus.shortLabel}</span>
+            <span className="font-mono" title={smapStatus.longLabel}>
+              {smapStatus.isOfficialApiResponse ? 'NASA POWER GWETROOT (Model)' : smapStatus.shortLabel}
+            </span>
           </div>
         </div>
 

@@ -34,7 +34,7 @@ export default function DataSourcesPage() {
           }`}
         >
           <Database className="w-3.5 h-3.5" />
-          <span>Katalog 13 Dataset Terintegrasi & Terverifikasi</span>
+          <span>13 Sumber Dataset, Referensi & Peran Sistem</span>
         </button>
 
         <button

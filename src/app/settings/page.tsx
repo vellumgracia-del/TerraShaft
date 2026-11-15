@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { useAppI18n } from '@/lib/i18n';
@@ -21,7 +20,6 @@ import {
   Satellite,
   Layers,
   Sparkles,
-  ShieldCheck,
   Trash2,
   AlertCircle,
   Languages
@@ -66,7 +64,6 @@ export default function SettingsPage() {
     toggleFieldMode,
     selectedPathway,
     setSelectedPathway,
-    priorities,
     setPriorityPreset
   } = useTerraShaftStore();
   const { t, locale, setLocale, isEn } = useAppI18n();
@@ -182,11 +179,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'profile'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'profile'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <User className="w-4 h-4 shrink-0" />
             <span>Profil Pengguna</span>
@@ -195,11 +191,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('preferences')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'preferences'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'preferences'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <Sliders className="w-4 h-4 shrink-0" />
             <span>Preferensi Sistem</span>
@@ -208,11 +203,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('integrations')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'integrations'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'integrations'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <Radio className="w-4 h-4 shrink-0" />
             <span>Integrasi Satelit & AI</span>
@@ -221,11 +215,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('security')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'security'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'security'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <Lock className="w-4 h-4 shrink-0" />
             <span>Keamanan & Sesi</span>
@@ -366,11 +359,10 @@ export default function SettingsPage() {
                       setLocale('en');
                       triggerToast('Language switched to English (calculations unchanged)');
                     }}
-                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${
-                      locale === 'en'
-                        ? 'bg-[#00C2CC] text-[#121417]'
-                        : 'text-[#C1C7CD] hover:text-white'
-                    }`}
+                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${locale === 'en'
+                      ? 'bg-[#00C2CC] text-[#121417]'
+                      : 'text-[#C1C7CD] hover:text-white'
+                      }`}
                   >
                     English (EN)
                   </button>
@@ -380,11 +372,10 @@ export default function SettingsPage() {
                       setLocale('id');
                       triggerToast('Bahasa diubah ke Indonesia (kalkulasi tetap sama)');
                     }}
-                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${
-                      locale === 'id'
-                        ? 'bg-[#00C2CC] text-[#121417]'
-                        : 'text-[#C1C7CD] hover:text-white'
-                    }`}
+                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${locale === 'id'
+                      ? 'bg-[#00C2CC] text-[#121417]'
+                      : 'text-[#C1C7CD] hover:text-white'
+                      }`}
                   >
                     Indonesia (ID)
                   </button>
@@ -433,11 +424,10 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={toggleFieldMode}
-                  className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-colors cursor-pointer ${
-                    isFieldMode
-                      ? 'bg-[#163A40] text-[#00C2CC] border border-[#00C2CC]'
-                      : 'bg-[#1A1F26] text-[#A6AFB8] border border-[#2E3540]'
-                  }`}
+                  className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-colors cursor-pointer ${isFieldMode
+                    ? 'bg-[#163A40] text-[#00C2CC] border border-[#00C2CC]'
+                    : 'bg-[#1A1F26] text-[#A6AFB8] border border-[#2E3540]'
+                    }`}
                 >
                   {isFieldMode ? 'Aktif' : 'Non-Aktif'}
                 </button>
@@ -461,11 +451,10 @@ export default function SettingsPage() {
                         setSelectedPathway(p.id as 'A' | 'B' | 'C');
                         triggerToast(`Jalur bawaan disetel ke ${p.name}`);
                       }}
-                      className={`p-3 rounded-[4px] border text-left transition-colors cursor-pointer ${
-                        selectedPathway === p.id
-                          ? 'bg-[#163A40] border-[#00C2CC] text-[#F1F3F5]'
-                          : 'bg-[#121418] border-[#242831] text-[#A6AFB8] hover:border-[#2C313A]'
-                      }`}
+                      className={`p-3 rounded-[4px] border text-left transition-colors cursor-pointer ${selectedPathway === p.id
+                        ? 'bg-[#163A40] border-[#00C2CC] text-[#F1F3F5]'
+                        : 'bg-[#121418] border-[#242831] text-[#A6AFB8] hover:border-[#2C313A]'
+                        }`}
                     >
                       <div className="text-xs font-semibold text-[#00C2CC]">{p.name}</div>
                       <div className="text-[11px] mt-0.5">{p.desc}</div>
@@ -532,7 +521,7 @@ export default function SettingsPage() {
                     <Satellite className="w-4 h-4 text-[#00C2CC]" />
                     <div>
                       <div className="text-xs font-semibold text-[#F1F3F5]">NASA POWER API</div>
-                      <div className="text-[11px] text-[#8A949E]">SMAP, GPM IMERG, CERES</div>
+                      <div className="text-[11px] text-[#8A949E]">T2M, Solar Radiation, GWETROOT, PRECTOTCORR</div>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#064E3B] text-[#34D399] border border-[#047857]">

@@ -340,7 +340,7 @@ export default function FieldOverviewCard() {
                 : 'text-[#8A949E] hover:text-[#F1F3F5]'
             }`}
           >
-            Satelit Riil
+            Satellite Basemap
           </button>
         </div>
       </div>

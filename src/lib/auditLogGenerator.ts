@@ -111,8 +111,8 @@ export function generateDynamicAuditLog(
     const hypotheticalDeficit = Math.max(0, waterHeavyCrop.water_requirement_mm - rainS4);
     const cropDisplayName = isEn ? waterHeavyCrop.name_en || waterHeavyCrop.name : waterHeavyCrop.name;
     const reasonText = isEn
-      ? `Crop water demand (${formatMm(waterHeavyCrop.water_requirement_mm)}) projects a ${formatMm(hypotheticalDeficit)} deficit at SMAP root moisture ${formatNumber(gwetroot, 2)} GWETROOT. Yield failure risk exceeds safe threshold.`
-      : `Kebutuhan air (${formatMm(waterHeavyCrop.water_requirement_mm)}) menghasilkan proyeksi defisit ${formatMm(hypotheticalDeficit)} pada kelembapan akar SMAP ${formatNumber(gwetroot, 2)} GWETROOT. Risiko kegagalan panen dinilai tidak aman.`;
+      ? `Crop water demand (${formatMm(waterHeavyCrop.water_requirement_mm)}) projects a ${formatMm(hypotheticalDeficit)} deficit at NASA POWER GWETROOT ${formatNumber(gwetroot, 2)} (model-assimilated). Yield failure risk exceeds safe threshold.`
+      : `Kebutuhan air (${formatMm(waterHeavyCrop.water_requirement_mm)}) menghasilkan proyeksi defisit ${formatMm(hypotheticalDeficit)} pada indikator NASA POWER GWETROOT ${formatNumber(gwetroot, 2)} (model-assimilated). Risiko kegagalan panen dinilai tidak aman.`;
 
     entries.push({
       id: 'audit-drought-elimination',

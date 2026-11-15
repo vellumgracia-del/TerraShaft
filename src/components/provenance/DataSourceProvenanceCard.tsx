@@ -234,10 +234,10 @@ export default function DataSourceProvenanceCard() {
             {isEn ? 'Assimilated Satellite Instruments & Models:' : 'Instrumen Asimilasi Satelit & Model:'}
           </span>
           <ul className="list-disc pl-5 space-y-1 text-[#8A949E] font-mono text-[11.5px]">
-            <li><strong>NASA SMAP (Soil Moisture Active Passive):</strong> Level-4 Model-Assimilated Root-Zone Soil Wetness (0-100cm).</li>
-            <li><strong>NASA POWER Precipitation:</strong> NASA-derived precipitation estimate via NASA POWER daily PRECTOTCORR.</li>
-            <li><strong>NASA CERES & MERRA-2:</strong> Solar Surface Radiation & Evapotranspiration Hargreaves-Samani via NASA POWER.</li>
-            <li><strong>ISRIC SoilGrids 250m v2.0:</strong> Pedotransfer Sand, Clay, Silt, C-Organic, pH, dan CEC (atau profil regional terkalibrasi saat failover).</li>
+            <li><strong>NASA POWER GWETROOT:</strong> Model-assimilated root-zone wetness indicator (0–100 cm) via NASA POWER API (no direct SMAP API route).</li>
+            <li><strong>NASA POWER PRECTOTCORR:</strong> Corrected daily/monthly precipitation parameter via NASA POWER API (no direct GPM/IMERG API route).</li>
+            <li><strong>NASA POWER Agroclimatology:</strong> Daily T2M (min/max/mean) and ALLSKY_SFC_SW_DWN solar irradiance for Hargreaves-Samani ET0.</li>
+            <li><strong>ISRIC SoilGrids 250m v2.0:</strong> 0–30 cm depth-weighted Sand, Clay, Silt, SOC, pH, and CEC via REST API (or calibrated regional failover).</li>
           </ul>
         </div>
       )}
