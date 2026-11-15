@@ -24,7 +24,7 @@ The system transforms complex geospatial data into easy-to-understand crop rotat
 - [Geographic Coverage and Dataset Strategy](#geographic-coverage-and-dataset-strategy)
 - [Global Core Datasets](#global-core-datasets)
 - [Indonesia Profile Datasets](#indonesia-profile-datasets)
-- [United States Regional Datasets](#united-states-regional-datasets)
+- [Calibrated Standard and Pedotransfer Baseline](#calibrated-standard-and-pedotransfer-baseline)
 - [System Workflow](#system-workflow)
 - [Key Features](#key-features)
 - [Methodology and Assumptions](#methodology-and-assumptions)
@@ -99,25 +99,15 @@ Global Core
 + Local commodity price data
 ```
 
-### United States Profile
+### Calibrated Standard and Pedotransfer Baseline
 
-USDA datasets and United States regional sources are used only when the target location falls within supported coverage areas:
+For validating soil physical relationships (Saxton-Rawls pedotransfer equations) and providing a calibrated fallback for the United States (CONUS), TerraShaft uses:
 
 ```text
-Global Core
-+ SSURGO/WSS
-+ CDL/CropScape
-+ USDA NASS
-+ PRISM
-+ NAIP
-+ NLCD
-+ NLDAS
-+ USGS NWIS
-+ OpenET
-+ USDA AMS Market News
+USDA SSURGO / STATSGO2
 ```
 
-With this strategy, TerraShaft never forces United States-only datasets onto locations in Indonesia or other countries.
+Unused United States regional datasets (such as CDL, NASS, PRISM, NAIP, NLCD, NLDAS, NWIS, OpenET, LANDFIRE, CoCoRaHS) have been streamlined out of runtime execution for efficiency and dedicated focus on Indonesian dryland agriculture.
 
 ---
 
@@ -216,22 +206,13 @@ Local datasets must never be assumed to be universally available. When unavailab
 
 ---
 
-## United States Regional Datasets
+## Calibrated Standard and Pedotransfer Baseline
 
-The following datasets are used as regional enhancements when a location is within the United States or officially supported territories:
+The following dataset serves as a benchmark for soil texture and water retention relationships:
 
-- **SSURGO/WSS:** detailed soil maps and soil survey attributes.
-- **CDL/CropScape:** annual crop type classification.
-- **USDA NASS:** planted acreage, yield, and production statistics.
-- **PRISM:** climate datasets accounting for topographic/orographic effects.
-- **NAIP:** high-resolution aerial imagery for field boundary and condition validation.
-- **NLCD:** land cover and land use classification.
-- **NLDAS:** North American weather time series and land-surface variables.
-- **USGS NWIS:** surface water, groundwater, streamflow, and water quality data.
-- **OpenET:** satellite-based evapotranspiration estimates for supported regions.
-- **USDA AMS Market News:** United States commodity prices and market conditions.
+- **USDA SSURGO / STATSGO2:** used for calibrating the standard Saxton-Rawls pedotransfer equations (calculating Available Water Capacity / AWC) and serving as the calibrated soil profile fallback for CONUS (United States).
 
-SSURGO, WSS, CDL, and USDA NASS are never used as global datasets. When a location lies outside their coverage, the system routes to global or appropriate regional providers and logs the fallback.
+Unused United States regional datasets (such as CDL, NASS, PRISM, NAIP, NLCD, NLDAS, NWIS, OpenET, LANDFIRE, CoCoRaHS) have been eliminated from runtime systems for optimal efficiency and system integrity.
 
 ---
 

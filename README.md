@@ -24,7 +24,7 @@ Sistem mengubah data geospasial yang kompleks menjadi rekomendasi rotasi tanaman
 - [Cakupan Geografis dan Strategi Dataset](#cakupan-geografis-dan-strategi-dataset)
 - [Dataset Global Core](#dataset-global-core)
 - [Dataset Indonesia Profile](#dataset-indonesia-profile)
-- [Dataset Regional Amerika Serikat](#dataset-regional-amerika-serikat)
+- [Dataset Standar Kalibrasi dan Pedotransfer](#dataset-standar-kalibrasi-dan-pedotransfer)
 - [Alur Kerja Sistem](#alur-kerja-sistem)
 - [Fitur Utama](#fitur-utama)
 - [Metodologi dan Asumsi](#metodologi-dan-asumsi)
@@ -99,25 +99,15 @@ Global Core
 + data harga komoditas lokal
 ```
 
-### United States Profile
+### Standar Kalibrasi dan Pedotransfer
 
-Dataset USDA dan sumber regional Amerika Serikat hanya digunakan ketika lokasi berada di wilayah yang didukung:
+Untuk validasi hubungan fisika tanah (persamaan pedotransfer Saxton-Rawls) dan fallback wilayah Amerika Serikat (CONUS), TerraShaft menggunakan:
 
 ```text
-Global Core
-+ SSURGO/WSS
-+ CDL/CropScape
-+ USDA NASS
-+ PRISM
-+ NAIP
-+ NLCD
-+ NLDAS
-+ USGS NWIS
-+ OpenET
-+ USDA AMS Market News
+USDA SSURGO / STATSGO2
 ```
 
-Dengan strategi ini, TerraShaft tidak memaksakan dataset Amerika Serikat ke lokasi Indonesia atau negara lain.
+Dataset regional AS yang tidak terpakai di lapangan (seperti CDL, NASS, PRISM, NAIP, NLCD, NLDAS, NWIS, OpenET, LANDFIRE, CoCoRaHS) telah dilepas dari sistem demi efisiensi, akurasi, dan fokus penuh pada pertanian lahan kering Indonesia.
 
 ---
 
@@ -216,22 +206,13 @@ Dataset lokal tidak boleh dianggap selalu tersedia. Jika tidak tersedia, UI haru
 
 ---
 
-## Dataset Regional Amerika Serikat
+## Dataset Standar Kalibrasi dan Pedotransfer
 
-Dataset berikut dipakai sebagai enhancement ketika lokasi berada di Amerika Serikat atau wilayah yang secara resmi didukung:
+Dataset berikut dipakai sebagai benchmark acuan hubungan tekstur tanah dan retensi air:
 
-- **SSURGO/WSS:** peta dan atribut tanah detail.
-- **CDL/CropScape:** klasifikasi jenis tanaman tahunan.
-- **USDA NASS:** statistik luas tanam, hasil panen, dan produksi.
-- **PRISM:** data iklim yang memperhitungkan pengaruh topografi.
-- **NAIP:** citra udara resolusi tinggi untuk validasi batas dan kondisi lahan.
-- **NLCD:** tutupan dan penggunaan lahan.
-- **NLDAS:** deret waktu cuaca dan variabel permukaan Amerika Utara.
-- **USGS NWIS:** data sungai, air tanah, debit, dan kualitas air.
-- **OpenET:** estimasi evapotranspirasi untuk wilayah yang didukung.
-- **USDA AMS Market News:** harga dan kondisi pasar komoditas Amerika Serikat.
+- **USDA SSURGO / STATSGO2:** digunakan untuk kalibrasi formula pedotransfer baku Saxton-Rawls (menghitung Available Water Capacity / AWC) dan fallback profil tanah terkalibrasi khusus wilayah CONUS Amerika Serikat.
 
-SSURGO, WSS, CDL, dan USDA NASS tidak digunakan sebagai dataset global. Jika lokasi berada di luar cakupan, sistem menggunakan provider global atau regional lain dan mencatat fallback tersebut.
+Dataset regional AS yang tidak terpakai (seperti CDL, NASS, PRISM, NAIP, NLCD, NLDAS, NWIS, OpenET, LANDFIRE, CoCoRaHS) telah dieliminasi demi efisiensi dan integritas sistem.
 
 ---
 

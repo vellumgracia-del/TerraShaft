@@ -365,7 +365,7 @@ export default function HomePage() {
               <span className="text-[#F1F3F5]">SRTM DEM ({elevation_m}m)</span>
             </div>
             <Link href="/data-sources" className="text-[#00C2CC] hover:underline flex items-center gap-1 font-sans text-[11px]">
-              <span>24 Datasets</span>
+              <span>13 Datasets</span>
               <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>

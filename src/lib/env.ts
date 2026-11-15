@@ -19,7 +19,7 @@ export interface AppEnvConfig {
 
 const DEFAULT_NASA_POWER_BASE = 'https://power.larc.nasa.gov/api';
 const DEFAULT_SOILGRIDS_BASE = 'https://rest.isric.org/soilgrids/v2.0';
-const DEFAULT_TIMEOUT_MS = 12000;
+const DEFAULT_TIMEOUT_MS = 15000;
 
 export function getAppEnv(): AppEnvConfig {
   const rawMode = process.env.NEXT_PUBLIC_DATA_MODE?.trim().toLowerCase();
