@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { useAppI18n } from '@/lib/i18n';
+import { useAppI18n, localizePathwayCopy } from '@/lib/i18n';
 import {
   Search,
   MapPin,
@@ -34,6 +34,7 @@ interface PresetItem {
   elevation: number;
   category: 'timor' | 'indonesia' | 'global';
   notes: string;
+  notesEn: string;
 }
 
 const PRESET_LOCATIONS: PresetItem[] = [
@@ -44,7 +45,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 123.821,
     elevation: 85,
     category: 'timor',
-    notes: 'Lahan sawah tadah hujan & palawija tanah Vertisol'
+    notes: 'Lahan sawah tadah hujan & palawija tanah Vertisol',
+    notesEn: 'Rainfed rice & palawija dryland on Vertisol clay soils'
   },
   {
     name: 'Camplong',
@@ -53,7 +55,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 123.9215,
     elevation: 180,
     category: 'timor',
-    notes: 'Kawasan perbukitan semi-kering lereng kapur'
+    notes: 'Kawasan perbukitan semi-kering lereng kapur',
+    notesEn: 'Semi-arid limestone hillslopes'
   },
   {
     name: 'Sumba Timur',
@@ -62,7 +65,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 120.2642,
     elevation: 60,
     category: 'timor',
-    notes: 'Sentra sorgum & padang sabana iklim kering'
+    notes: 'Sentra sorgum & padang sabana iklim kering',
+    notesEn: 'Dry-climate sorghum hub & savanna grasslands'
   },
   {
     name: 'Gunungkidul',
@@ -71,7 +75,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 110.6012,
     elevation: 220,
     category: 'indonesia',
-    notes: 'Lahan kering karst bergelombang tanah mediteran'
+    notes: 'Lahan kering karst bergelombang tanah mediteran',
+    notesEn: 'Undulating karst dryland with Mediterranean soils'
   },
   {
     name: 'Indramayu',
@@ -80,7 +85,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 108.3242,
     elevation: 12,
     category: 'indonesia',
-    notes: 'Dataran pantai aluvial sawah irigasi teknis'
+    notes: 'Dataran pantai aluvial sawah irigasi teknis',
+    notesEn: 'Alluvial coastal plain with technical irrigation'
   },
   {
     name: 'Lombok Timur',
@@ -89,7 +95,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 116.5342,
     elevation: 140,
     category: 'indonesia',
-    notes: 'Kawasan bayangan hujan sentra jagung dan tembakau'
+    notes: 'Kawasan bayangan hujan sentra jagung dan tembakau',
+    notesEn: 'Rain-shadow maize and tobacco belt'
   },
   {
     name: 'Machakos (Kenya)',
@@ -98,7 +105,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 37.2634,
     elevation: 1600,
     category: 'global',
-    notes: 'Dataran tinggi semi-arid Afrika Timur'
+    notes: 'Dataran tinggi semi-arid Afrika Timur',
+    notesEn: 'Semi-arid East African highlands'
   },
   {
     name: 'Central Valley (USA)',
@@ -107,7 +115,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: -119.7871,
     elevation: 94,
     category: 'global',
-    notes: 'Lembah agribisnis mediterania dengan irigasi intensif'
+    notes: 'Lembah agribisnis mediterania dengan irigasi intensif',
+    notesEn: 'Mediterranean agribusiness valley with intensive irrigation'
   },
   {
     name: 'Murray-Darling (Australia)',
@@ -116,7 +125,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: 149.5775,
     elevation: 650,
     category: 'global',
-    notes: 'Cekungan pertanian gandum dan peternakan iklim sedang'
+    notes: 'Cekungan pertanian gandum dan peternakan iklim sedang',
+    notesEn: 'Temperate wheat-sheep agricultural basin'
   },
   {
     name: 'Petrolina (Brazil)',
@@ -125,7 +135,8 @@ const PRESET_LOCATIONS: PresetItem[] = [
     lon: -40.503,
     elevation: 376,
     category: 'global',
-    notes: 'Kawasan semi-kering Sertao lembah Rio Sao Francisco'
+    notes: 'Kawasan semi-kering Sertao lembah Rio Sao Francisco',
+    notesEn: 'Semi-arid Sertao in the Sao Francisco River valley'
   }
 ];
 
@@ -141,7 +152,7 @@ export default function InteractiveFieldExplorer() {
     isLoadingBioData,
     agroecologicalProfile
   } = useTerraShaftStore();
-  const { t, isEn } = useAppI18n();
+  const { t, locale, isEn } = useAppI18n();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -249,9 +260,10 @@ export default function InteractiveFieldExplorer() {
         : `Cadangan air zona akar defisit kritis (<0.25) di ${agroecologicalProfile.agroecological_zone}: prioritaskan spesies tahan kekeringan terlokalisasi.`;
     }
     if (currentPlan && currentPlan.soilBatteryScore > currentPlan.initialBatteryScore) {
+      const localizedTitle = localizePathwayCopy(selectedPathway, locale).title;
       return isEn
-        ? `Active ${currentPlan.title} sequence restores Soil Battery from ${currentPlan.initialBatteryScore}% to ${currentPlan.soilBatteryScore}% (${agroecologicalProfile.country_code}).`
-        : `Pola rotasi ${currentPlan.title} memulihkan baterai tanah dari ${currentPlan.initialBatteryScore}% ke ${currentPlan.soilBatteryScore}%.`;
+        ? `Active ${localizedTitle} sequence restores Soil Battery from ${currentPlan.initialBatteryScore}% to ${currentPlan.soilBatteryScore}% (${agroecologicalProfile.country_code}).`
+        : `Pola rotasi ${localizedTitle} memulihkan baterai tanah dari ${currentPlan.initialBatteryScore}% ke ${currentPlan.soilBatteryScore}%.`;
     }
     return isEn
       ? `Soil moisture adequate for planned 4-season rotation in ${agroecologicalProfile.country}.`
@@ -483,7 +495,13 @@ export default function InteractiveFieldExplorer() {
       const lat = parseFloat(coordMatch[1]);
       const lon = parseFloat(coordMatch[3]);
       if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
-        await setLocation(lat, lon, `Koordinat (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)`);
+        await setLocation(
+          lat,
+          lon,
+          isEn
+            ? `Coordinates (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)`
+            : `Koordinat (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)`
+        );
         setSearchResults([]);
         return;
       }
@@ -596,7 +614,7 @@ export default function InteractiveFieldExplorer() {
               disabled={isSearchingPlace || searchQuery.trim().length < 2}
               className="px-2.5 py-1 bg-[#009DA5] hover:bg-[#00B4BD] text-white text-[11px] font-medium rounded-[3px] transition-colors disabled:opacity-40"
             >
-              Cari
+              {isEn ? 'Search' : 'Cari'}
             </button>
           </form>
 
@@ -645,7 +663,7 @@ export default function InteractiveFieldExplorer() {
           <button
             type="button"
             onClick={() => setIsDrawerOpen(false)}
-            title="Ciutkan Panel AOI"
+            title={isEn ? 'Collapse AOI Panel' : 'Ciutkan Panel AOI'}
             className="p-1 rounded-[3px] text-[#8A949E] hover:bg-[#20252D] hover:text-white transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -686,14 +704,14 @@ export default function InteractiveFieldExplorer() {
             {/* Active AOI Card */}
             <div className="p-3.5 bg-[#20252D] border border-[#282C34] rounded-[4px] flex flex-col gap-2">
               <div className="flex items-center justify-between text-[11px] font-mono text-[#8A949E]">
-                <span>Lahan Aktif Terpilih</span>
+                <span>{isEn ? 'Active Selected Plot' : 'Lahan Aktif Terpilih'}</span>
                 <span className="text-[#00C2CC] bg-[#163A40] px-2 py-0.5 rounded-[3px] border border-[#009DA5]/40">
-                  FOKUS
+                  {isEn ? 'FOCUSED' : 'FOKUS'}
                 </span>
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-[#F1F3F5] leading-snug">
-                  {location.placeName || 'Lahan Budidaya'}
+                  {location.placeName || (isEn ? 'Cultivation Plot' : 'Lahan Budidaya')}
                 </h2>
                 <div className="flex items-center gap-3 mt-1.5 text-[11px] font-mono text-[#8A949E]">
                   <span>
@@ -717,7 +735,7 @@ export default function InteractiveFieldExplorer() {
               <div className="flex items-center justify-between text-[11px] font-mono text-[#8A949E]">
                 <span className="flex items-center gap-1.5">
                   <Navigation className="w-3.5 h-3.5 text-[#00C2CC]" />
-                  <span>Input Koordinat Manual:</span>
+                  <span>{isEn ? 'Manual Coordinates:' : 'Input Koordinat Manual:'}</span>
                 </span>
                 <button
                   type="button"
@@ -726,7 +744,7 @@ export default function InteractiveFieldExplorer() {
                   className="text-[#00C2CC] hover:underline flex items-center gap-1"
                 >
                   <LocateFixed className={`w-3 h-3 ${isLocatingGps ? 'animate-spin' : ''}`} />
-                  <span>{isLocatingGps ? 'GPS...' : 'GPS Saya'}</span>
+                  <span>{isLocatingGps ? 'GPS...' : isEn ? 'My GPS' : 'GPS Saya'}</span>
                 </button>
               </div>
 
@@ -763,14 +781,14 @@ export default function InteractiveFieldExplorer() {
                 type="submit"
                 className="w-full py-1.5 bg-[#009DA5] hover:bg-[#00B4BD] text-white font-medium rounded-[3px] text-xs transition-colors"
               >
-                Pindah Titik Lahan
+                {isEn ? 'Move Plot Pin' : 'Pindah Titik Lahan'}
               </button>
             </form>
 
             {/* Biophysical Telemetry Snapshot */}
             <div className="flex flex-col gap-2">
               <span className="text-[11px] font-mono uppercase tracking-wider text-[#8A949E]">
-                Telemetri Biofisik Lapangan
+                {isEn ? 'Field Biophysical Telemetry' : 'Telemetri Biofisik Lapangan'}
               </span>
 
               {/* SMAP Root-zone Moisture */}
@@ -778,7 +796,7 @@ export default function InteractiveFieldExplorer() {
                 <div className="flex items-center justify-between">
                   <span className="text-[#8A949E] flex items-center gap-1.5">
                     <Droplets className="w-3.5 h-3.5 text-[#00C2CC]" />
-                    <span>Kelembapan Zona Akar</span>
+                    <span>{isEn ? 'Root-Zone Wetness' : 'Kelembapan Zona Akar'}</span>
                   </span>
                   <span
                     className={`px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono font-medium ${
@@ -789,7 +807,11 @@ export default function InteractiveFieldExplorer() {
                         : 'bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40'
                     }`}
                   >
-                    {isCriticalMoisture ? 'KRITIS' : isWatchMoisture ? 'WASPADA' : 'MEMADAI'}
+                    {isCriticalMoisture
+                      ? isEn ? 'CRITICAL' : 'KRITIS'
+                      : isWatchMoisture
+                      ? isEn ? 'WATCH' : 'WASPADA'
+                      : isEn ? 'ADEQUATE' : 'MEMADAI'}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-1.5 font-mono">
@@ -801,13 +823,13 @@ export default function InteractiveFieldExplorer() {
               {/* ISRIC Soil Properties */}
               <div className="p-3 bg-[#20252D] border border-[#282C34] rounded-[4px] grid grid-cols-2 gap-2 text-center font-mono">
                 <div className="p-2 bg-[#16191E] rounded-[3px]">
-                  <span className="text-[10px] text-[#8A949E] block">AWC Retensi</span>
+                  <span className="text-[10px] text-[#8A949E] block">{isEn ? 'AWC Retention' : 'AWC Retensi'}</span>
                   <span className="text-sm font-bold text-[#00C2CC]">
                     {soilData?.awc?.toFixed(1) ?? '27.8'} mm
                   </span>
                 </div>
                 <div className="p-2 bg-[#16191E] rounded-[3px]">
-                  <span className="text-[10px] text-[#8A949E] block">Bahan Organik</span>
+                  <span className="text-[10px] text-[#8A949E] block">{isEn ? 'Organic Matter' : 'Bahan Organik'}</span>
                   <span className="text-sm font-bold text-[#F1F3F5]">
                     {soilData?.soc?.toFixed(1) ?? '1.2'}% SOC
                   </span>
@@ -829,14 +851,14 @@ export default function InteractiveFieldExplorer() {
                 href="/rotation-planner"
                 className="w-full py-2 bg-[#009DA5] hover:bg-[#00B4BD] text-white font-medium rounded-[3px] text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors"
               >
-                <span>Optimasi Rotasi 4 Musim</span>
+                <span>{isEn ? 'Optimize 4-Season Rotation' : 'Optimasi Rotasi 4 Musim'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/water-balance"
                 className="w-full py-2 bg-[#20252D] hover:bg-[#282E38] text-[#C1C7CD] hover:text-white border border-[#282C34] font-medium rounded-[3px] text-xs flex items-center justify-center gap-1.5 transition-colors"
               >
-                <span>Periksa Neraca Air Lahan</span>
+                <span>{isEn ? 'Inspect Field Water Balance' : 'Periksa Neraca Air Lahan'}</span>
               </Link>
             </div>
           </div>
@@ -862,7 +884,7 @@ export default function InteractiveFieldExplorer() {
               <div className="flex items-center gap-1 flex-wrap text-[11px] font-mono text-[#8A949E]">
                 {(
                   [
-                    { id: 'all', label: 'SEMUA' },
+                    { id: 'all', label: isEn ? 'ALL' : 'SEMUA' },
                     { id: 'timor', label: 'TIMOR' },
                     { id: 'indonesia', label: 'INDONESIA' },
                     { id: 'global', label: 'GLOBAL' }
@@ -905,10 +927,12 @@ export default function InteractiveFieldExplorer() {
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-xs text-[#F1F3F5]">{preset.name}</span>
                       <span className="font-mono text-[10.5px] text-[#00C2CC]">
-                        {preset.elevation}m dpl
+                        {preset.elevation} {t('header.elevationUnit')}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#8A949E] line-clamp-1">{preset.notes}</p>
+                    <p className="text-[11px] text-[#8A949E] line-clamp-1">
+                      {isEn ? preset.notesEn : preset.notes}
+                    </p>
                     <div className="flex items-center justify-between pt-1 border-t border-[#282C34]/60 text-[10.5px] font-mono text-[#8A949E]">
                       <span>
                         {preset.lat.toFixed(3)}°, {preset.lon.toFixed(3)}°
@@ -916,10 +940,12 @@ export default function InteractiveFieldExplorer() {
                       {isSelected ? (
                         <span className="text-[#00C2CC] flex items-center gap-1 font-semibold">
                           <Check className="w-3 h-3" />
-                          <span>TERPILIH</span>
+                          <span>{isEn ? 'SELECTED' : 'TERPILIH'}</span>
                         </span>
                       ) : (
-                        <span className="text-[#8A949E] group-hover:text-white">PILIH</span>
+                        <span className="text-[#8A949E] group-hover:text-white">
+                          {isEn ? 'SELECT' : 'PILIH'}
+                        </span>
                       )}
                     </div>
                   </button>
@@ -928,7 +954,7 @@ export default function InteractiveFieldExplorer() {
 
               {filteredPresets.length === 0 && (
                 <div className="text-center py-8 text-xs text-[#8A949E]">
-                  Tidak ada lokasi preset yang sesuai filter.
+                  {isEn ? 'No preset locations match your filter.' : 'Tidak ada lokasi preset yang sesuai filter.'}
                 </div>
               )}
             </div>
@@ -941,7 +967,7 @@ export default function InteractiveFieldExplorer() {
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          title="Buka Panel AOI"
+          title={isEn ? 'Open AOI Panel' : 'Buka Panel AOI'}
           className="absolute left-0 top-3 z-20 h-10 px-3 bg-[#16191E]/95 backdrop-blur-md border-r border-t border-b border-[#282C34] hover:bg-[#20252D] text-[#C1C7CD] hover:text-white rounded-r-[4px] shadow-2xl flex items-center gap-2 text-xs font-mono transition-colors"
         >
           <ChevronRight className="w-4 h-4 text-[#00C2CC]" />
@@ -956,7 +982,7 @@ export default function InteractiveFieldExplorer() {
           <button
             type="button"
             onClick={handleZoomIn}
-            title="Perbesar Peta"
+            title={isEn ? 'Zoom In' : 'Perbesar Peta'}
             className="w-8 h-8 flex items-center justify-center text-[#C1C7CD] hover:bg-[#20252D] hover:text-white transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -965,7 +991,7 @@ export default function InteractiveFieldExplorer() {
           <button
             type="button"
             onClick={handleZoomOut}
-            title="Perkecil Peta"
+            title={isEn ? 'Zoom Out' : 'Perkecil Peta'}
             className="w-8 h-8 flex items-center justify-center text-[#C1C7CD] hover:bg-[#20252D] hover:text-white transition-colors"
           >
             <Minus className="w-4 h-4" />
@@ -976,7 +1002,7 @@ export default function InteractiveFieldExplorer() {
         <button
           type="button"
           onClick={handleRecenter}
-          title="Fokus ke Lokasi Lahan Terpilih"
+          title={isEn ? 'Center on Active Plot' : 'Fokus ke Lokasi Lahan Terpilih'}
           className="w-8 h-8 bg-[#16191E]/95 backdrop-blur-md border border-[#282C34] hover:bg-[#20252D] rounded-[4px] shadow-xl flex items-center justify-center text-[#00C2CC] transition-colors"
         >
           <Crosshair className="w-4 h-4" />
@@ -987,7 +1013,7 @@ export default function InteractiveFieldExplorer() {
           <button
             type="button"
             onClick={() => setIsLayerMenuOpen((prev) => !prev)}
-            title="Ganti Lapisan Peta Basemap"
+            title={isEn ? 'Switch Basemap Layer' : 'Ganti Lapisan Peta Basemap'}
             className={`w-8 h-8 bg-[#16191E]/95 backdrop-blur-md border border-[#282C34] hover:bg-[#20252D] rounded-[4px] shadow-xl flex items-center justify-center transition-colors ${
               isLayerMenuOpen ? 'text-[#00C2CC] border-[#009DA5]' : 'text-[#C1C7CD] hover:text-white'
             }`}
@@ -998,7 +1024,7 @@ export default function InteractiveFieldExplorer() {
           {isLayerMenuOpen && (
             <div className="absolute right-10 top-0 w-44 bg-[#16191E]/98 backdrop-blur-md border border-[#282C34] rounded-[4px] shadow-2xl p-1.5 flex flex-col gap-1 text-xs">
               <span className="text-[10px] font-mono uppercase tracking-wider text-[#8A949E] px-2 py-1">
-                Pilih Lapisan Citra
+                {isEn ? 'Select Imagery Layer' : 'Pilih Lapisan Citra'}
               </span>
               <button
                 type="button"
@@ -1025,7 +1051,7 @@ export default function InteractiveFieldExplorer() {
                     : 'text-[#C1C7CD] hover:bg-[#20252D] hover:text-white'
                 }`}
               >
-                <span>Peta Jalan (OSM)</span>
+                <span>{isEn ? 'Street Map (OSM)' : 'Peta Jalan (OSM)'}</span>
                 {mapType === 'streets' && <Check className="w-3.5 h-3.5" />}
               </button>
               <button
@@ -1039,7 +1065,7 @@ export default function InteractiveFieldExplorer() {
                     : 'text-[#C1C7CD] hover:bg-[#20252D] hover:text-white'
                 }`}
               >
-                <span>Topografi & Kontur</span>
+                <span>{isEn ? 'Topography & Contours' : 'Topografi & Kontur'}</span>
                 {mapType === 'topo' && <Check className="w-3.5 h-3.5" />}
               </button>
             </div>
@@ -1050,7 +1076,11 @@ export default function InteractiveFieldExplorer() {
         <button
           type="button"
           onClick={handleToggleFullscreen}
-          title={isFullscreen ? 'Keluar Layar Penuh' : 'Mode Layar Penuh'}
+          title={
+            isFullscreen
+              ? isEn ? 'Exit Fullscreen' : 'Keluar Layar Penuh'
+              : isEn ? 'Fullscreen Mode' : 'Mode Layar Penuh'
+          }
           className="w-8 h-8 bg-[#16191E]/95 backdrop-blur-md border border-[#282C34] hover:bg-[#20252D] rounded-[4px] shadow-xl flex items-center justify-center text-[#C1C7CD] hover:text-white transition-colors"
         >
           {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -1071,7 +1101,7 @@ export default function InteractiveFieldExplorer() {
         {/* Right: Planet Explorer Telemetry Bar (Coordinates, Zoom, m/px, Scale Line) */}
         <div className="flex items-center gap-3.5 sm:gap-5 md:gap-6 shrink-0 text-[11px] font-mono text-[#E1E4EA]">
           {/* Coordinates with GIS Heading Pointer Arrow */}
-          <div className="flex items-center gap-1.5" title="Koordinat Lokasi / Kursor Aktif">
+          <div className="flex items-center gap-1.5" title={isEn ? 'Active Location / Cursor Coordinates' : 'Koordinat Lokasi / Kursor Aktif'}>
             <svg
               className="w-3.5 h-3.5 text-[#E1E4EA] shrink-0"
               viewBox="0 0 16 16"
@@ -1085,13 +1115,13 @@ export default function InteractiveFieldExplorer() {
           </div>
 
           {/* Zoom Level with Search/Magnifier */}
-          <div className="hidden xs:flex items-center gap-1.5" title="Tingkat Pembesaran Zoom">
+          <div className="hidden xs:flex items-center gap-1.5" title={isEn ? 'Map Zoom Level' : 'Tingkat Pembesaran Zoom'}>
             <Search className="w-3 h-3 text-[#C1C7CD] shrink-0" />
             <span className="text-[#E1E4EA]">{zoomLevel.toFixed(2)}</span>
           </div>
 
           {/* Spatial Resolution (m/px) with Pixel Frame Icon */}
-          <div className="hidden sm:flex items-center gap-1.5" title="Resolusi Citra (Ground Sampling Distance)">
+          <div className="hidden sm:flex items-center gap-1.5" title={isEn ? 'Ground Sampling Distance' : 'Resolusi Citra (Ground Sampling Distance)'}>
             <svg
               className="w-3 h-3 text-[#C1C7CD] shrink-0"
               viewBox="0 0 16 16"
@@ -1106,7 +1136,7 @@ export default function InteractiveFieldExplorer() {
           </div>
 
           {/* Scale Line with Distance Unit */}
-          <div className="flex items-center gap-2 shrink-0" title="Skala Jarak Lapangan">
+          <div className="flex items-center gap-2 shrink-0" title={isEn ? 'Ground Distance Scale' : 'Skala Jarak Lapangan'}>
             <div
               className="h-[1.5px] bg-white transition-all shrink-0"
               style={{ width: `${Math.round(scaleBar.widthPx)}px` }}

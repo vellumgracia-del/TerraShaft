@@ -308,8 +308,8 @@ export default function LandingPage() {
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
                   {isEn
-                    ? 'NASA POWER live agroclimatology (GWETROOT root-zone wetness indicator, PRECTOTCORR precipitation, T2M temperature, and surface solar irradiance).'
-                    : 'Agroklimatologi langsung NASA POWER (indikator kelembapan zona akar GWETROOT, curah hujan PRECTOTCORR, suhu T2M, dan iradiansi surya permukaan).'}
+                    ? 'NASA POWER live agroclimatology (GWETROOT root-zone wetness, PRECTOTCORR precipitation, T2M, solar irradiance) paired with Sentinel-2, Landsat & MODIS NDVI via Planetary Computer.'
+                    : 'Agroklimatologi langsung NASA POWER (kelembapan zona akar GWETROOT, curah hujan PRECTOTCORR, suhu T2M, iradiansi surya) dipadukan dengan NDVI Sentinel-2, Landsat & MODIS via Planetary Computer.'}
                 </p>
               </div>
             </div>

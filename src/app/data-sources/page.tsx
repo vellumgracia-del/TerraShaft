@@ -5,12 +5,14 @@ import DataSourceProvenanceCard from '@/components/provenance/DataSourceProvenan
 import NasaChallengeResources from '@/components/provenance/NasaChallengeResources';
 import RagKnowledgeCatalog from '@/components/provenance/RagKnowledgeCatalog';
 import { AGRONOMY_KNOWLEDGE_BASE } from '@/data/agronomyKnowledgeBase';
+import { useAppI18n } from '@/lib/i18n';
 import { Database, Activity, BookOpen } from 'lucide-react';
 
 type DataSourcesTab = 'catalog' | 'live-status' | 'rag-sop';
 
 export default function DataSourcesPage() {
   const [activeTab, setActiveTab] = useState<DataSourcesTab>('catalog');
+  const { isEn } = useAppI18n();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -34,7 +36,11 @@ export default function DataSourcesPage() {
           }`}
         >
           <Database className="w-3.5 h-3.5" />
-          <span>13 Sumber Dataset, Referensi & Peran Sistem</span>
+          <span>
+            {isEn
+              ? '13 Datasets, References & System Roles'
+              : '13 Sumber Dataset, Referensi & Peran Sistem'}
+          </span>
         </button>
 
         <button
@@ -47,7 +53,11 @@ export default function DataSourcesPage() {
           }`}
         >
           <Activity className="w-3.5 h-3.5" />
-          <span>Status Telemetri & Provenansi AOI Aktif</span>
+          <span>
+            {isEn
+              ? 'Live Telemetry & Active AOI Provenance'
+              : 'Status Telemetri & Provenansi AOI Aktif'}
+          </span>
         </button>
 
         <button
@@ -60,13 +70,15 @@ export default function DataSourcesPage() {
           }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
-          <span>Basis Data SOP Ilmiah AI (RAG)</span>
+          <span>
+            {isEn ? 'Scientific AI SOP Database (RAG)' : 'Basis Data SOP Ilmiah AI (RAG)'}
+          </span>
           <span
             className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
               activeTab === 'rag-sop' ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#20242B] text-[#8A949E]'
             }`}
           >
-            {AGRONOMY_KNOWLEDGE_BASE.length} Dokumen
+            {AGRONOMY_KNOWLEDGE_BASE.length} {isEn ? 'Docs' : 'Dokumen'}
           </span>
         </button>
       </div>

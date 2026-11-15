@@ -1,6 +1,6 @@
 import { ClimateData, LocationCoordinates } from '@/types/climate';
 import { SoilData, Priorities, RotationPlan, Crop } from '@/types/agronomy';
-import { formatMm, formatNumber, formatScore } from './formatters';
+import { formatMm, formatNumber, formatScore, localizeTextureClass } from './formatters';
 
 export interface AuditLogEntry {
   id: string;
@@ -137,7 +137,7 @@ export function generateDynamicAuditLog(
   if (cerealCrop) {
     const cerealDisplayName = isEn ? cerealCrop.name_en || cerealCrop.name : cerealCrop.name;
     const reasonText = isEn
-      ? `Soil texture (${soilData.textureClass}) with ${formatMm(awc)} AWC cannot sustain shallow rooting (${cerealCrop.root_depth_cm}cm) when monthly precipitation falls below ET0.`
+      ? `Soil texture (${localizeTextureClass(soilData.textureClass, 'en')}) with ${formatMm(awc)} AWC cannot sustain shallow rooting (${cerealCrop.root_depth_cm}cm) when monthly precipitation falls below ET0.`
       : `Karakteristik tekstur tanah ${soilData.textureClass} dengan AWC terukur ${formatMm(awc)} tidak mampu menopang perakaran dangkal (${cerealCrop.root_depth_cm}cm) saat presipitasi bulanan di bawah ET0.`;
     entries.push({
       id: 'audit-awc-restriction',

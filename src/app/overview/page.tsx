@@ -5,7 +5,7 @@ import Link from 'next/link';
 import SummaryMetricCards from '@/components/overview/SummaryMetricCards';
 import AgroecologicalProfileCard from '@/components/overview/AgroecologicalProfileCard';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { useAppI18n, localizeCropName, localizePathwayCopy } from '@/lib/i18n';
+import { useAppI18n, localizeCropName, localizePathwayCopy, localizeTextureClass } from '@/lib/i18n';
 import {
   Search,
   Rss,
@@ -70,6 +70,7 @@ export default function HomePage() {
     elevation_m,
     climateData,
     soilData,
+    vegetationData,
     crops,
     plans,
     selectedPathway,
@@ -143,16 +144,16 @@ export default function HomePage() {
       icon: FileText,
       title: isEn ? '4-Season rotation orders' : 'Rencana rotasi 4 musim',
       sublabel: isEn
-        ? `Optimization API · Pathway ${selectedPathway} (${currentPlan?.title ?? 'Max Soil Regeneration'})`
-        : `Optimization API · Jalur ${selectedPathway} (${currentPlan?.title ?? 'Pemulihan Tanah'})`
+        ? `Optimization API · ${localizePathwayCopy(selectedPathway, locale).title}`
+        : `Optimization API · ${localizePathwayCopy(selectedPathway, locale).title}`
     },
     {
       href: '/soil-battery',
       icon: Layers,
       title: isEn ? 'Soil battery subscriptions' : 'Pemantauan baterai tanah',
       sublabel: isEn
-        ? `Pedotransfer 0-30cm API · Score ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
-        : `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
+        ? `Pedotransfer 0-30cm API · Score ${currentPlan?.soilBatteryScore ?? 100}% (${localizeTextureClass(soilData?.textureClass || '', locale)})`
+        : `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${localizeTextureClass(soilData?.textureClass || '', locale)})`
     },
     {
       href: '/water-balance',
@@ -371,10 +372,17 @@ export default function HomePage() {
           {/* Active Sensor Constellation Ribbon (Verified Live Sources Only) */}
           <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-[#16191E] border border-[#2C313A] rounded-[3px] text-[11px] font-mono text-[#8A949E]">
             <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00C2CC] animate-pulse" />
               <span className="text-[#C1C7CD] font-medium">{isEn ? 'Live Feeds:' : 'Telemetri:'}</span>
               <span className="text-[#F1F3F5]">NASA POWER (ET0 & GWETROOT)</span>
               <span className="text-[#3E4552]">·</span>
               <span className="text-[#F1F3F5]">ISRIC SoilGrids v2.0</span>
+              <span className="text-[#3E4552]">·</span>
+              <span className="text-[#F1F3F5]">
+                {vegetationData
+                  ? `${vegetationData.primarySensor} NDVI ${vegetationData.compositeNdvi.toFixed(2)}`
+                  : 'Sentinel-2 · Landsat · MODIS'}
+              </span>
               <span className="text-[#3E4552]">·</span>
               <span className="text-[#F1F3F5]">Open-Meteo DEM ({elevation_m}m)</span>
             </div>

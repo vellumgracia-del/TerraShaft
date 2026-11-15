@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -16,6 +17,7 @@ import { Activity, CheckCircle2 } from 'lucide-react';
 
 export default function PathwayRadarComparison() {
   const { plans, selectedPathway, setSelectedPathway } = useTerraShaftStore();
+  const { isEn } = useAppI18n();
 
   if (!plans) return null;
 
@@ -37,31 +39,31 @@ export default function PathwayRadarComparison() {
 
   const radarData = [
     {
-      axis: 'Baterai Tanah',
+      axis: isEn ? 'Soil Battery' : 'Baterai Tanah',
       A: plans.A.soilBatteryScore,
       B: plans.B.soilBatteryScore,
       C: plans.C.soilBatteryScore
     },
     {
-      axis: 'Efisiensi Air',
+      axis: isEn ? 'Water Efficiency' : 'Efisiensi Air',
       A: calcWaterScore('A'),
       B: calcWaterScore('B'),
       C: calcWaterScore('C')
     },
     {
-      axis: 'Aman Kemarau',
+      axis: isEn ? 'Drought Safety' : 'Aman Kemarau',
       A: calcDroughtSafety('A'),
       B: calcDroughtSafety('B'),
       C: calcDroughtSafety('C')
     },
     {
-      axis: 'Indeks Profit',
+      axis: isEn ? 'Profit Index' : 'Indeks Profit',
       A: plans.A.projectedProfitIndex,
       B: plans.B.projectedProfitIndex,
       C: plans.C.projectedProfitIndex
     },
     {
-      axis: 'Fiksasi Nitrogen',
+      axis: isEn ? 'N Fixation' : 'Fiksasi Nitrogen',
       A: calcNitrogenScore('A'),
       B: calcNitrogenScore('B'),
       C: calcNitrogenScore('C')
@@ -83,15 +85,19 @@ export default function PathwayRadarComparison() {
               <Activity className="w-4 h-4" />
             </span>
             <h3 className="text-base font-medium text-[#F1F3F5] tracking-tight">
-              Komparasi Multi-Objektif 5-Axis Radar (Pathway A vs B vs C)
+              {isEn
+                ? 'Multi-Objective 5-Axis Radar Comparison (Pathway A vs B vs C)'
+                : 'Komparasi Multi-Objektif 5-Axis Radar (Pathway A vs B vs C)'}
             </h3>
           </div>
           <p className="text-xs text-[#8A949E] mt-0.5">
-            Evaluasi trade-off antara kesehatan baterai tanah, ketahanan kekeringan, fiksasi nitrogen, dan arus kas petani
+            {isEn
+              ? 'Trade-off evaluation across soil battery health, drought resilience, nitrogen fixation, and farmer cash flow'
+              : 'Evaluasi trade-off antara kesehatan baterai tanah, ketahanan kekeringan, fiksasi nitrogen, dan arus kas petani'}
           </p>
         </div>
         <span className="text-[11px] font-mono text-[#00C2CC] bg-[#163A40] border border-[#009DA5]/40 px-2.5 py-0.5 rounded-[3px] self-start sm:self-auto">
-          Aktif: Jalur {selectedPathway}
+          {isEn ? `Active: Pathway ${selectedPathway}` : `Aktif: Jalur ${selectedPathway}`}
         </span>
       </div>
 
@@ -172,17 +178,17 @@ export default function PathwayRadarComparison() {
                   </span>
                   <span className="text-xs font-mono font-medium text-[#00C2CC] flex items-center gap-1">
                     {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
-                    <span>Skor {p.compositeScore}/100</span>
+                    <span>{isEn ? `Score ${p.compositeScore}/100` : `Skor ${p.compositeScore}/100`}</span>
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-[11px] pt-1.5 border-t border-[#2C313A] font-mono">
                   <div>
-                    <span className="text-[#8A949E] block">Baterai</span>
+                    <span className="text-[#8A949E] block">{isEn ? 'Battery' : 'Baterai'}</span>
                     <strong className="text-[#F1F3F5]">{p.soilBatteryScore}%</strong>
                   </div>
                   <div>
-                    <span className="text-[#8A949E] block">Hemat Air</span>
+                    <span className="text-[#8A949E] block">{isEn ? 'Water Saved' : 'Hemat Air'}</span>
                     <strong className="text-[#00C2CC]">{p.waterSavingsPct}%</strong>
                   </div>
                   <div>

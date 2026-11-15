@@ -206,9 +206,20 @@ export function getStructuredSeason(
 
 function translateSeasonNameEn(rawName?: string): string | undefined {
   if (!rawName) return undefined;
-  if (rawName.includes('Hujan Utama')) return 'Primary Wet Season';
-  if (rawName.includes('Peralihan Awal')) return 'Early Transition';
-  if (rawName.includes('Kemarau Awal')) return 'Early Dry Season';
-  if (rawName.includes('Puncak Kemarau')) return 'Peak Dry / Cover Window';
+  if (rawName.includes('Hujan Utama') || rawName.includes('Rendeng')) return 'Primary Wet Season';
+  if (rawName.includes('Pancaroba') || rawName.includes('Peralihan') || rawName.includes('Gadu 1')) return 'Early Transition';
+  if (rawName.includes('Kemarau Awal') || rawName.includes('Gadu 2')) return 'Early Dry Season';
+  if (rawName.includes('Puncak Kemarau') || rawName.includes('Cover')) return 'Peak Dry / Cover Window';
   return rawName;
+}
+
+export function localizeTextureClass(textureClass: string, locale: 'en' | 'id' = 'id'): string {
+  if (!textureClass) return locale === 'en' ? 'Loam' : 'Lempung (Loam)';
+  if (locale === 'en') {
+    const match = textureClass.match(/\(([^)]+)\)/);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  return textureClass;
 }

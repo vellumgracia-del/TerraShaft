@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { useAppI18n, localizeCropName } from '@/lib/i18n';
+import { useAppI18n, localizeCropName, localizeTextureClass } from '@/lib/i18n';
 import { formatMm, formatNumber, getWaterStatusDetails } from '@/lib/formatters';
 import { getNasaSmapDisplayStatus } from '@/lib/provenance';
 
@@ -33,7 +33,7 @@ export default function SummaryMetricCards() {
 
   // 3. Soil AWC & Texture (ISRIC SoilGrids)
   const awcVal = soilData?.awc ?? 27.8;
-  const textureLabel = soilData?.textureClass?.split('(')[0]?.trim() || 'Lempung Liat';
+  const textureLabel = localizeTextureClass(soilData?.textureClass || '', locale);
 
   // 4. Water Risk (Max Seasonal Deficit)
   let maxDeficit = 0;
