@@ -252,9 +252,9 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-[#F1F3F5]">{profile.name}</h3>
                   <p className="text-xs text-[#8A949E]">{profile.role}</p>
-                  <span className="inline-block mt-1 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#064E3B] text-[#34D399] border border-[#047857]">
+                  <p className="text-[11px] font-mono text-[#00C2CC] mt-1">
                     Akun Terverifikasi
-                  </span>
+                  </p>
                 </div>
               </div>
 
@@ -560,14 +560,18 @@ export default function SettingsPage() {
                   <div>
                     <div className="text-xs font-semibold text-[#F1F3F5] flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-[#00C2CC]" />
-                      <span>Google Gemini API Key (Field Advisor AI)</span>
+                      <span>AI API Key - DeepSeek / Gemini (Field Advisor AI)</span>
                     </div>
                     <p className="text-[11px] text-[#8A949E] mt-0.5">
-                      Opsional. Jika diisi, Field Advisor AI dapat menjawab konsultasi bebas secara generatif selain dokumen acuan baku.
+                      Opsional. Mendukung kunci DeepSeek (sk-...) atau Google Gemini (AIzaSy...) agar Field Advisor AI dapat menjawab konsultasi bebas berbasis RAG.
                     </p>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC]">
-                    {geminiKey ? 'KEY TERPASANG' : 'MODE DETERMINISTIK'}
+                    {geminiKey
+                      ? geminiKey.trim().startsWith('sk-')
+                        ? 'DEEPSEEK TERPASANG'
+                        : 'GEMINI TERPASANG'
+                      : 'SERVER / DETERMINISTIK'}
                   </span>
                 </div>
 
@@ -577,7 +581,7 @@ export default function SettingsPage() {
                       type={showKey ? 'text' : 'password'}
                       value={geminiKey}
                       onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder="Masukkan AIzaSy... (atau atur via GEMINI_API_KEY di .env.local)"
+                      placeholder="Masukkan sk-... (DeepSeek) atau AIzaSy... (Gemini)"
                       className="w-full bg-[#16191E] border border-[#282C34] focus:border-[#00C2CC] rounded-[4px] px-3 py-2 pr-9 text-xs text-[#F1F3F5] outline-none font-mono"
                     />
                     <button

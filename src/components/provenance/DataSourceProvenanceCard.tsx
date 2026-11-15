@@ -7,7 +7,6 @@ import {
   Satellite,
   ChevronDown,
   ChevronUp,
-  ShieldCheck,
   Layers,
   Info
 } from 'lucide-react';
@@ -46,6 +45,19 @@ export default function DataSourceProvenanceCard() {
       case 'loading':
       default:
         return 'SYNCING TELEMETRY...';
+    }
+  };
+
+  const getModeTextClass = (mode?: DataMode) => {
+    switch (mode) {
+      case 'live':
+        return 'text-[#00C2CC] font-semibold';
+      case 'cached':
+        return 'text-[#00C2CC] font-medium';
+      case 'fallback':
+        return 'text-[#FBBF24] font-medium';
+      default:
+        return 'text-[#C1C7CD]';
     }
   };
 
@@ -107,15 +119,7 @@ export default function DataSourceProvenanceCard() {
             <span className="text-[13px] font-medium text-[#F1F3F5]">
               Iklim & Atmosfer (NASA POWER)
             </span>
-            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${
-              nasaProv?.mode === 'live'
-                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
-                : nasaProv?.mode === 'cached'
-                ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
-                : nasaProv?.mode === 'fallback'
-                ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
-                : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
-            }`}>
+            <span className={`font-mono text-[10.5px] shrink-0 ${getModeTextClass(nasaProv?.mode)}`}>
               {nasaLabel}
             </span>
           </div>
@@ -163,15 +167,7 @@ export default function DataSourceProvenanceCard() {
             <span className="text-[13px] font-medium text-[#F1F3F5]">
               Fisika Tanah (ISRIC SoilGrids)
             </span>
-            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${
-              soilProv?.mode === 'live'
-                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
-                : soilProv?.mode === 'cached'
-                ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
-                : soilProv?.mode === 'fallback'
-                ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
-                : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
-            }`}>
+            <span className={`font-mono text-[10.5px] shrink-0 ${getModeTextClass(soilProv?.mode)}`}>
               {soilLabel}
             </span>
           </div>
@@ -237,14 +233,6 @@ export default function DataSourceProvenanceCard() {
           </ul>
         </div>
       )}
-
-      {/* Required Scientific Disclaimer: Low Chrome */}
-      <div className="p-3.5 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex items-start gap-2.5 text-xs text-[#8A949E]">
-        <ShieldCheck className="w-4 h-4 text-[#009DA5] shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          TerraShaft adalah alat eksplorasi skenario berbasis observasi NASA, profil tanah, dan aturan agronomi. Rekomendasi perlu divalidasi dengan penyuluh dan kondisi lapangan lokal sebelum digunakan sebagai keputusan tanam.
-        </p>
-      </div>
     </div>
   );
 }

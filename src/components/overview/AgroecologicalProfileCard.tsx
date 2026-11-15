@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Globe2, ShieldCheck, AlertTriangle, Compass } from 'lucide-react';
+import { Globe2, AlertTriangle, Compass } from 'lucide-react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { useAppI18n } from '@/lib/i18n';
 
@@ -85,7 +85,6 @@ export default function AgroecologicalProfileCard() {
     useTerraShaftStore();
   const { t, locale, isEn } = useAppI18n();
 
-  const verifiedCount = localizedCultivars.filter(r => !r.is_archetype_fallback).length;
   const fallbackCount = localizedCultivars.filter(r => r.is_archetype_fallback).length;
 
   return (
@@ -101,78 +100,58 @@ export default function AgroecologicalProfileCard() {
               {t('aez.panelTitle')}
             </h2>
             <p className="text-xs text-[#9BA3AE] mt-0.5">
-              {agroecologicalProfile.country} ({agroecologicalProfile.country_code}) ·{' '}
-              <span className="text-[#00C2CC] font-medium capitalize">
-                {agroecologicalProfile.agroecological_zone}
-              </span>{' '}
-              · {agroecologicalProfile.macro_region}
+              <span className="font-medium text-[#E1E4EA]">{t('aez.cultivarGuardrail')}: </span>
+              {t('aez.cultivarGuardrailDesc', { country: agroecologicalProfile.country })}
             </p>
           </div>
         </div>
 
-        {/* Cultivar Verification Summary Pill */}
-        <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
-          {verifiedCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#064E3B]/70 text-[#34D399] border border-[#047857]/60">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              {verifiedCount} {isEn ? 'Verified Regional Cultivars' : 'Kultivar Lokal Terverifikasi'}
-            </span>
-          )}
-          {fallbackCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#3B2E14] text-[#FBBF24] border border-[#92400E]/60">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {fallbackCount} {isEn ? 'Species Archetype Fallbacks' : 'Fallback Arketipe Spesies'}
-            </span>
-          )}
-        </div>
+        {/* Cultivar Fallback Notice */}
+        {fallbackCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#FBBF24] whitespace-nowrap shrink-0">
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            {fallbackCount} {isEn ? 'Species Archetype Fallbacks' : 'Fallback Arketipe Spesies'}
+          </span>
+        )}
       </div>
 
       {/* Normalized AEZ Telemetry Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
-        <div className="bg-[#15181D] border border-[#282C34] rounded-[5px] p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-[#8A949E]">{t('aez.country')}</div>
-          <div className="font-semibold text-[#F1F3F5] mt-1 truncate">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-[#282C34] border border-[#282C34] rounded-[5px] overflow-hidden text-xs">
+        <div className="bg-[#15181D] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[#8A949E] whitespace-nowrap">{t('aez.country')}</div>
+          <div className="font-semibold text-[#F1F3F5] mt-1">
             {agroecologicalProfile.country} ({agroecologicalProfile.country_code})
           </div>
         </div>
-        <div className="bg-[#15181D] border border-[#282C34] rounded-[5px] p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-[#8A949E]">{t('aez.zone')}</div>
-          <div className="font-semibold text-[#00C2CC] mt-1 capitalize truncate">
+        <div className="bg-[#15181D] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[#8A949E] whitespace-nowrap">{t('aez.zone')}</div>
+          <div className="font-semibold text-[#00C2CC] mt-1 capitalize">
             {agroecologicalProfile.agroecological_zone}
           </div>
         </div>
-        <div className="bg-[#15181D] border border-[#282C34] rounded-[5px] p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-[#8A949E]">{t('aez.elevationBand')}</div>
-          <div className="font-semibold text-[#F1F3F5] mt-1 truncate">
+        <div className="bg-[#15181D] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[#8A949E] whitespace-nowrap">{t('aez.elevationBand')}</div>
+          <div className="font-semibold text-[#F1F3F5] mt-1">
             {agroecologicalProfile.elevation_m} m ({agroecologicalProfile.elevation_band.split(' ')[0]})
           </div>
         </div>
-        <div className="bg-[#15181D] border border-[#282C34] rounded-[5px] p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-[#8A949E]">{t('aez.gddAnnual')}</div>
+        <div className="bg-[#15181D] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[#8A949E] whitespace-nowrap">{t('aez.gddAnnual')}</div>
           <div className="font-semibold text-[#F1F3F5] mt-1">
             {agroecologicalProfile.growing_degree_days_annual.toLocaleString(locale === 'en' ? 'en-US' : 'id-ID')} °C·d
           </div>
         </div>
-        <div className="bg-[#15181D] border border-[#282C34] rounded-[5px] p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-[#8A949E]">{t('aez.dryMonths')}</div>
+        <div className="bg-[#15181D] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[#8A949E] whitespace-nowrap">{t('aez.dryMonths')}</div>
           <div className="font-semibold text-[#F1F3F5] mt-1">
             {t('aez.dryMonthsCount', { count: agroecologicalProfile.dry_season_months.length })}
           </div>
         </div>
-        <div className="bg-[#15181D] border border-[#282C34] rounded-[5px] p-2.5">
-          <div className="text-[10px] uppercase tracking-wider text-[#8A949E]">{t('aez.photoperiod')}</div>
-          <div className="font-semibold text-[#F1F3F5] mt-1 truncate" title={agroecologicalProfile.photoperiod_class}>
+        <div className="bg-[#15181D] px-3 py-2.5">
+          <div className="text-[10px] uppercase tracking-wider text-[#8A949E] whitespace-nowrap">{t('aez.photoperiod')}</div>
+          <div className="font-semibold text-[#F1F3F5] mt-1" title={agroecologicalProfile.photoperiod_class}>
             {agroecologicalProfile.hemisphere} · {agroecologicalProfile.photoperiod_class.split('-')[0]}
           </div>
-        </div>
-      </div>
-
-      {/* Guardrail Notice */}
-      <div className="flex items-start gap-2.5 px-3 py-2 bg-[#16191E] border border-[#282C34] rounded-[5px] text-[11px] text-[#A6AFB8]">
-        <ShieldCheck className="w-4 h-4 text-[#00C2CC] shrink-0 mt-0.5" />
-        <div>
-          <span className="font-semibold text-[#E1E4EA]">{t('aez.cultivarGuardrail')}: </span>
-          <span>{t('aez.cultivarGuardrailDesc', { country: agroecologicalProfile.country })}</span>
         </div>
       </div>
 

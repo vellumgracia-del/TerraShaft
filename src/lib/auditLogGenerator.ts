@@ -166,10 +166,10 @@ export function generateDynamicAuditLog(
     const evidenceNote = resolution
       ? isEn
         ? isFallback
-          ? ` [Archetype fallback for ${location.country || 'target region'} — verify local seed registry]`
+          ? ` [Archetype fallback for ${location.country || 'target region'} - verify local seed registry]`
           : ` [Verified ${resolution.cultivar.country_or_region_of_release.join('/')} release: ${resolution.cultivar.evidence_source}]`
         : isFallback
-          ? ` [Arketipe fallback untuk ${location.country || 'wilayah target'} — verifikasi katalog benih lokal]`
+          ? ` [Arketipe fallback untuk ${location.country || 'wilayah target'} - verifikasi katalog benih lokal]`
           : ` [Kultivar terverifikasi ${resolution.cultivar.country_or_region_of_release.join('/')}: ${resolution.cultivar.evidence_source}]`
       : '';
 

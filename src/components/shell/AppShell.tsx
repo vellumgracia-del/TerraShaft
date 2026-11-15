@@ -16,6 +16,7 @@ export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const isPublicRoute = pathname === '/' || pathname === '/landing' || pathname === '/login';
   const isFieldMapPage = pathname === '/field-map';
+  const isFieldAdvisorPage = pathname === '/field-advisor';
   const {
     location,
     soilData,
@@ -110,6 +111,19 @@ export default function AppShell({ children }: AppShellProps) {
               {/* Controlled Error Alert Banner as floating toast on map view */}
               {errorBioData && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1050] max-w-lg px-4 py-2.5 bg-[#2D1B1E]/95 backdrop-blur-md border border-[#7F1D1D]/60 rounded-[4px] shadow-2xl flex items-center gap-2.5 text-xs text-[#F87171]">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-[#F87171]" />
+                  <span>
+                    <strong>{isEn ? 'Validation / Network Warning:' : 'Peringatan Validasi/Jaringan:'}</strong> {errorBioData}
+                  </span>
+                </div>
+              )}
+
+              {children}
+            </main>
+          ) : isFieldAdvisorPage ? (
+            <main className="flex-1 w-full lg:h-[calc(100vh-4rem)] lg:overflow-hidden p-4 lg:p-5 max-w-[1600px] mx-auto flex flex-col gap-3 bg-[#181B20] text-[#F1F3F5]">
+              {errorBioData && (
+                <div className="p-2.5 bg-[#2D1B1E] border border-[#7F1D1D]/40 rounded-[4px] flex items-center gap-2 text-xs text-[#F87171] shrink-0">
                   <AlertCircle className="w-4 h-4 shrink-0 text-[#F87171]" />
                   <span>
                     <strong>{isEn ? 'Validation / Network Warning:' : 'Peringatan Validasi/Jaringan:'}</strong> {errorBioData}

@@ -49,9 +49,9 @@ function buildArchetypeFallbackCultivar(
     allowed_agroecological_zones: [aez.agroecological_zone],
     registration_status: 'Phenotype Archetype (Unverified Local Registry)',
     evidence_source:
-      'FAO-56 Crop Evapotranspiration & Global Phenotype Baseline — Verify National Seed Registry',
+      'FAO-56 Crop Evapotranspiration & Global Phenotype Baseline - Verify National Seed Registry',
     evidence_date: 'Baseline Reference',
-    availability_status: 'Archetype Fallback — Verify Local Seed Registry',
+    availability_status: 'Archetype Fallback - Verify Local Seed Registry',
     confidence_score: 0.48,
     agronomic_notes_en: `${species.species_notes_en} No verified cultivar is registered in the local TerraShaft catalog for ${aez.country} (${aez.agroecological_zone}). Consult local agricultural extension or national seed catalogs before purchasing seed.`,
     agronomic_notes_id: `${species.species_notes_id} Belum ada kultivar terverifikasi di registri lokal TerraShaft untuk wilayah ${aez.country} (${aez.agroecological_zone}). Verifikasi katalog benih resmi atau PPL setempat sebelum memilih varietas.`,

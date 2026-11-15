@@ -25,7 +25,7 @@ const reverseCache = new Map<string, { data: ReverseGeocodeResult; timestamp: nu
 const searchCache = new Map<string, { results: SearchLocationItem[]; timestamp: number }>();
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 Hari
 const MAX_CACHE_SIZE = 500;
-const USER_AGENT = 'TerraShaft-Agritech/3.0 (NASA Space Apps Challenge; Public Spatial Telemetry)';
+const USER_AGENT = 'TerraShaft-Agritech/3.0 (Public Spatial Telemetry)';
 
 function setBoundedMap<T>(
   map: Map<string, { data?: T; results?: T; timestamp: number }>,
