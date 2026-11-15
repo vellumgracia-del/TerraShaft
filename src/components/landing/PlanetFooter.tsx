@@ -2,8 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useAppI18n } from '@/lib/i18n';
 
 export default function PlanetFooter() {
+  const { isEn } = useAppI18n();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -103,7 +105,7 @@ export default function PlanetFooter() {
           <div className="flex flex-col gap-8">
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Products
+                {isEn ? 'Products' : 'Produk'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -156,7 +158,7 @@ export default function PlanetFooter() {
 
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Solutions
+                {isEn ? 'Solutions' : 'Solusi'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -187,7 +189,7 @@ export default function PlanetFooter() {
           <div className="flex flex-col gap-8">
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Industries
+                {isEn ? 'Industries' : 'Sektor'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -260,7 +262,7 @@ export default function PlanetFooter() {
 
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Investors
+                {isEn ? 'Investors' : 'Investor'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -281,7 +283,7 @@ export default function PlanetFooter() {
           <div className="flex flex-col gap-8">
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Partners
+                {isEn ? 'Partners' : 'Mitra'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -309,7 +311,7 @@ export default function PlanetFooter() {
 
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Company
+                {isEn ? 'Company' : 'Perusahaan'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -375,7 +377,7 @@ export default function PlanetFooter() {
           <div className="flex flex-col gap-8">
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Support
+                {isEn ? 'Support' : 'Dukungan'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -408,7 +410,7 @@ export default function PlanetFooter() {
 
             <div>
               <h3 className="text-white font-bold text-[13px] tracking-wider mb-3.5 uppercase">
-                Quick Links
+                {isEn ? 'Quick Links' : 'Tautan Cepat'}
               </h3>
               <ul className="space-y-2.5">
                 <li>
@@ -465,22 +467,25 @@ export default function PlanetFooter() {
         <div className="mt-20 pt-8 border-t border-[#1C2534] flex flex-col md:flex-row items-center justify-between gap-6 text-[12px] text-[#7E8B9E]">
           {/* Legal Links */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-1.5 leading-normal">
-            <span>© {currentYear} TerraShaft Systems. All rights reserved.</span>
+            <span>
+              © {currentYear} TerraShaft Systems.{' '}
+              {isEn ? 'All rights reserved.' : 'Seluruh hak cipta dilindungi.'}
+            </span>
             <span>|</span>
             <Link href="/settings" className="hover:text-white transition-colors">
-              Privacy Policy
+              {isEn ? 'Privacy Policy' : 'Kebijakan Privasi'}
             </Link>
             <span>|</span>
             <Link href="/settings" className="hover:text-white transition-colors">
-              Terms of Service
+              {isEn ? 'Terms of Service' : 'Ketentuan Layanan'}
             </Link>
             <span>|</span>
             <Link href="/data-sources" className="hover:text-white transition-colors">
-              Data Provenance & Audit
+              {isEn ? 'Data Provenance & Audit' : 'Sumber & Audit Data'}
             </Link>
             <span>|</span>
             <Link href="/settings" className="inline-flex items-center gap-1.5 hover:text-white transition-colors">
-              <span>Your Privacy Choices</span>
+              <span>{isEn ? 'Your Privacy Choices' : 'Pilihan Privasi Anda'}</span>
               {/* Privacy / Opt-Out Icon */}
               <svg className="w-6 h-3 inline-block" viewBox="0 0 30 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="0.5" y="0.5" width="29" height="13" rx="6.5" stroke="#00C2CC" fill="#0E232E" />
@@ -490,15 +495,15 @@ export default function PlanetFooter() {
             </Link>
             <span>|</span>
             <Link href="/settings" className="hover:text-white transition-colors">
-              Cookie Notice
+              {isEn ? 'Cookie Notice' : 'Pemberitahuan Cookie'}
             </Link>
             <span>|</span>
             <Link href="/data-sources" className="hover:text-white transition-colors">
-              Scientific Citations (BRIN / FAO)
+              {isEn ? 'Scientific Citations (BRIN / FAO)' : 'Sitasi Ilmiah (BRIN / FAO)'}
             </Link>
             <span>|</span>
             <Link href="/overview" className="hover:text-white transition-colors">
-              Sitemap
+              {isEn ? 'Sitemap' : 'Peta Situs'}
             </Link>
           </div>
 
