@@ -2,6 +2,23 @@
 
 All notable changes to the TerraShaft project are documented in this file.
 
+## [Milestone 3.4] - 2026-11-15 - Streamlined 13-Dataset Architecture, Silent Background Re-verification & Provenance Sync
+
+### Summary
+Streamlined TerraShaft data architecture by trimming 11 unused regional US datasets that lacked runtime routes and parsers, consolidating into 13 high-impact verified datasets across Global Core, Indonesia Profile, and Calibrated Baseline. Resolved telemetry status hydration inconsistencies between frontend provenance badges and backend payloads through an automatic silent background re-verification engine and increased upstream timeout margins.
+
+### Changed & Streamlined
+- **Dataset Catalog Consolidation (`NasaChallengeResources.tsx`, `/data-sources`, `/overview`)**:
+  - Removed 11 non-functional passive US datasets: USFS LANDFIRE, CoCoRaHS, NAIP, NLCD, OpenET, NWIS, PRISM, CDL, WSS, AMS Market News, NASS QuickStats.
+  - Standardized on 13 verified active datasets: 8 Global Core (NASA POWER, NASA SMAP L4, ISRIC SoilGrids v2.0, NASA GPM IMERG, NASA SRTM DEM, Landsat & MODIS/VIIRS, Copernicus Sentinel-2, GLDAS/ERA5), 4 Indonesia Profile (NASA ECOSTRESS, NASA GEDI, BRIN/Balittanah/Kementan, FAO GAEZ v4), and 1 Calibrated Standard Baseline (USDA SSURGO).
+  - Synchronized UI badges and array lengths to an exact 1:1 match (13 datasets).
+- **Telemetry Hydration & Silent Background Re-verification (`useTerraShaftStore.ts`, `env.ts`)**:
+  - Implemented 3.5s silent background re-verification in Zustand store when initial fetch returns fallback data due to upstream cold start.
+  - Increased ISRIC SoilGrids default timeout margin from 12,000ms to 15,000ms in `env.ts` to accommodate upstream REST API latency.
+  - Aligned provenance badges in `DataSourceProvenanceCard.tsx` with dynamic styles reflecting exact payload state (cyan for live, sky blue for cached, amber for fallback).
+- **Documentation & Bilingual Resources**:
+  - Synchronized `README.md`, `README.en.md`, and `src/locales/readmeResources.ts` to clearly delineate live API endpoints vs RAG knowledge base vs standard baseline.
+
 ## [Milestone 3.3] - 2026-11-15 - Landing Page Polish, Lenis Smooth Curtain Transition, Scroll-Expand Morph & Video Showcase
 
 ### Summary
