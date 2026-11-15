@@ -180,6 +180,28 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
             provenance: resolveTerraShaftProvenance(data, state.soilData, stillLoading, null, newLoading)
           };
         });
+
+        // Auto-recheck silently if initial cold-start returned fallback
+        if (data.source === 'FALLBACK_CLIMATOLOGY' && typeof window !== 'undefined') {
+          setTimeout(async () => {
+            if (get().activeRequestId !== nextReqId) return;
+            try {
+              const retryRes = await fetch(`/api/nasa-climate?lat=${lat}&lon=${lon}`);
+              if (!retryRes.ok) return;
+              const retryData: ClimateData = await retryRes.json();
+              if (retryData.source === 'NASA_POWER_LIVE' && get().activeRequestId === nextReqId) {
+                set(state => ({
+                  climateData: retryData,
+                  provenance: resolveTerraShaftProvenance(retryData, state.soilData, false, null)
+                }));
+                get().recalculate();
+              }
+            } catch {
+              // Silently ignore
+            }
+          }, 3500);
+        }
+
         return data;
       } catch (err) {
         if (get().activeRequestId !== nextReqId) return null;
@@ -213,6 +235,28 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
             provenance: resolveTerraShaftProvenance(state.climateData, data, stillLoading, null, newLoading)
           };
         });
+
+        // Auto-recheck silently if initial cold-start returned fallback
+        if (data.source === 'REGIONAL_FALLBACK' && typeof window !== 'undefined') {
+          setTimeout(async () => {
+            if (get().activeRequestId !== nextReqId) return;
+            try {
+              const retryRes = await fetch(`/api/soil-profile?lat=${lat}&lon=${lon}`);
+              if (!retryRes.ok) return;
+              const retryData: SoilData = await retryRes.json();
+              if (retryData.source === 'ISRIC_SOILGRIDS_LIVE' && get().activeRequestId === nextReqId) {
+                set(state => ({
+                  soilData: retryData,
+                  provenance: resolveTerraShaftProvenance(state.climateData, retryData, false, null)
+                }));
+                get().recalculate();
+              }
+            } catch {
+              // Silently ignore
+            }
+          }, 3500);
+        }
+
         return data;
       } catch (err) {
         if (get().activeRequestId !== nextReqId) return null;

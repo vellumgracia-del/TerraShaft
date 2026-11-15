@@ -22,11 +22,11 @@ export default function DataSourcesPage() {
           }`}
         >
           <Database className="w-3.5 h-3.5" />
-          <span>Katalog 24 Dataset Resmi NASA 2026</span>
+          <span>Katalog 13 Dataset Terintegrasi & Terverifikasi</span>
           <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
             activeTab === 'catalog' ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#20242B] text-[#8A949E]'
           }`}>
-            24 (Global + Regional ID/US)
+            13 Terverifikasi (Global Core + Penguatan Indonesia)
           </span>
         </button>
 

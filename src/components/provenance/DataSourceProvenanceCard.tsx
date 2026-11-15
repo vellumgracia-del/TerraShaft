@@ -107,7 +107,11 @@ export default function DataSourceProvenanceCard() {
             </span>
             <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${
               nasaProv?.mode === 'live'
-                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
+                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
+                : nasaProv?.mode === 'cached'
+                ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
+                : nasaProv?.mode === 'fallback'
+                ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
                 : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
             }`}>
               {nasaLabel}
@@ -159,7 +163,11 @@ export default function DataSourceProvenanceCard() {
             </span>
             <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${
               soilProv?.mode === 'live'
-                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
+                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
+                : soilProv?.mode === 'cached'
+                ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
+                : soilProv?.mode === 'fallback'
+                ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
                 : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
             }`}>
               {soilLabel}
