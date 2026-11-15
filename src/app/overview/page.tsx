@@ -15,11 +15,9 @@ import {
   Database,
   LayoutGrid,
   Share2,
-  Info,
   ArrowUpRight,
   Sparkles,
-  ArrowRight,
-  CheckCircle2
+  ArrowRight
 } from 'lucide-react';
 import {
   formatMm,
@@ -120,23 +118,22 @@ export default function HomePage() {
     {
       href: '/field-map',
       icon: Search,
-      title: 'Search and locate AOI',
-      hasInfo: true,
+      title: isEn ? 'Search and locate AOI' : 'Cari dan tentukan AOI',
       sublabel: `Nominatim & DEM API · ${location.placeName.split(',')[0]} (${elevation_m}m dpl)`
     },
     {
       href: '/data-sources',
       icon: Rss,
-      title: 'Subscribe to telemetry',
-      hasInfo: true,
+      title: isEn ? 'Subscribe to telemetry' : 'Langganan telemetri satelit',
       sublabel: 'Subscriptions API · NASA POWER & ISRIC SoilGrids v2.0'
     },
     {
       href: '/crop-library',
       icon: MapPin,
-      title: 'Areas of interest & crop varieties',
-      hasInfo: false,
-      sublabel: `Crop Library API · ${crops.length} varietas tanaman terdaftar`
+      title: isEn ? 'Areas of interest & crop varieties' : 'Katalog komoditas & varietas',
+      sublabel: isEn
+        ? `Crop Library API · ${crops.length} registered crop varieties`
+        : `Crop Library API · ${crops.length} varietas tanaman terdaftar`
     }
   ];
 
@@ -144,31 +141,35 @@ export default function HomePage() {
     {
       href: '/rotation-planner',
       icon: FileText,
-      title: '4-Season rotation orders',
-      sublabel: `Optimization API · Jalur ${selectedPathway} (${currentPlan?.title ?? 'Max Soil Regeneration'})`
+      title: isEn ? '4-Season rotation orders' : 'Rencana rotasi 4 musim',
+      sublabel: isEn
+        ? `Optimization API · Pathway ${selectedPathway} (${currentPlan?.title ?? 'Max Soil Regeneration'})`
+        : `Optimization API · Jalur ${selectedPathway} (${currentPlan?.title ?? 'Pemulihan Tanah'})`
     },
     {
       href: '/soil-battery',
       icon: Layers,
-      title: 'Soil battery subscriptions',
-      sublabel: `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
+      title: isEn ? 'Soil battery subscriptions' : 'Pemantauan baterai tanah',
+      sublabel: isEn
+        ? `Pedotransfer 0-30cm API · Score ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
+        : `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
     },
     {
       href: '/water-balance',
       icon: Database,
-      title: 'Data collections (Hydrology & ET0)',
+      title: isEn ? 'Data collections (Hydrology & ET0)' : 'Koleksi data (Hidrologi & ET0)',
       sublabel: `NASA POWER Data, Public DEM, Hargreaves ET0 (${climateData?.annualRainfall_mm ?? 1113} mm/yr)`
     },
     {
       href: '/field-map',
       icon: LayoutGrid,
-      title: 'Mosaics & satellite basemaps',
+      title: isEn ? 'Mosaics & satellite basemaps' : 'Mosaik & peta dasar satelit',
       sublabel: 'Basemaps API · OpenStreetMap & Esri World Imagery'
     },
     {
       href: '/action-sheet',
       icon: Share2,
-      title: 'Destinations & field action sheet',
+      title: isEn ? 'Destinations & field action sheet' : 'Ekspor & lembar aksi lapangan',
       sublabel: 'Destinations API · Poster PNG 1080x1350 & WhatsApp Advisory'
     }
   ];
@@ -178,15 +179,17 @@ export default function HomePage() {
       {/* LEFT COLUMN: DATA WORKFLOWS (Planet Insights Platform Layout) */}
       <div className="lg:col-span-5 lg:pr-10 lg:border-r lg:border-[#2C313A] flex flex-col gap-7">
         <div className="text-[12px] font-medium uppercase tracking-[0.08em] text-[#C1C7CD]">
-          DATA WORKFLOWS
+          {isEn ? 'DATA WORKFLOWS' : 'ALUR KERJA DATA'}
         </div>
 
         {/* Group 1: Add data */}
         <div className="flex flex-col gap-3">
           <div>
-            <h2 className="text-[15px] font-medium text-[#F1F3F5]">Add data</h2>
+            <h2 className="text-[15px] font-medium text-[#F1F3F5]">{isEn ? 'Add data' : 'Tambah data'}</h2>
             <p className="text-[13px] text-[#9BA3AE] mt-1 leading-relaxed">
-              After you select field AOIs, configure satellite telemetry feeds for soil and climate products or register local crop varieties.
+              {isEn
+                ? 'After you select field AOIs, configure satellite telemetry feeds for soil and climate products or register local crop varieties.'
+                : 'Setelah menentukan AOI lahan, atur umpan telemetri satelit untuk data tanah dan iklim atau kelola varietas tanaman lokal.'}
             </p>
           </div>
 
@@ -205,9 +208,6 @@ export default function HomePage() {
                       <span className="text-[13.5px] font-medium text-[#F1F3F5] group-hover:text-white">
                         {item.title}
                       </span>
-                      {item.hasInfo && (
-                        <Info className="w-3.5 h-3.5 text-[#8A949E] shrink-0" />
-                      )}
                     </div>
                     <p className="text-[12px] text-[#8A949E] truncate mt-0.5">
                       {item.sublabel}
@@ -276,7 +276,6 @@ export default function HomePage() {
                     AOI: {location.placeName}
                   </div>
                 </div>
-                <Info className="w-4 h-4 text-[#9BA3AE] shrink-0 mt-0.5" />
               </div>
               <div className="flex items-center justify-between text-[11.5px] font-mono text-[#8A949E] pt-1">
                 <span>2025-01-01 to 2025-12-31</span>
@@ -296,7 +295,6 @@ export default function HomePage() {
                     {activePathwayCopy.title} ({isEn ? 'Score' : 'Skor'} {currentPlan?.compositeScore ?? 89}/100)
                   </div>
                 </div>
-                <Info className="w-4 h-4 text-[#9BA3AE] shrink-0 mt-0.5" />
               </div>
               <div className="flex items-center justify-between text-[11.5px] font-mono text-[#8A949E] pt-1">
                 <span>
@@ -319,7 +317,6 @@ export default function HomePage() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-[#F1F3F5]">Field Advisor AI Diagnosis</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#20242B] text-[#00C2CC] border border-[#00C2CC]/30">RAG BRIN & FAO-56</span>
               </div>
               <p className="text-xs text-[#9BA3AE] mt-0.5 leading-relaxed">
                 {aiBriefText}
@@ -374,7 +371,6 @@ export default function HomePage() {
           {/* Active Sensor Constellation Ribbon (Verified Live Sources Only) */}
           <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-[#16191E] border border-[#2C313A] rounded-[3px] text-[11px] font-mono text-[#8A949E]">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00C2CC] animate-pulse" />
               <span className="text-[#C1C7CD] font-medium">{isEn ? 'Live Feeds:' : 'Telemetri:'}</span>
               <span className="text-[#F1F3F5]">NASA POWER (ET0 & GWETROOT)</span>
               <span className="text-[#3E4552]">·</span>
@@ -391,10 +387,11 @@ export default function HomePage() {
           <SummaryMetricCards />
           <AgroecologicalProfileCard />
         </div>
+      </div>
 
-        {/* Bottom Section: 4-SEASON ROTATION MATRIX */}
-        {currentPlan && (
-          <div className="flex flex-col gap-3">
+      {/* FULL-WIDTH BOTTOM SECTION: 4-SEASON ROTATION MATRIX */}
+      {currentPlan && (
+        <div className="lg:col-span-12 lg:mt-8 lg:pt-6 lg:border-t lg:border-[#2C313A] flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-[#C1C7CD]">
                 {isEn ? '4-SEASON ROTATION SCHEDULE' : 'JADWAL ROTASI 4 MUSIM'} ({activePathwayCopy.title.toUpperCase()})
@@ -457,17 +454,18 @@ export default function HomePage() {
                         <span className="text-[#3E4552]">·</span>
                         <span>{season.crop.growth_duration_days} {isEn ? 'days' : 'hari'}</span>
                         {res && (
-                          <span
-                            className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${
-                              isFallback
-                                ? 'bg-[#3B2E14] text-[#FBBF24] border-[#92400E]/60'
-                                : 'bg-[#064E3B]/60 text-[#34D399] border-[#047857]/60'
-                            }`}
-                          >
-                            {isFallback
-                              ? isEn ? 'Archetype Fallback' : 'Fallback Arketipe'
-                              : `${res.cultivar.country_or_region_of_release[0]} · ${Math.round(res.confidence_score * 100)}%`}
-                          </span>
+                          <>
+                            <span className="text-[#3E4552]">·</span>
+                            <span
+                              className={`font-mono ${
+                                isFallback ? 'text-[#FBBF24]' : 'text-[#34D399]'
+                              }`}
+                            >
+                              {isFallback
+                                ? isEn ? 'Archetype Fallback' : 'Fallback Arketipe'
+                                : `${Math.round(res.confidence_score * 100)}%`}
+                            </span>
+                          </>
                         )}
                       </p>
                     </div>
@@ -494,16 +492,7 @@ export default function HomePage() {
             </div>
 
             {/* Quick Action Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <div className="text-[11.5px] text-[#8A949E] flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2CC]" />
-                <span>
-                  {isEn
-                    ? 'Adaptive 4-season schedule optimized for water resilience, AEZ zoning & soil recovery'
-                    : 'Jadwal 4 musim adaptif teroptimasi untuk ketahanan air, zonasi AEZ & pemulihan hara'}
-                </span>
-              </div>
-
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
               <div className="flex items-center gap-2">
                 <Link
                   href="/action-sheet"
@@ -523,7 +512,6 @@ export default function HomePage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

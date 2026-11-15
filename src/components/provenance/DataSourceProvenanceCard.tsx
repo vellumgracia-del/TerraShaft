@@ -7,7 +7,6 @@ import {
   Satellite,
   ChevronDown,
   ChevronUp,
-  ShieldCheck,
   Layers,
   Info
 } from 'lucide-react';
@@ -46,6 +45,19 @@ export default function DataSourceProvenanceCard() {
       case 'loading':
       default:
         return 'SYNCING TELEMETRY...';
+    }
+  };
+
+  const getModeTextClass = (mode?: DataMode) => {
+    switch (mode) {
+      case 'live':
+        return 'text-[#00C2CC] font-semibold';
+      case 'cached':
+        return 'text-[#00C2CC] font-medium';
+      case 'fallback':
+        return 'text-[#FBBF24] font-medium';
+      default:
+        return 'text-[#C1C7CD]';
     }
   };
 
@@ -95,7 +107,11 @@ export default function DataSourceProvenanceCard() {
       {overallMode === 'demo' && (
         <div className="p-3 rounded-[4px] bg-[#16191E] border border-[#2C313A] text-xs font-mono text-[#9BA3AE] flex items-center gap-2">
           <Info className="w-4 h-4 text-[#8A949E] shrink-0" />
-          <span>Mode Demo: Nilai iklim dan tanah disimulasikan untuk evaluasi alur kerja platform.</span>
+          <span>
+            {isEn
+              ? 'Demo Mode: Climate and soil values are simulated for workflow evaluation.'
+              : 'Mode Demo: Nilai iklim dan tanah disimulasikan untuk evaluasi alur kerja platform.'}
+          </span>
         </div>
       )}
 
@@ -105,39 +121,32 @@ export default function DataSourceProvenanceCard() {
         <div className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[13px] font-medium text-[#F1F3F5]">
-              Iklim & Atmosfer (NASA POWER)
+              {isEn ? 'Climate & Atmosphere (NASA POWER)' : 'Iklim & Atmosfer (NASA POWER)'}
             </span>
-            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${nasaProv?.mode === 'live'
-              ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
-              : nasaProv?.mode === 'cached'
-                ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
-                : nasaProv?.mode === 'fallback'
-                  ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
-                  : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
-              }`}>
+            <span className={`font-mono text-[10.5px] shrink-0 ${getModeTextClass(nasaProv?.mode)}`}>
               {nasaLabel}
             </span>
           </div>
 
           <div className="text-[12px] text-[#9BA3AE] flex flex-col gap-1.5 pt-1.5 border-t border-[#2C313A]">
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Penyedia & Dataset:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Provider & Dataset:' : 'Penyedia & Dataset:'}</span>
               <span className="font-mono text-[#F1F3F5] text-right truncate max-w-[220px]">
                 {nasaProv?.dataset || 'NASA POWER Climatology'}
               </span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Waktu Pengambilan:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Fetched At:' : 'Waktu Pengambilan:'}</span>
               <span className="font-mono text-[#F1F3F5]">{formatTime(climateData?.fetchedAt)}</span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Status Observasi:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Observation Status:' : 'Status Observasi:'}</span>
               <span className="font-mono text-[#F1F3F5] text-right truncate max-w-[220px]">
                 {nasaStatus.shortLabel}
               </span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Periode Observasi:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Observation Period:' : 'Periode Observasi:'}</span>
               <span className="font-mono text-[#F1F3F5] text-right truncate max-w-[220px]">
                 {climateData?.observationPeriod || 'Historical Baseline 1-Tahun'}
               </span>
@@ -151,7 +160,7 @@ export default function DataSourceProvenanceCard() {
           {climateData?.fallbackReason && (
             <div className="p-2.5 rounded-[3px] bg-[#20242B] border border-[#2C313A] text-[11px] font-mono text-[#8A949E] flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-[#8A949E] shrink-0 mt-0.5" />
-              <span>Keterangan: {climateData.fallbackReason}</span>
+              <span>{isEn ? 'Note:' : 'Keterangan:'} {climateData.fallbackReason}</span>
             </div>
           )}
         </div>
@@ -160,39 +169,32 @@ export default function DataSourceProvenanceCard() {
         <div className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[13px] font-medium text-[#F1F3F5]">
-              Fisika Tanah (ISRIC SoilGrids)
+              {isEn ? 'Soil Physics (ISRIC SoilGrids)' : 'Fisika Tanah (ISRIC SoilGrids)'}
             </span>
-            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${soilProv?.mode === 'live'
-              ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
-              : soilProv?.mode === 'cached'
-                ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
-                : soilProv?.mode === 'fallback'
-                  ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
-                  : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
-              }`}>
+            <span className={`font-mono text-[10.5px] shrink-0 ${getModeTextClass(soilProv?.mode)}`}>
               {soilLabel}
             </span>
           </div>
 
           <div className="text-[12px] text-[#9BA3AE] flex flex-col gap-1.5 pt-1.5 border-t border-[#2C313A]">
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Penyedia & Model:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Provider & Model:' : 'Penyedia & Model:'}</span>
               <span className="font-mono text-[#F1F3F5] text-right truncate max-w-[220px]">
                 {soilProv?.dataset || 'ISRIC SoilGrids 250m v2.0'}
               </span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Waktu Pengambilan:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Fetched At:' : 'Waktu Pengambilan:'}</span>
               <span className="font-mono text-[#F1F3F5]">{formatTime(soilData?.fetchedAt)}</span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Status Observasi:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Observation Status:' : 'Status Observasi:'}</span>
               <span className="font-mono text-[#F1F3F5] text-right truncate max-w-[220px]">
                 {soilStatus.shortLabel}
               </span>
             </div>
             <div className="flex justify-between gap-2">
-              <span className="text-[#8A949E]">Lapisan Kedalaman:</span>
+              <span className="text-[#8A949E]">{isEn ? 'Depth Layer:' : 'Lapisan Kedalaman:'}</span>
               <span className="font-mono text-[#F1F3F5] text-right truncate max-w-[220px]">
                 {soilData?.observationPeriod || 'Standard Depth Layer 0-30cm'}
               </span>
@@ -206,7 +208,7 @@ export default function DataSourceProvenanceCard() {
           {soilData?.fallbackReason && (
             <div className="p-2.5 rounded-[3px] bg-[#20242B] border border-[#2C313A] text-[11px] font-mono text-[#8A949E] flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-[#8A949E] shrink-0 mt-0.5" />
-              <span>Keterangan: {soilData.fallbackReason}</span>
+              <span>{isEn ? 'Note:' : 'Keterangan:'} {soilData.fallbackReason}</span>
             </div>
           )}
         </div>
@@ -216,17 +218,21 @@ export default function DataSourceProvenanceCard() {
       <div className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-2 text-[12px] text-[#9BA3AE]">
         <div className="flex items-center gap-2 font-medium text-[#F1F3F5]">
           <Layers className="w-4 h-4 text-[#8A949E]" />
-          <span>Keterbatasan Data Telemetri</span>
+          <span>{isEn ? 'Telemetry Data Limitations' : 'Keterbatasan Data Telemetri'}</span>
         </div>
         <p className="leading-relaxed">
-          TerraShaft menggunakan kombinasi data observasi API satelit resmi dan model pedologi terkalibrasi regional saat layanan hulu mengalami kendala jaringan. Nilai estimasi regional dirancang untuk perencanaan skenario rotasi tanaman dan perlu divalidasi dengan pengamatan fisik di lahan budidaya.
+          {isEn
+            ? 'TerraShaft combines official satellite API observations with regionally calibrated pedology models when upstream services experience network constraints. Regional estimates are designed for crop rotation scenario planning and should be validated with field observations.'
+            : 'TerraShaft menggunakan kombinasi data observasi API satelit resmi dan model pedologi terkalibrasi regional saat layanan hulu mengalami kendala jaringan. Nilai estimasi regional dirancang untuk perencanaan skenario rotasi tanaman dan perlu divalidasi dengan pengamatan fisik di lahan budidaya.'}
         </p>
       </div>
 
       {/* Expanded Details on Sensors and Models */}
       {isExpanded && (
         <div className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-2 text-xs text-[#9BA3AE]">
-          <span className="font-medium text-[#F1F3F5]">Instrumen Asimilasi Satelit & Model:</span>
+          <span className="font-medium text-[#F1F3F5]">
+            {isEn ? 'Assimilated Satellite Instruments & Models:' : 'Instrumen Asimilasi Satelit & Model:'}
+          </span>
           <ul className="list-disc pl-5 space-y-1 text-[#8A949E] font-mono text-[11.5px]">
             <li><strong>NASA POWER GWETROOT:</strong> Model-assimilated root-zone wetness indicator (0–100 cm) via NASA POWER API (no direct SMAP API route).</li>
             <li><strong>NASA POWER PRECTOTCORR:</strong> Corrected daily/monthly precipitation parameter via NASA POWER API (no direct GPM/IMERG API route).</li>
@@ -235,14 +241,6 @@ export default function DataSourceProvenanceCard() {
           </ul>
         </div>
       )}
-
-      {/* Required Scientific Disclaimer: Low Chrome */}
-      <div className="p-3.5 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex items-start gap-2.5 text-xs text-[#8A949E]">
-        <ShieldCheck className="w-4 h-4 text-[#009DA5] shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          TerraShaft adalah alat eksplorasi skenario berbasis observasi NASA, profil tanah, dan aturan agronomi. Rekomendasi perlu divalidasi dengan penyuluh dan kondisi lapangan lokal sebelum digunakan sebagai keputusan tanam.
-        </p>
-      </div>
     </div>
   );
 }

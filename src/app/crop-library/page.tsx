@@ -5,7 +5,7 @@ import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { useAppI18n, localizeCropName } from '@/lib/i18n';
 import AgroecologicalProfileCard from '@/components/overview/AgroecologicalProfileCard';
 import { Crop, CropCategory, DroughtTolerance } from '@/types/agronomy';
-import { Database, Plus, Check, Sparkles, Trash2, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Database, Plus, Check, Sparkles, Trash2 } from 'lucide-react';
 import { getCropEmoji, formatMm } from '@/lib/formatters';
 
 export default function CropLibraryPage() {
@@ -315,14 +315,14 @@ export default function CropLibraryPage() {
                       {res.cultivar.cultivar_name}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border shrink-0 ${
+                      title={isEn ? 'Agroecological cultivar match score' : 'Skor kecocokan kultivar terhadap zona agroekologi'}
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border shrink-0 ${
                         isFallback
-                          ? 'bg-[#3B2E14] text-[#FBBF24] border-[#92400E]/60'
-                          : 'bg-[#064E3B]/60 text-[#34D399] border-[#047857]/60'
+                          ? 'bg-[#16191E] text-[#FBBF24] border-[#78350F]/60'
+                          : 'bg-[#16191E] text-[#00C2CC] border-[#2C313A]'
                       }`}
                     >
-                      {isFallback ? <AlertTriangle className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
-                      {Math.round(res.confidence_score * 100)}%
+                      <span>{isEn ? 'Match' : 'Cocok'} {Math.round(res.confidence_score * 100)}%</span>
                     </span>
                   </div>
                   <div className="text-[10.5px] text-[#9BA3AE] font-mono">

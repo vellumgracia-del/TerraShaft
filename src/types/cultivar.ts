@@ -34,7 +34,7 @@ export type RegistrationStatus =
 export type AvailabilityStatus =
   | 'Verified Commercial / Extension Seed'
   | 'Regional Research / Extension Distribution'
-  | 'Archetype Fallback — Verify Local Seed Registry';
+  | 'Archetype Fallback - Verify Local Seed Registry';
 
 export interface SoilRequirements {
   preferred_textures: string[];

@@ -245,15 +245,15 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-[#F1F3F5]">{profile.name}</h3>
                   <p className="text-xs text-[#8A949E]">{profile.role}</p>
-                  <span className="inline-block mt-1 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#064E3B] text-[#34D399] border border-[#047857]">
-                    Akun Terverifikasi
-                  </span>
+                  <p className="text-[11px] font-mono text-[#00C2CC] mt-1">
+                    {isEn ? 'Verified Account' : 'Akun Terverifikasi'}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Nama Lengkap</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Full Name' : 'Nama Lengkap'}</label>
                   <input
                     type="text"
                     value={profile.name}
@@ -264,7 +264,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Alamat Email</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Email Address' : 'Alamat Email'}</label>
                   <input
                     type="email"
                     value={profile.email}
@@ -275,7 +275,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Jabatan / Peran</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Role / Position' : 'Jabatan / Peran'}</label>
                   <input
                     type="text"
                     value={profile.role}
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Dinas / Institusi</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Department / Institution' : 'Dinas / Institusi'}</label>
                   <input
                     type="text"
                     value={profile.organization}
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Wilayah Kerja Binaan</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Operational Region' : 'Wilayah Kerja Binaan'}</label>
                   <input
                     type="text"
                     value={profile.district}
@@ -305,7 +305,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Catatan / Bio Lapangan</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Field Bio / Notes' : 'Catatan / Bio Lapangan'}</label>
                   <textarea
                     rows={3}
                     value={profile.bio}
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                   className="px-4 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] font-semibold text-xs rounded-[4px] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Simpan Perubahan Profil</span>
+                  <span>{isEn ? 'Save Profile Changes' : 'Simpan Perubahan Profil'}</span>
                 </button>
               </div>
             </form>
@@ -549,14 +549,18 @@ export default function SettingsPage() {
                   <div>
                     <div className="text-xs font-semibold text-[#F1F3F5] flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-[#00C2CC]" />
-                      <span>Google Gemini API Key (Field Advisor AI)</span>
+                      <span>AI API Key - DeepSeek / Gemini (Field Advisor AI)</span>
                     </div>
                     <p className="text-[11px] text-[#8A949E] mt-0.5">
-                      Opsional. Jika diisi, Field Advisor AI dapat menjawab konsultasi bebas secara generatif selain dokumen acuan baku.
+                      Opsional. Mendukung kunci DeepSeek (sk-...) atau Google Gemini (AIzaSy...) agar Field Advisor AI dapat menjawab konsultasi bebas berbasis RAG.
                     </p>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC]">
-                    {geminiKey ? 'KEY TERPASANG' : 'MODE DETERMINISTIK'}
+                    {geminiKey
+                      ? geminiKey.trim().startsWith('sk-')
+                        ? 'DEEPSEEK TERPASANG'
+                        : 'GEMINI TERPASANG'
+                      : 'SERVER / DETERMINISTIK'}
                   </span>
                 </div>
 
@@ -566,7 +570,7 @@ export default function SettingsPage() {
                       type={showKey ? 'text' : 'password'}
                       value={geminiKey}
                       onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder="Masukkan AIzaSy... (atau atur via GEMINI_API_KEY di .env.local)"
+                      placeholder="Masukkan sk-... (DeepSeek) atau AIzaSy... (Gemini)"
                       className="w-full bg-[#16191E] border border-[#282C34] focus:border-[#00C2CC] rounded-[4px] px-3 py-2 pr-9 text-xs text-[#F1F3F5] outline-none font-mono"
                     />
                     <button

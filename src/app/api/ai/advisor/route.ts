@@ -19,8 +19,14 @@ interface TelemetryContext {
   agroecologicalProfile?: AgroecologicalProfile | null;
 }
 
+interface ChatTurn {
+  sender: 'user' | 'assistant';
+  text: string;
+}
+
 interface AdvisorRequestBody {
   message?: string;
+  history?: ChatTurn[];
   telemetry?: TelemetryContext;
   apiKey?: string;
   locale?: 'en' | 'id';
@@ -40,7 +46,26 @@ export async function POST(request: Request) {
 
     const telemetry = body.telemetry || {};
     const env = getAppEnv();
-    const activeApiKey = body.apiKey || request.headers.get('x-gemini-key') || env.geminiApiKey;
+    const clientKey = (
+      body.apiKey ||
+      request.headers.get('x-gemini-key') ||
+      request.headers.get('x-ai-key') ||
+      ''
+    ).trim();
+
+    let activeProvider: 'deepseek' | 'gemini' | null = null;
+    let activeApiKey = '';
+
+    if (clientKey) {
+      activeProvider = clientKey.startsWith('sk-') ? 'deepseek' : 'gemini';
+      activeApiKey = clientKey;
+    } else if (env.deepseekApiKey) {
+      activeProvider = 'deepseek';
+      activeApiKey = env.deepseekApiKey;
+    } else if (env.geminiApiKey) {
+      activeProvider = 'gemini';
+      activeApiKey = env.geminiApiKey;
+    }
 
     // 1. RAG Retrieval - Search verified knowledge base
     // Combine user query with telemetry clues for comprehensive grounding
@@ -66,18 +91,38 @@ export async function POST(request: Request) {
     // 2. Prepare Grounding Context Payload
     const fieldSummary = formatTelemetrySummary(telemetry);
 
-    // 3. Execution: If Gemini API Key exists, call Gemini REST API
+    // 3. Execution: Call DeepSeek or Gemini when an API key is configured
     const locale = body.locale === 'en' ? 'en' : 'id';
-    if (activeApiKey) {
+    const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+    const geminiModel = 'gemini-2.5-flash';
+    const deepseekModel = env.deepseekModel || 'deepseek-flash';
+
+    if (activeProvider && activeApiKey) {
+      const systemPrompt = buildSystemPrompt(
+        fieldSummary,
+        finalDocs,
+        locale,
+        telemetry.agroecologicalProfile
+      );
+
       try {
-        const aiResponse = await callGeminiWithGrounding(
-          activeApiKey,
-          userMessage,
-          fieldSummary,
-          finalDocs,
-          locale,
-          telemetry.agroecologicalProfile
-        );
+        const aiResponse =
+          activeProvider === 'deepseek'
+            ? await callDeepSeekWithGrounding(
+                activeApiKey,
+                deepseekModel,
+                systemPrompt,
+                userMessage,
+                history
+              )
+            : await callGeminiWithGrounding(
+                activeApiKey,
+                geminiModel,
+                systemPrompt,
+                userMessage,
+                history
+              );
+
         return NextResponse.json({
           reply: aiResponse,
           citations: finalDocs.map((d, idx) => ({
@@ -88,11 +133,12 @@ export async function POST(request: Request) {
             year: d.year,
             citation: d.citation
           })),
-          mode: 'gemini_grounded',
+          mode: activeProvider === 'deepseek' ? 'deepseek_grounded' : 'gemini_grounded',
+          model: activeProvider === 'deepseek' ? deepseekModel : geminiModel,
           matchedTopics: finalDocs.map((d) => d.title)
         });
-      } catch (geminiError) {
-        console.warn('Gemini API call failed, falling back to local agronomy engine:', geminiError);
+      } catch (llmError) {
+        console.warn(`${activeProvider} API call failed, falling back to local agronomy engine:`, llmError);
         // Fall through to deterministic agronomy response
       }
     }
@@ -111,6 +157,7 @@ export async function POST(request: Request) {
         citation: d.citation
       })),
       mode: 'knowledge_base_grounded',
+      model: 'deterministic-rag',
       matchedTopics: finalDocs.map((d) => d.title)
     });
   } catch (error) {
@@ -164,14 +211,12 @@ function formatTelemetrySummary(telemetry: TelemetryContext): string {
   return lines.join('\n');
 }
 
-async function callGeminiWithGrounding(
-  apiKey: string,
-  userMessage: string,
+function buildSystemPrompt(
   telemetrySummary: string,
   docs: KnowledgeDocument[],
   locale: 'en' | 'id' = 'id',
   aez?: AgroecologicalProfile | null
-): Promise<string> {
+): string {
   const documentsContext = docs
     .map(
       (d, i) =>
@@ -189,7 +234,7 @@ async function callGeminiWithGrounding(
       ? 'Respond in clear, professional agronomy English.'
       : 'Gunakan bahasa Indonesia profesional yang jelas, terstruktur, dan aplikatif untuk petani di lapangan.';
 
-  const systemPrompt = `You are TerraShaft Agronomist AI, a precision dryland agronomy and agricultural extension decision-support assistant.
+  return `You are TerraShaft Agronomist AI, a precision dryland agronomy and agricultural extension decision-support assistant.
 
 STRICT ANTI-HALLUCINATION RULES:
 1. Answer ONLY using the provided field telemetry and reference documents.
@@ -203,19 +248,86 @@ ${telemetrySummary}
 
 Reference Knowledge Base (RAG):
 ${documentsContext}`;
+}
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+async function callDeepSeekWithGrounding(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+  history: ChatTurn[]
+): Promise<string> {
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history
+      .filter((turn) => turn.text?.trim())
+      .map((turn) => ({
+        role: turn.sender === 'assistant' ? 'assistant' : 'user',
+        content: turn.text.trim()
+      })),
+    { role: 'user', content: userMessage }
+  ];
+
+  const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.2,
+      max_tokens: 2048,
+      reasoning_effort: 'low'
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`DeepSeek HTTP ${res.status}: ${errText}`);
+  }
+
+  const json = await res.json();
+  const textOutput = json.choices?.[0]?.message?.content?.trim();
+
+  if (!textOutput) {
+    throw new Error('Respon DeepSeek tidak memuat konten teks');
+  }
+
+  return textOutput;
+}
+
+async function callGeminiWithGrounding(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+  history: ChatTurn[]
+): Promise<string> {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const contents = [
+    ...history
+      .filter((turn) => turn.text?.trim())
+      .map((turn) => ({
+        role: turn.sender === 'assistant' ? 'model' : 'user',
+        parts: [{ text: turn.text.trim() }]
+      })),
+    {
+      role: 'user',
+      parts: [{ text: userMessage }]
+    }
+  ];
 
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: `${systemPrompt}\n\nPertanyaan Petani/PPL:\n"${userMessage}"` }]
-        }
-      ],
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
+      },
+      contents,
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 1200
@@ -286,9 +398,9 @@ function generateDeterministicAdvisory(
         const res = s.crop.cultivar_resolution;
         const cultivarText = s.crop.recommended_variety || res?.cultivar.cultivar_name || 'Species Archetype';
         const statusTag = res?.is_archetype_fallback
-          ? 'Archetype Fallback — Verify Local Seed Registry'
+          ? 'Archetype Fallback - Verify Local Seed Registry'
           : res?.cultivar.registration_status || 'Local Cultivar';
-        lines.push(`- Season ${s.seasonIndex}: **${s.crop.name_en || s.crop.name}** (*${s.crop.scientific_name || ''}*) — ${cultivarText} (${statusTag})`);
+        lines.push(`- Season ${s.seasonIndex}: **${s.crop.name_en || s.crop.name}** (*${s.crop.scientific_name || ''}*) - ${cultivarText} (${statusTag})`);
       });
       lines.push(
         `- Projected Soil Battery Score: **${plan.soilBatteryScore}%** | Water Savings: **${plan.waterSavingsPct}%**.`

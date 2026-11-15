@@ -9,7 +9,6 @@ import {
   ChevronDown,
   ChevronUp,
   ShieldAlert,
-  ShieldCheck,
   AlertTriangle
 } from 'lucide-react';
 import { SeasonCropAllocation } from '@/types/agronomy';
@@ -118,10 +117,10 @@ export default function FourSeasonRotationCard() {
                 key={pw.id}
                 type="button"
                 onClick={() => setSelectedPathway(pw.id)}
-                className={`p-4 rounded-[4px] border text-left transition-all flex flex-col justify-between gap-2.5 ${
+                className={`p-4 rounded-[4px] border text-left transition-all flex flex-col justify-between gap-2.5 cursor-pointer ${
                   isSelected
-                    ? 'bg-[#163A40] border-[#009DA5] ring-1 ring-[#009DA5]/40 shadow-xs'
-                    : 'bg-[#16191E] border-[#2C313A] hover:bg-[#20242B]'
+                    ? 'bg-[#16191E] border-[#00C2CC] ring-1 ring-[#00C2CC]/30 shadow-xs'
+                    : 'bg-[#16191E] border-[#2C313A] hover:border-[#3E4552]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 w-full">
@@ -289,14 +288,12 @@ export default function FourSeasonRotationCard() {
                   {res && (
                     <span
                       title={res.assumptions_en}
-                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border whitespace-nowrap ${
-                        isFallback
-                          ? 'bg-[#3B2E14] text-[#FBBF24] border-[#92400E]/60'
-                          : 'bg-[#064E3B]/60 text-[#34D399] border-[#047857]/60'
+                      className={`inline-flex items-center gap-1 px-1 py-0.5 text-[10px] font-mono whitespace-nowrap ${
+                        isFallback ? 'text-[#FBBF24]' : 'text-[#34D399]'
                       }`}
                     >
-                      {isFallback ? <AlertTriangle className="w-2.5 h-2.5" /> : <ShieldCheck className="w-2.5 h-2.5" />}
-                      {isFallback ? t('rotation.archetypeFallback') : `${res.cultivar.country_or_region_of_release[0]} · ${Math.round(res.confidence_score * 100)}%`}
+                      {isFallback && <AlertTriangle className="w-2.5 h-2.5" />}
+                      {isFallback ? t('rotation.archetypeFallback') : `${Math.round(res.confidence_score * 100)}%`}
                     </span>
                   )}
                 </div>
@@ -422,10 +419,10 @@ export default function FourSeasonRotationCard() {
                   </p>
                 </div>
                 <span
-                  className={`px-2.5 py-1 rounded-[3px] font-mono text-[10px] self-start sm:self-auto whitespace-nowrap shrink-0 border ${
+                  className={`font-mono text-[10.5px] font-medium self-start sm:self-auto whitespace-nowrap shrink-0 ${
                     entry.outcome === 'TERPILIH'
-                      ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
-                      : 'bg-[#2D1B1E] text-[#F87171] border-[#7F1D1D]/40'
+                      ? 'text-[#00C2CC]'
+                      : 'text-[#F87171]'
                   }`}
                 >
                   {isEn ? (entry.outcome === 'TERPILIH' ? 'SELECTED' : 'ELIMINATED') : entry.outcome}

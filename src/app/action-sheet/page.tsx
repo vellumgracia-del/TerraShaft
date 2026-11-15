@@ -198,9 +198,9 @@ export default function ActionSheetPage() {
           <button
             type="button"
             onClick={handleShareWhatsApp}
-            className="px-4 py-2 rounded-[4px] bg-[#25D366] hover:bg-[#20BA5C] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+            className="px-4 py-2 rounded-[4px] bg-[#20242B] hover:bg-[#282D36] text-[#F1F3F5] border border-[#2C313A] hover:border-[#009DA5] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <Share2 className="w-4 h-4" />
+            <Share2 className="w-4 h-4 text-[#00C2CC]" />
             <span>{isEn ? 'Share via WhatsApp' : 'Kirim ke WhatsApp'}</span>
           </button>
         </div>

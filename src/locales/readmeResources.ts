@@ -110,7 +110,7 @@ Untuk menghindari *overclaim*, TerraShaft mengelompokkan ke-13 sumber dataset di
 8. **GLDAS & ECMWF ERA5 (\`Reference Standard\`):** Acuan literatur reanalisis daratan/atmosfer; tidak diambil saat runtime (seluruh cuaca runtime berasal dari NASA POWER atau fallback lintang).
 9. **NASA ECOSTRESS (\`Knowledge Base\` / \`Planned Integration\`):** Berperan sebagai entri pengetahuan lokal di \`agronomyKnowledgeBase.ts\` untuk konteks stres panas pada AI Advisor; tidak ada query LST ECOSTRESS langsung.
 10. **NASA GEDI LiDAR (\`Knowledge Base\` / \`Planned Integration\`):** Berperan sebagai referensi agroforestri di \`agronomyKnowledgeBase.ts\`; tidak ada query footprint LiDAR GEDI di runtime.
-11. **Riset Agronomi BRIN / Balittanah & Registri Kultivar Regional (\`Static Local Registry\` & \`Knowledge Base\`):** Berbasis data JSON statis lokal (\`src/data/cultivars_registry.json\` berisi **23 entri kultivar statis** untuk \`Indonesia\`, \`United States\`, \`Kenya\`, \`Tanzania / East Africa\`, \`Uganda\`, \`India / South Asia\`, \`Brazil / Latin America\`, dan \`Australia\`) serta dokumen RAG lokal. Referensi institusi (\`USDA NASS / Land-Grant Extension\`, \`KALRO / KEPHIS\`, \`ICAR / IRRI\`, \`EMBRAPA\`, \`GRDC\`, \`BRIN / Balittanah\`) tersimpan sebagai metadata string JSON—**belum** ada endpoint live \`GET /api/cultivars\`, \`GET /api/cultivar-recommendation\`, atau \`GET /api/evidence\`.
+11. **Riset Agronomi BRIN / Balittanah & Registri Kultivar Regional (\`Static Local Registry\` & \`Knowledge Base\`):** Berbasis data JSON statis lokal (\`src/data/cultivars_registry.json\` berisi **23 entri kultivar statis** untuk \`Indonesia\`, \`United States\`, \`Kenya\`, \`Tanzania / East Africa\`, \`Uganda\`, \`India / South Asia\`, \`Brazil / Latin America\`, dan \`Australia\`) serta dokumen RAG lokal. Referensi institusi (\`USDA NASS / Land-Grant Extension\`, \`KALRO / KEPHIS\`, \`ICAR / IRRI\`, \`EMBRAPA\`, \`GRDC\`, \`BRIN / Balittanah\`) tersimpan sebagai metadata string JSON, **belum** ada endpoint live \`GET /api/cultivars\`, \`GET /api/cultivar-recommendation\`, atau \`GET /api/evidence\`.
 12. **FAO GAEZ v4 & FAO-56 (\`Reference Standard\` & \`Knowledge Base\`):** Konsep $ET_0$/$K_c$ FAO-56 dan literatur GAEZ v4 menjadi acuan metodologis serta dokumen RAG. **Belum** ada pengambilan data GAEZ, raster query, lapisan kesesuaian lahan GAEZ, atau skor GAEZ di mesin optimasi runtime.
 13. **USDA Soil Taxonomy & SSURGO / STATSGO2 Reference (\`Reference Standard\`):** Klasifikasi **Segitiga Tekstur Tanah USDA** (\`classifySoilTexture\`) dan literatur NRCS menjadi acuan konseptual/pedagogis serta konstanta fallback statis wilayah CONUS saat SoilGrids timeout. **Tidak** ada query live ke SSURGO atau STATSGO2; nilai tanah runtime berasal dari ISRIC SoilGrids atau fallback regional statis.
 
@@ -123,7 +123,7 @@ TerraShaft memisahkan secara ketat **taksonomi spesies tanaman** dari **registri
 1. **Pemisahan Entitas Spesies vs Kultivar:** Spesies (\`src/data/crop_species.json\`) memuat 6 spesies (*Oryza sativa L.*, *Zea mays L.*, *Glycine max (L.) Merr.*, *Vigna radiata*, *Sorghum bicolor*, *Crotalaria juncea*). Kultivar (\`src/data/cultivars_registry.json\`) berisi **23 entri statis** yang mengikat tiap varietas ke \`country_or_region_of_release\`, \`allowed_agroecological_zones\`, \`registration_status\`, \`evidence_source\`, dan calibrated \`confidence_score\`.
 2. **Pipeline Zonasi Agroekologi Global (\`src/lib/agroecologicalZoning.ts\`):** Mengonversi koordinat, elevasi, iklim NASA POWER, serta profil tanah ISRIC SoilGrids menjadi profil \`AgroecologicalProfile\` (negara, makro-wilayah, belahan bumi, sabuk elevasi, bulan kering, GDD, kelas fotoperiod, dan zona agroekologi).
 3. **Isolasi Geografis & Fallback Arketipe (\`src/lib/cultivarLocalizer.ts\`):** Kultivar Indonesia (seperti Inpago, Bisi-18, Anjasmoro, Vima, Bioguma) dibatasi hanya untuk \`ID\`. Wilayah global dalam registri statis (\`US\`, \`KE\`, \`TZ\`, \`UG\`, \`IN\`, \`BR\`, \`AU\`) menampilkan varietas lokal yang sesuai zona AEZ, sedangkan wilayah tanpa entri registri melakukan fallback transparan ke **Arketipe Fenotipe Spesies** (*Phenotype Archetype*) tanpa mengarang nama varietas maupun status ketersediaan benih.
-4. **Dukungan Dwibahasa i18n (\`en\` default & \`id\`):** Aplikasi menggunakan \`i18next\` (\`src/locales/en.json\` sebagai default, \`src/locales/id.json\` alternatif bahasa Indonesia). Pergantian bahasa \`EN | ID\` hanya mengubah teks antarmuka—telemetri, nama ilmiah, nama kultivar, unit metrik, dan hasil optimasi tetap identik.
+4. **Dukungan Dwibahasa i18n (\`en\` default & \`id\`):** Aplikasi menggunakan \`i18next\` (\`src/locales/en.json\` sebagai default, \`src/locales/id.json\` alternatif bahasa Indonesia). Pergantian bahasa \`EN | ID\` hanya mengubah teks antarmuka, telemetri, nama ilmiah, nama kultivar, unit metrik, dan hasil optimasi tetap identik.
 
 ---
 
@@ -196,9 +196,9 @@ Soil Battery adalah indeks komposit ($0–100\\%$) untuk memvisualisasikan simul
 
 ### 4. Tiga Skenario Rotasi Optimal (\`/rotation-planner\`)
 
-- **Pathway A — Soil Regeneration:** Memprioritaskan pemulihan indeks baterai tanah, fiksasi nitrogen biologis, dan biomassa penutup tanah.
-- **Pathway B — Drought Resilience:** Memblokir tanaman boros air pada periode defisit air tinggi dan memprioritaskan spesies tahan kering dengan kultivar terlokalisasi (atau fallback arketipe fenotipe spesies).
-- **Pathway C — Cash-Flow Optimized:** Memprioritaskan estimasi pendapatan bersih dengan tetap menjaga batas aman ketersediaan air tanah.
+- **Pathway A: Soil Regeneration:** Memprioritaskan pemulihan indeks baterai tanah, fiksasi nitrogen biologis, dan biomassa penutup tanah.
+- **Pathway B: Drought Resilience:** Memblokir tanaman boros air pada periode defisit air tinggi dan memprioritaskan spesies tahan kering dengan kultivar terlokalisasi (atau fallback arketipe fenotipe spesies).
+- **Pathway C: Cash-Flow Optimized:** Memprioritaskan estimasi pendapatan bersih dengan tetap menjaga batas aman ketersediaan air tanah.
 
 ### 5. Water Balance Chart (\`/water-balance\`)
 
@@ -265,10 +265,10 @@ Setiap respons proxy API (\`/api/nasa-climate\` dan \`/api/soil-profile\`) menye
 
 Nilai \`source\` yang didukung di dalam sistem:
 
-- \`NASA_POWER_LIVE\` — Respons langsung dari NASA POWER Agroclimatology API.
-- \`ISRIC_SOILGRIDS_LIVE\` — Respons langsung dari ISRIC SoilGrids v2.0 REST API.
-- \`FALLBACK_CLIMATOLOGY\` — Profil klimatologi regional terkalibrasi lintang ketika API NASA POWER mengalami *timeout* atau kendala jaringan.
-- \`REGIONAL_FALLBACK\` — Profil pedologi regional statis ketika API ISRIC SoilGrids tidak merespons atau mengembalikan piksel perairan/perkotaan kosong.
+- \`NASA_POWER_LIVE\`: Respons langsung dari NASA POWER Agroclimatology API.
+- \`ISRIC_SOILGRIDS_LIVE\`: Respons langsung dari ISRIC SoilGrids v2.0 REST API.
+- \`FALLBACK_CLIMATOLOGY\`: Profil klimatologi regional terkalibrasi lintang ketika API NASA POWER mengalami *timeout* atau kendala jaringan.
+- \`REGIONAL_FALLBACK\`: Profil pedologi regional statis ketika API ISRIC SoilGrids tidak merespons atau mengembalikan piksel perairan/perkotaan kosong.
 
 \`fetchedAt\` mencatat waktu pengambilan data oleh server/cache dan dipisahkan secara tegas dari \`observationPeriod\` (periode observasi fisik/lapisan kedalaman tanah).
 
@@ -284,10 +284,10 @@ Nilai \`source\` yang didukung di dalam sistem:
 - **State Management & Persistensi:** Zustand + \`idb-keyval\` + Service Worker PWA.
 - **Ekspor Gambar:** \`html-to-image\` (render poster PNG $1080 \\times 1350\\text{ px}$ di sisi klien).
 - **Backend API Route Handlers:**
-  - \`/api/nasa-climate\` — Proxy NASA POWER Agroclimatology (\`T2M\`, \`T2M_MAX\`, \`T2M_MIN\`, \`ALLSKY_SFC_SW_DWN\`, \`PRECTOTCORR\`, \`GWETROOT\`) dengan *in-memory bounded cache* (TTL 24 jam) & fallback klimatologi regional.
-  - \`/api/soil-profile\` — Proxy ISRIC SoilGrids v2.0 dengan agregasi tertimbang kedalaman 0–30 cm, *bounded cache* (TTL 30 hari), & fallback pedologi regional statis.
-  - \`/api/geocode\` — Proxy OpenStreetMap Nominatim + Open-Meteo Elevation (SRTM/Copernicus DEM).
-  - \`/api/ai/advisor\` — Endpoint RAG Field Advisor (mendukung kunci Gemini API opsional & mesin respons deterministik berbasis dokumen lokal).
+  - \`/api/nasa-climate\`: Proxy NASA POWER Agroclimatology (\`T2M\`, \`T2M_MAX\`, \`T2M_MIN\`, \`ALLSKY_SFC_SW_DWN\`, \`PRECTOTCORR\`, \`GWETROOT\`) dengan *in-memory bounded cache* (TTL 24 jam) & fallback klimatologi regional.
+  - \`/api/soil-profile\`: Proxy ISRIC SoilGrids v2.0 dengan agregasi tertimbang kedalaman 0–30 cm, *bounded cache* (TTL 30 hari), & fallback pedologi regional statis.
+  - \`/api/geocode\`: Proxy OpenStreetMap Nominatim + Open-Meteo Elevation (SRTM/Copernicus DEM).
+  - \`/api/ai/advisor\`: Endpoint RAG Field Advisor (mendukung kunci Gemini API opsional & mesin respons deterministik berbasis dokumen lokal).
 
 ---
 
@@ -295,7 +295,7 @@ Nilai \`source\` yang didukung di dalam sistem:
 
 - **Tidak ada API satelit langsung selain NASA POWER, SoilGrids, Open-Meteo DEM, dan Nominatim:** TerraShaft tidak memanggil direct SMAP API (lengas akar runtime berasal dari NASA POWER \`GWETROOT\`), tidak memanggil direct GPM/IMERG API (curah hujan berasal dari \`PRECTOTCORR\`), tidak mengunduh raster FAO GAEZ/SSURGO/STATSGO2 di runtime, serta tidak memproses band citra Landsat, MODIS/VIIRS, Sentinel-2, ECOSTRESS, GEDI, atau ERA5/GLDAS.
 - **Resolusi Grid & Prediksi Global:** NASA POWER (~0.5° / ~50 km) dan ISRIC SoilGrids (250 m *machine learning* global) merepresentasikan estimasi grid regional, bukan pengukuran sensor *in-situ* maupun uji laboratorium tanah lokal.
-- **Registri Kultivar Masih Bersifat Statis:** \`src/data/cultivars_registry.json\` memuat 23 entri kurasi statis dan sitasi institusi sebagai metadata JSON lokal—belum terhubung ke layanan live API registrasi varietas resmi maupun ketersediaan benih di toko pertanian (\`/api/cultivars\`, \`/api/evidence\`).
+- **Registri Kultivar Masih Bersifat Statis:** \`src/data/cultivars_registry.json\` memuat 23 entri kurasi statis dan sitasi institusi sebagai metadata JSON lokal, belum terhubung ke layanan live API registrasi varietas resmi maupun ketersediaan benih di toko pertanian (\`/api/cultivars\`, \`/api/evidence\`).
 - **Keluaran Simulasi:** Estimasi $ET_c$, skor Soil Battery, neraca nitrogen, dan estimasi pendapatan adalah keluaran model keputusan yang wajib divalidasi bersama PPL atau agronom setempat.
 
 ---
@@ -357,7 +357,7 @@ npm run start
 ## Sitasi dan Sumber Data
 
 - **NASA POWER Project:** NASA Langley Research Center (LaRC) Agroclimatology Archive (\`T2M\`, \`ALLSKY_SFC_SW_DWN\`, \`PRECTOTCORR\`, \`GWETROOT\`).
-- **ISRIC — World Soil Information:** SoilGrids 250m v2.0 (*Poggio et al., 2021*).
+- **ISRIC: World Soil Information:** SoilGrids 250m v2.0 (*Poggio et al., 2021*).
 - **Open-Meteo Elevation & OpenStreetMap Nominatim:** Elevation DEM & forward/reverse geocoding APIs.
 - **Reference Standards (Conceptual & Knowledge Base):** FAO Irrigation and Drainage Paper No. 56 (*Allen et al., 1998*), FAO GAEZ v4, USDA Soil Taxonomy / NRCS Soil Texture Triangle, NASA SMAP L4 / GPM / ECOSTRESS / GEDI / Landsat / Sentinel-2 / ERA5 / GLDAS literature, and regional agronomic monographs (BRIN, Balittanah, Kementan, USDA Extension, KALRO/KEPHIS, ICAR/IRRI, EMBRAPA, GRDC).
 
@@ -365,7 +365,7 @@ npm run start
 
 ## Tim
 
-- **Zulfa Fahmiy Al Murtadlo** ([@varosaghasi](https://github.com/varosaghasi)) — Team Owner
+- **Zulfa Fahmiy Al Murtadlo** ([@varosaghasi](https://github.com/varosaghasi)): Team Owner
 - **Mohammad Arga** ([@rifaldhi](https://github.com/rifaldhi))
 - **Moch. Hafidz Zawawi** ([@zawacaprio](https://github.com/zawacaprio))
 - **Stiven Josh Peter Siburian** ([@stevenjoshburian](https://github.com/stevenjoshburian))
@@ -377,7 +377,7 @@ npm run start
 
 Proyek ini dikembangkan untuk tujuan riset, edukasi, dan inovasi pertanian berkelanjutan (NASA Space Apps Challenge). Atribusi data satelit, tanah, dan agroklimatologi tunduk pada ketentuan lisensi terbuka masing-masing penyedia (NASA Earthdata, ISRIC SoilGrids CC-BY 4.0, FAO, dan BRIN/Kementan).
 
-© 2026 TerraShaft Team — Built for resilient agriculture and space-to-field impact.`,
+© 2026 TerraShaft Team: Built for resilient agriculture and space-to-field impact.`,
     },
   },
   en: {
@@ -491,7 +491,7 @@ To prevent overclaiming and clarify exactly what executes in runtime code versus
 8. **GLDAS & ECMWF ERA5 (\`Reference Standard\`):** Land-surface reanalysis background standards; not fetched at runtime (all runtime weather telemetry comes from NASA POWER or calibrated latitude fallbacks).
 9. **NASA ECOSTRESS (\`Knowledge Base\` / \`Planned Integration\`):** Curated RAG document entry in \`agronomyKnowledgeBase.ts\` explaining heat-stress & soil-cooling cover crop concepts; no live ECOSTRESS LST API calls.
 10. **NASA GEDI LiDAR (\`Knowledge Base\` / \`Planned Integration\`):** Curated RAG document entry describing canopy-structure & agroforestry windbreaks; no live GEDI waveform/LiDAR API calls.
-11. **Regional Cultivar Registry & BRIN / Extension Knowledge Base (\`Static Local Registry\` & \`Knowledge Base\`):** Static JSON registry (\`src/data/cultivars_registry.json\`) containing **23 curated cultivar entries** across \`Indonesia\`, \`United States\`, \`Kenya\`, \`Tanzania / East Africa\`, \`Uganda\`, \`India / South Asia\`, \`Brazil / Latin America\`, and \`Australia\`, plus BRIN/Balittanah RAG docs. Institutional references (\`USDA NASS / Land-Grant Extension\`, \`KALRO / KEPHIS\`, \`ICAR / IRRI\`, \`EMBRAPA\`, \`GRDC\`, \`BRIN / Balittanah\`) are stored as local JSON metadata strings—live endpoints such as \`GET /api/cultivars\`, \`GET /api/cultivar-recommendation\`, or \`GET /api/evidence\` are **not yet implemented**.
+11. **Regional Cultivar Registry & BRIN / Extension Knowledge Base (\`Static Local Registry\` & \`Knowledge Base\`):** Static JSON registry (\`src/data/cultivars_registry.json\`) containing **23 curated cultivar entries** across \`Indonesia\`, \`United States\`, \`Kenya\`, \`Tanzania / East Africa\`, \`Uganda\`, \`India / South Asia\`, \`Brazil / Latin America\`, and \`Australia\`, plus BRIN/Balittanah RAG docs. Institutional references (\`USDA NASS / Land-Grant Extension\`, \`KALRO / KEPHIS\`, \`ICAR / IRRI\`, \`EMBRAPA\`, \`GRDC\`, \`BRIN / Balittanah\`) are stored as local JSON metadata strings, live endpoints such as \`GET /api/cultivars\`, \`GET /api/cultivar-recommendation\`, or \`GET /api/evidence\` are **not yet implemented**.
 12. **FAO GAEZ v4 & FAO-56 (\`Reference Standard\` & \`Knowledge Base\`):** FAO-56 informs conceptual $ET_0$/$K_c$ calculations and GAEZ v4 appears in the RAG knowledge base; **FAO GAEZ is not a runtime input** (no GAEZ fetch, raster query, suitability layer, API route, or GAEZ score enters the optimization engine).
 13. **USDA Soil Taxonomy & SSURGO / STATSGO2 Reference (\`Reference Standard\`):** The **USDA Soil Texture Triangle** (\`classifySoilTexture\`) and NRCS pedological references inform conceptual texture classification and static regional/CONUS fallback constants when ISRIC SoilGrids times out; **there is no live query to SSURGO or STATSGO2**, and runtime soil values originate from ISRIC SoilGrids or calibrated regional failover.
 
@@ -504,7 +504,7 @@ TerraShaft strictly separates **crop species taxonomy** from **static regional c
 1. **Separated Taxonomy (\`src/data/crop_species.json\` vs \`src/data/cultivars_registry.json\`):** Evaluates 6 base crop species first (*Oryza sativa L.*, *Zea mays L.*, *Glycine max (L.) Merr.*, *Vigna radiata*, *Sorghum bicolor*, *Crotalaria juncea*). The static registry (\`23\` curated entries) binds each variety to explicit \`country_or_region_of_release\`, \`allowed_agroecological_zones\`, \`registration_status\`, \`evidence_source\`, and calibrated \`confidence_score\`.
 2. **Global Agroecological Zoning (\`src/lib/agroecologicalZoning.ts\`):** Transforms coordinates, elevation, NASA POWER climate telemetry, and ISRIC SoilGrids topsoil fractions into a normalized \`AgroecologicalProfile\` (country, macro-region, hemisphere, elevation band, dry-season months, annual GDD, photoperiod class, and AEZ class).
 3. **Cross-Border Guardrail & Archetype Fallback (\`src/lib/cultivarLocalizer.ts\`):** Indonesian varieties (Inpago, Bisi-18, Anjasmoro, Vima, Bioguma) are restricted strictly to \`ID\`. Global coordinates in covered territories (\`US\`, \`KE\`, \`TZ\`, \`UG\`, \`IN\`, \`BR\`, \`AU\`) resolve static local regional entries when AEZ-compatible, while unmapped territories transparently fall back to a **Species Phenotype Archetype** without fabricating cultivar names, yields, or seed availability.
-4. **Bilingual Web App i18n (\`en\` default / \`id\` alternative):** Built with \`i18next\` (\`src/locales/en.json\` default for demo mode, \`src/locales/id.json\` alternative). Switching \`EN | ID\` updates UI text only—telemetry, scientific names, cultivar identities, units, and optimization calculations remain invariant.
+4. **Bilingual Web App i18n (\`en\` default / \`id\` alternative):** Built with \`i18next\` (\`src/locales/en.json\` default for demo mode, \`src/locales/id.json\` alternative). Switching \`EN | ID\` updates UI text only, telemetry, scientific names, cultivar identities, units, and optimization calculations remain invariant.
 
 ---
 
@@ -577,9 +577,9 @@ The Soil Battery is a composite heuristic index ($0–100\\%$) designed to commu
 
 ### 4. Three Optimal Rotation Scenarios (\`/rotation-planner\`)
 
-- **Pathway A — Soil Regeneration:** Maximizes Soil Battery recovery, biological nitrogen fixation, and organic biomass return.
-- **Pathway B — Drought Resilience:** Disqualifies water-intensive crops during severe deficit windows and prioritizes drought-tolerant species with localized cultivars (or transparent phenotype archetypes).
-- **Pathway C — Cash-Flow Optimized:** Maximizes projected net farm revenue while enforcing root-zone water safety constraints.
+- **Pathway A: Soil Regeneration:** Maximizes Soil Battery recovery, biological nitrogen fixation, and organic biomass return.
+- **Pathway B: Drought Resilience:** Disqualifies water-intensive crops during severe deficit windows and prioritizes drought-tolerant species with localized cultivars (or transparent phenotype archetypes).
+- **Pathway C: Cash-Flow Optimized:** Maximizes projected net farm revenue while enforcing root-zone water safety constraints.
 
 ### 5. Water Balance Chart (\`/water-balance\`)
 
@@ -646,10 +646,10 @@ Every backend proxy response (\`/api/nasa-climate\` and \`/api/soil-profile\`) e
 
 Supported \`source\` identifiers in the codebase:
 
-- \`NASA_POWER_LIVE\` — Live response from the NASA POWER Agroclimatology API.
-- \`ISRIC_SOILGRIDS_LIVE\` — Live response from the ISRIC SoilGrids v2.0 REST API.
-- \`FALLBACK_CLIMATOLOGY\` — Latitude-calibrated regional climatology baseline used when the upstream NASA POWER API times out or is unreachable.
-- \`REGIONAL_FALLBACK\` — Calibrated regional pedological profile used when ISRIC SoilGrids is unreachable or returns masked water/urban pixels.
+- \`NASA_POWER_LIVE\`: Live response from the NASA POWER Agroclimatology API.
+- \`ISRIC_SOILGRIDS_LIVE\`: Live response from the ISRIC SoilGrids v2.0 REST API.
+- \`FALLBACK_CLIMATOLOGY\`: Latitude-calibrated regional climatology baseline used when the upstream NASA POWER API times out or is unreachable.
+- \`REGIONAL_FALLBACK\`: Calibrated regional pedological profile used when ISRIC SoilGrids is unreachable or returns masked water/urban pixels.
 
 \`fetchedAt\` records the network/cache retrieval timestamp and is strictly separated from \`observationPeriod\` (the physical satellite observation window or soil depth horizon).
 
@@ -665,10 +665,10 @@ Supported \`source\` identifiers in the codebase:
 - **State Management & Offline Persistence:** Zustand + \`idb-keyval\` + PWA Service Worker.
 - **Image Export:** \`html-to-image\` (client-side $1080 \\times 1350\\text{ px}$ PNG poster rendering).
 - **Backend API Route Handlers:**
-  - \`/api/nasa-climate\` — NASA POWER Agroclimatology proxy (\`T2M\`, \`T2M_MAX\`, \`T2M_MIN\`, \`ALLSKY_SFC_SW_DWN\`, \`PRECTOTCORR\`, \`GWETROOT\`) with bounded in-memory caching (24h TTL) & regional climatology failover.
-  - \`/api/soil-profile\` — ISRIC SoilGrids v2.0 proxy with 0–30 cm depth-weighted aggregation, bounded caching (30d TTL), & static regional soil failover.
-  - \`/api/geocode\` — OpenStreetMap Nominatim & Open-Meteo Elevation (SRTM/Copernicus DEM) proxy.
-  - \`/api/ai/advisor\` — RAG Field Advisor endpoint supporting both Gemini API keys and a deterministic local citation engine.
+  - \`/api/nasa-climate\`: NASA POWER Agroclimatology proxy (\`T2M\`, \`T2M_MAX\`, \`T2M_MIN\`, \`ALLSKY_SFC_SW_DWN\`, \`PRECTOTCORR\`, \`GWETROOT\`) with bounded in-memory caching (24h TTL) & regional climatology failover.
+  - \`/api/soil-profile\`: ISRIC SoilGrids v2.0 proxy with 0–30 cm depth-weighted aggregation, bounded caching (30d TTL), & static regional soil failover.
+  - \`/api/geocode\`: OpenStreetMap Nominatim & Open-Meteo Elevation (SRTM/Copernicus DEM) proxy.
+  - \`/api/ai/advisor\`: RAG Field Advisor endpoint supporting both Gemini API keys and a deterministic local citation engine.
 
 ---
 
@@ -738,7 +738,7 @@ npm run start
 ## Citations and Data Sources
 
 - **NASA POWER Project:** NASA Langley Research Center (LaRC) Agroclimatology Archive (\`T2M\`, \`ALLSKY_SFC_SW_DWN\`, \`PRECTOTCORR\`, \`GWETROOT\`).
-- **ISRIC — World Soil Information:** SoilGrids 250m v2.0 (*Poggio et al., 2021*).
+- **ISRIC: World Soil Information:** SoilGrids 250m v2.0 (*Poggio et al., 2021*).
 - **Open-Meteo Elevation & OpenStreetMap Nominatim:** Elevation DEM & forward/reverse geocoding APIs.
 - **Reference Standards (Conceptual & Knowledge Base):** FAO Irrigation and Drainage Paper No. 56 (*Allen et al., 1998*), FAO GAEZ v4, USDA Soil Taxonomy / NRCS Soil Texture Triangle, NASA SMAP L4 / GPM / ECOSTRESS / GEDI / Landsat / Sentinel-2 / ERA5 / GLDAS literature, and regional agronomic references (BRIN, Balittanah, Kementan, USDA NASS/Extension, KALRO/KEPHIS, ICAR/IRRI, EMBRAPA, GRDC).
 
@@ -746,7 +746,7 @@ npm run start
 
 ## Team
 
-- **Zulfa Fahmiy Al Murtadlo** ([@varosaghasi](https://github.com/varosaghasi)) — Team Owner
+- **Zulfa Fahmiy Al Murtadlo** ([@varosaghasi](https://github.com/varosaghasi)): Team Owner
 - **Mohammad Arga** ([@rifaldhi](https://github.com/rifaldhi))
 - **Moch. Hafidz Zawawi** ([@zawacaprio](https://github.com/zawacaprio))
 - **Stiven Josh Peter Siburian** ([@stevenjoshburian](https://github.com/stevenjoshburian))
@@ -758,7 +758,7 @@ npm run start
 
 Developed for sustainable agricultural research, education, and innovation (NASA Space Apps Challenge). Satellite, soil, and agroclimatological data attributions follow the open-access terms of their respective providers (NASA Earthdata, ISRIC SoilGrids CC-BY 4.0, FAO, and BRIN/Kementan).
 
-© 2026 TerraShaft Team — Built for resilient agriculture and space-to-field impact.`,
+© 2026 TerraShaft Team: Built for resilient agriculture and space-to-field impact.`,
     },
   },
 } as const;

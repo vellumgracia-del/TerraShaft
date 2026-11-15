@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Satellite,
-  ExternalLink,
   Search,
   CheckCircle2,
   Globe,
   Sprout,
-  ShieldCheck,
   ArrowUpRight
 } from 'lucide-react';
 
@@ -309,35 +308,36 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
 ];
 
 export default function NasaChallengeResources() {
+  const { isEn } = useAppI18n();
   const [activeProfile, setActiveProfile] = useState<'all' | 'global-core' | 'indonesia' | 'standard-baseline'>('all');
   const [activeGroup, setActiveGroup] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const domainGroups = [
-    { id: 'all', label: 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
+    { id: 'all', label: isEn ? 'All Domains' : 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'soil',
-      label: 'Kondisi Tanah',
+      label: isEn ? 'Soil Conditions' : 'Kondisi Tanah',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'soil').length
     },
     {
       id: 'weather',
-      label: 'Cuaca & Iklim',
+      label: isEn ? 'Weather & Climate' : 'Cuaca & Iklim',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'weather').length
     },
     {
       id: 'crop-land',
-      label: 'Tanaman & Lahan',
+      label: isEn ? 'Crop & Land' : 'Tanaman & Lahan',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'crop-land').length
     },
     {
       id: 'water-topo',
-      label: 'Air & Topografi',
+      label: isEn ? 'Water & Topography' : 'Air & Topografi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'water-topo').length
     },
     {
       id: 'agri-econ',
-      label: 'Kelayakan & Ekonomi',
+      label: isEn ? 'Feasibility & Economics' : 'Kelayakan & Ekonomi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'agri-econ').length
     }
   ];
@@ -347,22 +347,22 @@ export default function NasaChallengeResources() {
     label: string;
     count: number;
   }> = [
-    { id: 'all', label: 'Semua (13 Sumber)', count: NASA_CHALLENGE_DATASETS.length },
+    { id: 'all', label: isEn ? 'All' : 'Semua', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'global-core',
-      label: 'Global Core & Earth Obs',
+      label: 'Global Core',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'global-core').length
     },
     {
       id: 'indonesia',
-      label: 'Global + Regional Registry & RAG',
+      label: isEn ? 'Regional & RAG' : 'Regional & RAG',
       count: NASA_CHALLENGE_DATASETS.filter(
         (d) => d.geographicProfile === 'global-core' || d.geographicProfile === 'indonesia-profile'
       ).length
     },
     {
       id: 'standard-baseline',
-      label: 'Reference Standards (FAO & USDA)',
+      label: isEn ? 'Reference Standards' : 'Standar Acuan',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'standard-baseline').length
     }
   ];
@@ -408,22 +408,22 @@ export default function NasaChallengeResources() {
       case 'Live API':
         return {
           label: 'LIVE API',
-          style: 'bg-[#122822] text-[#2DD4BF] border-[#2DD4BF]/40 font-semibold'
+          style: 'bg-[#122A2F] text-[#00C2CC] border-[#164E55] font-semibold'
         };
       case 'Static Local Registry':
         return {
           label: 'STATIC LOCAL REGISTRY',
-          style: 'bg-[#162C2B] text-[#34D399] border-[#34D399]/40 font-semibold'
+          style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A] font-medium'
         };
       case 'Knowledge Base':
         return {
           label: 'KNOWLEDGE BASE',
-          style: 'bg-[#291B33] text-[#C084FC] border-[#C084FC]/40 font-semibold'
+          style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A] font-medium'
         };
       case 'Reference Standard':
         return {
           label: 'REFERENCE STANDARD',
-          style: 'bg-[#252528] text-[#D1D5DB] border-[#9CA3AF]/30 font-medium'
+          style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A] font-medium'
         };
       case 'Planned Integration':
         return {
@@ -438,70 +438,38 @@ export default function NasaChallengeResources() {
       case 'global-core':
         return {
           label: 'GLOBAL CORE',
-          style: 'bg-[#163A40] text-[#00C2CC] border-[#00C2CC]/40 font-semibold'
+          style: 'bg-[#121418] text-[#8A949E] border-[#282C34]'
         };
       case 'indonesia-profile':
         return {
           label: 'REGIONAL & RAG',
-          style: 'bg-[#133324] text-[#34D399] border-[#34D399]/40 font-semibold'
+          style: 'bg-[#121418] text-[#8A949E] border-[#282C34]'
         };
       case 'standard-baseline':
         return {
           label: 'REFERENCE STANDARD',
-          style: 'bg-[#252836] text-[#A5B4FC] border-[#A5B4FC]/30'
+          style: 'bg-[#121418] text-[#8A949E] border-[#282C34]'
         };
     }
   };
 
   return (
     <div className="flex flex-col gap-6 text-[#F1F3F5]">
-      {/* Official Challenge Header Banner */}
-      <div className="p-6 rounded-[4px] bg-gradient-to-r from-[#121721] via-[#161D2A] to-[#121620] border border-[#263347] flex flex-col gap-4 shadow-xl relative overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="px-2.5 py-1 rounded-[3px] bg-[#00C2CC]/10 text-[#00C2CC] border border-[#00C2CC]/30 font-mono text-xs font-semibold uppercase tracking-wider">
-              NASA Space Apps Challenge 2026
-            </span>
-            <span className="text-xs text-[#8A949E] hidden sm:inline">·</span>
-            <span className="text-xs font-mono text-[#8A949E]">Challenge: Adapting Farms with NASA Data</span>
-          </div>
-
-          <a
-            href="https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/?tab=resources"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00C2CC] hover:underline"
-          >
-            <span>Buka Resources Resmi NASA</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Satellite className="w-6 h-6 text-[#00C2CC] shrink-0" />
-            <span>13 Sumber Dataset, Referensi, & Peran Aktualnya di Sistem</span>
-          </h1>
-          <p className="mt-2 text-sm text-[#9BA3AE] leading-relaxed max-w-4xl">
-            Pemetaan jujur 13 sumber referensi & telemetri TerraShaft berdasarkan status aktual di kode:
-            <strong className="text-[#2DD4BF]"> Live API</strong> (NASA POWER T2M/Radiation/GWETROOT/PRECTOTCORR, ISRIC SoilGrids v2.0, Open-Meteo/SRTM Elevation),
-            <strong className="text-[#34D399]"> Static Local Registry</strong> (23 kultivar regional terlokalisasi),
-            <strong className="text-[#C084FC]"> Knowledge Base</strong> (ECOSTRESS, GEDI, BRIN RAG),
-            <strong className="text-[#D1D5DB]"> Reference Standard</strong> (ERA5/GLDAS, FAO-56/GAEZ, USDA Texture Triangle), dan
-            <strong className="text-[#38BDF8]"> Planned Integration</strong> (direct SMAP, GPM/IMERG, Landsat/MODIS, Sentinel-2 raster).
-          </p>
-        </div>
-
-        {/* Verbatim NASA Disclaimer Notice as Required */}
-        <div className="p-3.5 rounded-[4px] bg-[#0A0D13]/80 border border-[#212B3B] text-[11.5px] text-[#7E8B9E] leading-relaxed flex items-start gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-[#8A949E] shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold text-[#A6AFB8]">Official NASA Data Notice: </span>
-            NASA does not endorse any non-U.S. Government entity and is not responsible for information contained on
-            non-U.S. Government websites. For non-U.S. Government websites, participants must comply with any data use
-            parameters of that specific website.
-          </div>
-        </div>
+      {/* Catalog Header Banner */}
+      <div className="p-6 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <Satellite className="w-6 h-6 text-[#00C2CC] shrink-0" />
+          <span>
+            {isEn
+              ? '13 Datasets, References, & Actual System Roles'
+              : '13 Sumber Dataset, Referensi, & Peran Aktualnya di Sistem'}
+          </span>
+        </h1>
+        <p className="text-sm text-[#9BA3AE] leading-relaxed max-w-4xl">
+          {isEn
+            ? 'Transparent mapping of 13 TerraShaft telemetry and reference sources by actual implementation status: Live API (NASA POWER T2M/Radiation/GWETROOT/PRECTOTCORR, ISRIC SoilGrids v2.0, Open-Meteo/SRTM Elevation), Static Local Registry (23 localized regional cultivars), Knowledge Base (ECOSTRESS, GEDI, BRIN RAG), Reference Standard (ERA5/GLDAS, FAO-56/GAEZ, USDA Texture Triangle), and Planned Integration (direct SMAP, GPM/IMERG, Landsat/MODIS, Sentinel-2 raster).'
+            : 'Pemetaan jujur 13 sumber referensi & telemetri TerraShaft berdasarkan status aktual di kode: Live API (NASA POWER T2M/Radiation/GWETROOT/PRECTOTCORR, ISRIC SoilGrids v2.0, Open-Meteo/SRTM Elevation), Static Local Registry (23 kultivar regional terlokalisasi), Knowledge Base (ECOSTRESS, GEDI, BRIN RAG), Reference Standard (ERA5/GLDAS, FAO-56/GAEZ, USDA Texture Triangle), dan Planned Integration (direct SMAP, GPM/IMERG, Landsat/MODIS, Sentinel-2 raster).'}
+        </p>
       </div>
 
       {/* Geographic Profiling & Dataset Optimization Callout */}
@@ -510,23 +478,25 @@ export default function NasaChallengeResources() {
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-[#00C2CC]" />
             <h2 className="text-sm font-semibold text-white tracking-tight">
-              Klasifikasi Transparan: Live API vs Static Registry, Knowledge Base, & Planned Integration
+              {isEn
+                ? 'Transparent Classification: Live API vs Static Registry, Knowledge Base, & Planned Integration'
+                : 'Klasifikasi Transparan: Live API vs Static Registry, Knowledge Base, & Planned Integration'}
             </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5 bg-[#20242B] p-1 rounded-[3px] border border-[#2C313A]">
+          <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 bg-[#20242B] p-1 rounded-[3px] border border-[#2C313A] shrink-0">
             {profilePills.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 onClick={() => setActiveProfile(p.id)}
-                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium transition-all ${
+                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                   activeProfile === p.id
                     ? 'bg-[#00C2CC] text-[#121417] font-semibold shadow-xs'
                     : 'text-[#A6AFB8] hover:text-white'
                 }`}
               >
                 <span>{p.label}</span>
-                <span className={`ml-1 text-[10px] font-mono px-1 py-0.2 rounded-full ${
+                <span className={`ml-1.5 text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
                   activeProfile === p.id ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#16191E] text-[#8A949E]'
                 }`}>
                   {p.count}
@@ -537,31 +507,34 @@ export default function NasaChallengeResources() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
-          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
-            <span className="font-semibold text-[#00C2CC] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#00C2CC]" />
-              1. Live API & Telemetry Core
+          <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#F1F3F5]">
+              {isEn ? '1. Live API & Telemetry Core' : '1. Live API & Telemetry Core'}
             </span>
             <p className="text-[#8A949E]">
-              Aktif dipanggil runtime: NASA POWER (T2M, ALLSKY_SFC_SW_DWN, GWETROOT, PRECTOTCORR), ISRIC SoilGrids v2.0 (0–30 cm), dan Open-Meteo/SRTM elevation (/api/geocode). Tidak ada direct SMAP/GPM/Sentinel/Landsat API.
+              {isEn
+                ? 'Active runtime calls: NASA POWER (T2M, ALLSKY_SFC_SW_DWN, GWETROOT, PRECTOTCORR), ISRIC SoilGrids v2.0 (0-30 cm), and Open-Meteo/SRTM elevation (/api/geocode). No direct SMAP/GPM/Sentinel/Landsat API.'
+                : 'Aktif dipanggil runtime: NASA POWER (T2M, ALLSKY_SFC_SW_DWN, GWETROOT, PRECTOTCORR), ISRIC SoilGrids v2.0 (0-30 cm), dan Open-Meteo/SRTM elevation (/api/geocode). Tidak ada direct SMAP/GPM/Sentinel/Landsat API.'}
             </p>
           </div>
-          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
-            <span className="font-semibold text-[#34D399] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#34D399]" />
-              2. Static Registry & Knowledge Base
+          <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#F1F3F5]">
+              {isEn ? '2. Static Registry & Knowledge Base' : '2. Static Registry & Knowledge Base'}
             </span>
             <p className="text-[#8A949E]">
-              Registri statis 23 kultivar lokal (ID, US, KE, TZ, UG, IN, BR, AU) + guardrail lintas batas dan dokumen RAG lokal (BRIN/Balittanah, ECOSTRESS, GEDI). Belum terhubung ke API registri benih resmi eksternal.
+              {isEn
+                ? 'Static registry of 23 local cultivars (ID, US, KE, TZ, UG, IN, BR, AU) with cross-border guardrails and local RAG documents (BRIN/Balittanah, ECOSTRESS, GEDI). Not connected to external seed registry APIs.'
+                : 'Registri statis 23 kultivar lokal (ID, US, KE, TZ, UG, IN, BR, AU) + guardrail lintas batas dan dokumen RAG lokal (BRIN/Balittanah, ECOSTRESS, GEDI). Belum terhubung ke API registri benih resmi eksternal.'}
             </p>
           </div>
-          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
-            <span className="font-semibold text-[#A5B4FC] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#A5B4FC]" />
-              3. Reference Standards & Planned
+          <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#F1F3F5]">
+              {isEn ? '3. Reference Standards & Planned' : '3. Reference Standards & Planned'}
             </span>
             <p className="text-[#8A949E]">
-              Segitiga Tekstur USDA, FAO-56/GAEZ, dan GLDAS/ERA5 berperan sebagai standar konseptual/literatur. Tidak ada query runtime SSURGO maupun raster FAO GAEZ.
+              {isEn
+                ? 'USDA Texture Triangle, FAO-56/GAEZ, and GLDAS/ERA5 serve as conceptual/literature standards. No runtime SSURGO or FAO GAEZ raster queries.'
+                : 'Segitiga Tekstur USDA, FAO-56/GAEZ, dan GLDAS/ERA5 berperan sebagai standar konseptual/literatur. Tidak ada query runtime SSURGO maupun raster FAO GAEZ.'}
             </p>
           </div>
         </div>
@@ -599,7 +572,7 @@ export default function NasaChallengeResources() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari dataset, parameter, atau agensi..."
+            placeholder={isEn ? 'Search dataset, parameter, or agency...' : 'Cari dataset, parameter, atau agensi...'}
             className="w-full pl-9 pr-3 py-1.5 rounded-[3px] bg-[#12161E] border border-[#2C313A] text-xs text-[#F1F3F5] placeholder-[#6C757D] focus:border-[#00C2CC] focus:outline-none font-mono"
           />
         </div>
@@ -645,8 +618,8 @@ export default function NasaChallengeResources() {
                 </div>
 
                 {/* Scope Note */}
-                <div className="p-2 rounded-[3px] bg-[#0F131A] border border-[#1F2735] text-[11px] font-mono text-[#00C2CC] flex items-center gap-1.5">
-                  <Globe className="w-3 h-3 shrink-0" />
+                <div className="p-2.5 rounded-[3px] bg-[#121418] border border-[#242831] text-[11px] font-mono text-[#9BA3AE] flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-[#00C2CC] shrink-0" />
                   <span>{item.geographicScopeNote}</span>
                 </div>
 
@@ -656,7 +629,7 @@ export default function NasaChallengeResources() {
                 </p>
 
                 {/* Resolution & Frequency */}
-                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#12161E] p-2.5 rounded-[3px] border border-[#202530]">
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#121418] p-2.5 rounded-[3px] border border-[#242831]">
                   <div>
                     <span className="text-[#6C757D] block text-[10px] uppercase tracking-wider">Resolusi Spasial</span>
                     <span className="text-[#D0D7DE] font-semibold">{item.resolution}</span>
@@ -691,12 +664,12 @@ export default function NasaChallengeResources() {
                 </div>
 
                 {/* Integration in TerraShaft */}
-                <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#1F2735] flex flex-col gap-1 text-[11.5px]">
-                  <div className="flex items-center gap-1.5 font-medium text-[#38BDF8]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
+                <div className="p-3 rounded-[3px] bg-[#20242B]/80 border border-[#282F3A] flex flex-col gap-1 text-[11.5px]">
+                  <div className="flex items-center gap-1.5 font-medium text-[#F1F3F5]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2CC]" />
                     <span>Implementasi di TerraShaft:</span>
                   </div>
-                  <p className="text-[#A6AFB8] leading-relaxed">
+                  <p className="text-[#9BA3AE] leading-relaxed">
                     {item.terraShaftRole}
                   </p>
                 </div>

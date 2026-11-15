@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Droplets,
-  Sparkles,
+  Info,
   ArrowRight,
   X,
   Check
@@ -816,7 +816,7 @@ export default function InteractiveFieldExplorer() {
 
               {/* Agronomic Insight Box */}
               <div className="p-3 bg-[#16191E] border border-[#282C34] rounded-[4px] flex gap-2 items-start">
-                <Sparkles className="w-3.5 h-3.5 text-[#00C2CC] shrink-0 mt-0.5" />
+                <Info className="w-3.5 h-3.5 text-[#00C2CC] shrink-0 mt-0.5" />
                 <p className="text-[11px] text-[#8A949E] leading-relaxed">
                   {getAgronomicInsight()}
                 </p>
@@ -844,45 +844,48 @@ export default function InteractiveFieldExplorer() {
 
         {/* Tab Content 2: ALL LOCATIONS / PRESETS */}
         {activeTab === 'presets' && (
-          <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 text-xs">
-            {/* Filter by name input */}
-            <div className="relative">
-              <input
-                type="text"
-                value={presetSearchText}
-                onChange={(e) => setPresetSearchText(e.target.value)}
-                placeholder="Filter by name..."
-                className="w-full px-3 py-1.5 bg-[#20252D] border border-[#282C34] rounded-[3px] text-xs text-[#F1F3F5] placeholder-[#8A949E] outline-none focus:border-[#009DA5]"
-              />
+          <div className="flex-1 min-h-0 flex flex-col text-xs">
+            {/* Fixed Filter Header */}
+            <div className="p-4 pb-2.5 flex flex-col gap-2.5 shrink-0 border-b border-[#242831]">
+              {/* Filter by name input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={presetSearchText}
+                  onChange={(e) => setPresetSearchText(e.target.value)}
+                  placeholder="Filter by name..."
+                  className="w-full px-3 py-1.5 bg-[#20252D] border border-[#282C34] rounded-[3px] text-xs text-[#F1F3F5] placeholder-[#8A949E] outline-none focus:border-[#009DA5]"
+                />
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1 flex-wrap text-[11px] font-mono text-[#8A949E]">
+                {(
+                  [
+                    { id: 'all', label: 'SEMUA' },
+                    { id: 'timor', label: 'TIMOR' },
+                    { id: 'indonesia', label: 'INDONESIA' },
+                    { id: 'global', label: 'GLOBAL' }
+                  ] as const
+                ).map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setPresetFilter(cat.id)}
+                    className={`px-2 py-1 rounded-[3px] transition-colors whitespace-nowrap cursor-pointer ${
+                      presetFilter === cat.id
+                        ? 'bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40 font-semibold'
+                        : 'hover:bg-[#20252D] hover:text-white'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Category Filter Pills (WEEKLY / MONTHLY style in screenshot) */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-mono text-[#8A949E]">
-              {(
-                [
-                  { id: 'all', label: 'SEMUA' },
-                  { id: 'timor', label: 'TIMOR' },
-                  { id: 'indonesia', label: 'INDONESIA' },
-                  { id: 'global', label: 'GLOBAL' }
-                ] as const
-              ).map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setPresetFilter(cat.id)}
-                  className={`px-2 py-0.5 rounded-[3px] transition-colors whitespace-nowrap ${
-                    presetFilter === cat.id
-                      ? 'bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40 font-semibold'
-                      : 'hover:bg-[#20252D] hover:text-white'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {/* List of Location Cards */}
-            <div className="flex flex-col gap-2 pt-1">
+            {/* Scrollable List of Location Cards */}
+            <div className="p-4 pt-3 flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
               {filteredPresets.map((preset) => {
                 const isSelected =
                   Math.abs(location.lat - preset.lat) < 0.001 &&
