@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n, localizeCropName, localizePathwayCopy } from '@/lib/i18n';
 import { toPng } from 'html-to-image';
 import {
   Download,
@@ -23,7 +24,8 @@ import {
 import { getActionSheetProvenanceDisplay, getOverallDisplayStatus } from '@/lib/provenance';
 
 export default function ActionSheetPage() {
-  const { location, elevation_m, plans, selectedPathway, setSelectedPathway, provenance, isFieldMode } = useTerraShaftStore();
+  const { location, elevation_m, plans, selectedPathway, setSelectedPathway, provenance, isFieldMode, agroecologicalProfile } = useTerraShaftStore();
+  const { t, locale, isEn } = useAppI18n();
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [isExporting, setIsExporting] = useState(false);
@@ -36,9 +38,13 @@ export default function ActionSheetPage() {
         <div className="w-12 h-12 rounded-[4px] bg-[#163A40] text-[#00C2CC] flex items-center justify-center">
           <RefreshCw className="w-6 h-6 animate-spin" />
         </div>
-        <h3 className="text-base font-bold text-[#F1F3F5]">Menyiapkan Lembar Aksi Lapangan...</h3>
+        <h3 className="text-base font-bold text-[#F1F3F5]">
+          {isEn ? 'Preparing Field Action Sheet...' : 'Menyiapkan Lembar Aksi Lapangan...'}
+        </h3>
         <p className="text-xs text-[#8A949E]">
-          Sedang menghitung optimasi rotasi berdasarkan data telemetri iklim & tanah. Mohon tunggu sejenak.
+          {isEn
+            ? 'Computing rotation optimization from active climate & soil telemetry...'
+            : 'Sedang menghitung optimasi rotasi berdasarkan data telemetri iklim & tanah. Mohon tunggu sejenak.'}
         </p>
       </div>
     );
@@ -104,27 +110,40 @@ export default function ActionSheetPage() {
     }
   };
 
+  const pathwayMeta = localizePathwayCopy(selectedPathway, locale);
+
   const handleShareWhatsApp = () => {
     const cropsSummary = currentPlan.seasons
       .map((s) => {
-        const seasonInfo = getStructuredSeason(s.seasonIndex, s.seasonName, s.monthRange);
-        return `*${seasonInfo.seasonLabel}: ${seasonInfo.seasonName} (${seasonInfo.monthRange})*: ${s.crop.name} (Varietas: ${
-          s.crop.recommended_variety || 'Unggul'
-        }), Defisit Air: ${formatMm(s.waterDeficit_mm)}, Efek Baterai: ${s.batteryDelta_pct >= 0 ? '+' : ''}${s.batteryDelta_pct}%`;
+        const seasonInfo = getStructuredSeason(s.seasonIndex, s.seasonName, s.monthRange, locale);
+        return `*${seasonInfo.seasonLabel}: ${seasonInfo.seasonName} (${seasonInfo.monthRange})*: ${localizeCropName(s.crop, locale)} (${isEn ? 'Cultivar' : 'Varietas'}: ${
+          s.crop.recommended_variety || (isEn ? 'Phenotype Archetype' : 'Arketipe Fenotipe')
+        }), ${isEn ? 'Water Deficit' : 'Defisit Air'}: ${formatMm(s.waterDeficit_mm)}, ${isEn ? 'Battery Delta' : 'Efek Baterai'}: ${s.batteryDelta_pct >= 0 ? '+' : ''}${s.batteryDelta_pct}%`;
       })
       .join('\n');
 
-    const messageText =
-      `*LEMBAR AKSI POLA ROTASI TANAM 4 MUSIM: TERRASHAFT*\n\n` +
-      `*Lokasi:* ${location.placeName || 'Lahan Budidaya'} (${formatCoordinate(location.lat)}°, ${formatCoordinate(location.lon)}°, ${Math.round(elevation_m)} m dpl)\n` +
-      `*Skenario Terpilih:* ${currentPlan.title} (Skor: ${formatScore(currentPlan.compositeScore)}/100)\n\n` +
-      `*Baterai Tanah:* ${initialBattery}% -> ${finalBattery}% (${deltaBattery >= 0 ? '+' : ''}${deltaBattery}%)\n` +
-      `*Efisiensi Air:* Estimasi penghematan air hingga ${currentPlan.waterSavingsPct}% dibanding baseline monokultur\n` +
-      `*Neraca Nitrogen:* Estimasi kontribusi N biologis kumulatif ${formatKgPerHa(currentPlan.netNitrogenDelta)}\n\n` +
-      `*JADWAL ROTASI 4 MUSIM:*\n${cropsSummary}\n\n` +
-      `*Status Sumber Data:*\n${actionSheetProv.compactSourceBlock.nasa}\n${actionSheetProv.compactSourceBlock.soil}\n\n` +
-      `_${actionSheetProv.scientificNote}_\n` +
-      `_TerraShaft adalah alat eksplorasi skenario; validasikan dengan penyuluh dan kondisi lapangan lokal sebelum tanam._`;
+    const messageText = isEn
+      ? `*TERRASHAFT 4-SEASON ROTATION ACTION SHEET*\n\n` +
+        `*Location:* ${location.placeName || 'Plot'} (${agroecologicalProfile.country} · ${agroecologicalProfile.agroecological_zone})\n` +
+        `*Coordinates:* ${formatCoordinate(location.lat)}°, ${formatCoordinate(location.lon)}°, ${Math.round(elevation_m)} m asl\n` +
+        `*Scenario:* ${pathwayMeta.title} (Score: ${formatScore(currentPlan.compositeScore)}/100)\n\n` +
+        `*Soil Battery:* ${initialBattery}% -> ${finalBattery}% (${deltaBattery >= 0 ? '+' : ''}${deltaBattery}%)\n` +
+        `*Water Savings:* Up to ${currentPlan.waterSavingsPct}% vs continuous cereal monoculture\n` +
+        `*Nitrogen Balance:* Cumulative N delta ${formatKgPerHa(currentPlan.netNitrogenDelta)}\n\n` +
+        `*4-SEASON ROTATION SCHEDULE:*\n${cropsSummary}\n\n` +
+        `*Data Provenance:*\n${actionSheetProv.compactSourceBlock.nasa}\n${actionSheetProv.compactSourceBlock.soil}\n\n` +
+        `_TerraShaft is a decision-support tool; verify local seed registries and extension guidance before planting._`
+      : `*LEMBAR AKSI POLA ROTASI TANAM 4 MUSIM: TERRASHAFT*\n\n` +
+        `*Lokasi:* ${location.placeName || 'Lahan Budidaya'} (${agroecologicalProfile.country} · ${agroecologicalProfile.agroecological_zone})\n` +
+        `*Koordinat:* ${formatCoordinate(location.lat)}°, ${formatCoordinate(location.lon)}°, ${Math.round(elevation_m)} m dpl\n` +
+        `*Skenario Terpilih:* ${pathwayMeta.title} (Skor: ${formatScore(currentPlan.compositeScore)}/100)\n\n` +
+        `*Baterai Tanah:* ${initialBattery}% -> ${finalBattery}% (${deltaBattery >= 0 ? '+' : ''}${deltaBattery}%)\n` +
+        `*Efisiensi Air:* Estimasi penghematan air hingga ${currentPlan.waterSavingsPct}% dibanding baseline monokultur\n` +
+        `*Neraca Nitrogen:* Estimasi kontribusi N biologis kumulatif ${formatKgPerHa(currentPlan.netNitrogenDelta)}\n\n` +
+        `*JADWAL ROTASI 4 MUSIM:*\n${cropsSummary}\n\n` +
+        `*Status Sumber Data:*\n${actionSheetProv.compactSourceBlock.nasa}\n${actionSheetProv.compactSourceBlock.soil}\n\n` +
+        `_${actionSheetProv.scientificNote}_\n` +
+        `_TerraShaft adalah alat eksplorasi skenario; validasikan dengan penyuluh dan kondisi lapangan lokal sebelum tanam._`;
 
     const encoded = encodeURIComponent(messageText);
     window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
@@ -140,10 +159,10 @@ export default function ActionSheetPage() {
           </div>
           <div>
             <h2 className="text-base font-bold text-[#F1F3F5] leading-tight">
-              Lembar Panduan Lapangan WhatsApp (Action Sheet)
+              {t('actionSheet.title')}
             </h2>
             <p className="text-xs text-[#8A949E]">
-              Format poster 1080×1350 px (rasio 4:5) siap dibagikan ke kelompok tani
+              {t('actionSheet.subtitle')}
             </p>
           </div>
         </div>
@@ -161,7 +180,7 @@ export default function ActionSheetPage() {
                     : 'text-[#8A949E] hover:text-[#F1F3F5]'
                 }`}
               >
-                Jalur {pw}
+                {isEn ? `Pathway ${pw}` : `Jalur ${pw}`}
               </button>
             ))}
           </div>
@@ -173,7 +192,7 @@ export default function ActionSheetPage() {
             className="px-4 py-2 rounded-[4px] bg-[#009DA5] hover:bg-[#00878E] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isExporting ? 'Memproses...' : 'Unduh Gambar (PNG)'}</span>
+            <span>{isExporting ? (isEn ? 'Rendering...' : 'Memproses...') : (isEn ? 'Download PNG' : 'Unduh Gambar (PNG)')}</span>
           </button>
 
           <button
@@ -182,7 +201,7 @@ export default function ActionSheetPage() {
             className="px-4 py-2 rounded-[4px] bg-[#25D366] hover:bg-[#20BA5C] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
           >
             <Share2 className="w-4 h-4" />
-            <span>Kirim ke WhatsApp</span>
+            <span>{isEn ? 'Share via WhatsApp' : 'Kirim ke WhatsApp'}</span>
           </button>
         </div>
       </div>

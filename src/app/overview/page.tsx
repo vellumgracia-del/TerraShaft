@@ -3,7 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import SummaryMetricCards from '@/components/overview/SummaryMetricCards';
+import AgroecologicalProfileCard from '@/components/overview/AgroecologicalProfileCard';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n, localizeCropName, localizePathwayCopy } from '@/lib/i18n';
 import {
   Search,
   Rss,
@@ -75,24 +77,44 @@ export default function HomePage() {
     selectedPathway,
     setSelectedPathway,
     setLocation,
-    provenance
+    provenance,
+    agroecologicalProfile
   } = useTerraShaftStore();
+  const { locale, isEn } = useAppI18n();
 
   const currentPlan = plans ? plans[selectedPathway] : null;
-  const pathwayButtons: Array<{ id: 'A' | 'B' | 'C'; label: string }> = [
-    { id: 'A', label: 'Pathway A · Max Soil' },
-    { id: 'B', label: 'Pathway B · Drought Guard' },
-    { id: 'C', label: 'Pathway C · Cash Flow' }
-  ];
+  const activePathwayCopy = localizePathwayCopy(selectedPathway, locale);
+  const pathwayButtons: Array<{ id: 'A' | 'B' | 'C'; label: string }> = isEn
+    ? [
+        { id: 'A', label: 'Pathway A · Max Soil' },
+        { id: 'B', label: 'Pathway B · Drought Guard' },
+        { id: 'C', label: 'Pathway C · Cash Flow' }
+      ]
+    : [
+        { id: 'A', label: 'Jalur A · Tanah' },
+        { id: 'B', label: 'Jalur B · Kekeringan' },
+        { id: 'C', label: 'Jalur C · Arus Kas' }
+      ];
 
-  // Dynamic single-line AI field briefing based on active soil & moisture
+  // Dynamic single-line AI field briefing grounded in active soil, moisture & regional cultivar resolution
   const isClayRich = (soilData?.clay ?? 48) > 35;
   const isDroughtRisk = (climateData?.rootZoneSoilMoisture ?? 0.38) < 0.35;
-  const aiBriefText = isClayRich
-    ? `Vertisol liat ${soilData?.clay ?? 48}% rentan retak saat kemarau: prioritaskan rotasi legum berakar dalam (Orok-orok / Kedelai Anjasmoro) untuk mencegah kehilangan air kapiler.`
+  const activeDryCrop = currentPlan?.seasons?.[3]?.crop ?? crops[0];
+  const dryCropLabel = activeDryCrop
+    ? `${localizeCropName(activeDryCrop, locale)} (${activeDryCrop.recommended_variety || 'Archetype'})`
+    : 'Sorghum / Legume';
+
+  const aiBriefText = isEn
+    ? isClayRich
+      ? `Heavy clay fraction (${soilData?.clay ?? 48}%) in ${agroecologicalProfile.agroecological_zone}: pair deep-rooted ${dryCropLabel} with cover legumes to mitigate cracking and preserve capillary moisture.`
+      : isDroughtRisk
+      ? `Low SMAP root moisture (${climateData?.rootZoneSoilMoisture ?? 0.38} GWETROOT): prioritize drought-resilient ${dryCropLabel} to safeguard seasonal water balance.`
+      : `Soil AWC (${soilData?.awc ?? 27.8} mm) in ${agroecologicalProfile.country} supports balanced 4-season cereal-legume cycling with ${dryCropLabel}.`
+    : isClayRich
+    ? `Fraksi liat ${soilData?.clay ?? 48}% pada zona ${agroecologicalProfile.agroecological_zone}: padukan ${dryCropLabel} berakar dalam dengan rotasi legum untuk menjaga kelembapan kapiler.`
     : isDroughtRisk
-    ? `Kelembapan perakaran SMAP rendah (${climateData?.rootZoneSoilMoisture ?? 0.38}): prioritaskan tanaman penutup tahan kering (Sorgum Bioguma) untuk menjaga baterai hara.`
-    : `Kapasitas simpan air AWC (${soilData?.awc ?? 27.8} mm) optimal: pertahankan suksesi 4 musim berimbang antara sereal dan legum fiksasi nitrogen.`;
+    ? `Kelembapan perakaran SMAP rendah (${climateData?.rootZoneSoilMoisture ?? 0.38} GWETROOT): prioritaskan ${dryCropLabel} untuk menjaga neraca air musiman.`
+    : `Kapasitas simpan air AWC (${soilData?.awc ?? 27.8} mm) di ${agroecologicalProfile.country} mendukung suksesi 4 musim berimbang antara sereal dan legum.`;
 
   const addDataWorkflows = [
     {
@@ -269,9 +291,9 @@ export default function HomePage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="text-[13.5px] font-medium text-[#F1F3F5] leading-snug">
-                  4-Season Combinatorial Rotation (Pathway {selectedPathway})
+                  {isEn ? '4-Season Combinatorial Rotation' : 'Rotasi Kombinatorial 4 Musim'} ({isEn ? `Pathway ${selectedPathway}` : `Jalur ${selectedPathway}`})
                   <div className="text-[12.5px] text-[#C1C7CD] font-normal mt-0.5 truncate">
-                    {currentPlan?.title ?? 'Max Soil Regeneration'} (Skor {currentPlan?.compositeScore ?? 89}/100)
+                    {activePathwayCopy.title} ({isEn ? 'Score' : 'Skor'} {currentPlan?.compositeScore ?? 89}/100)
                   </div>
                 </div>
                 <Info className="w-4 h-4 text-[#9BA3AE] shrink-0 mt-0.5" />
@@ -309,7 +331,7 @@ export default function HomePage() {
             href="/field-advisor"
             className="inline-flex items-center gap-1 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium shrink-0 self-end sm:self-center"
           >
-            <span>Konsultasi AI</span>
+            <span>{isEn ? 'Ask AI Advisor' : 'Konsultasi AI'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -349,28 +371,25 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Active Sensor Constellation Ribbon (Ultra-slim 1-line strip) */}
+          {/* Active Sensor Constellation Ribbon (Verified Live Sources Only) */}
           <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 bg-[#16191E] border border-[#2C313A] rounded-[3px] text-[11px] font-mono text-[#8A949E]">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00C2CC] animate-pulse" />
-              <span className="text-[#C1C7CD] font-medium">Sensors:</span>
-              <span className="text-[#F1F3F5]">NASA SMAP L4</span>
+              <span className="text-[#C1C7CD] font-medium">{isEn ? 'Live Feeds:' : 'Telemetri:'}</span>
+              <span className="text-[#F1F3F5]">NASA POWER (ET0 & GWETROOT)</span>
               <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">GPM IMERG</span>
+              <span className="text-[#F1F3F5]">ISRIC SoilGrids v2.0</span>
               <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">POWER ET0</span>
-              <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">Sentinel-2 (10m)</span>
-              <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">SRTM DEM ({elevation_m}m)</span>
+              <span className="text-[#F1F3F5]">Open-Meteo DEM ({elevation_m}m)</span>
             </div>
             <Link href="/data-sources" className="text-[#00C2CC] hover:underline flex items-center gap-1 font-sans text-[11px]">
-              <span>13 Datasets</span>
+              <span>{isEn ? 'Provenance & Catalog' : 'Provenansi & Katalog'}</span>
               <ArrowUpRight className="w-3 h-3" />
             </Link>
           </div>
 
           <SummaryMetricCards />
+          <AgroecologicalProfileCard />
         </div>
 
         {/* Bottom Section: 4-SEASON ROTATION MATRIX */}
@@ -378,7 +397,7 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-[#C1C7CD]">
-                4-SEASON ROTATION SCHEDULE ({currentPlan.title.toUpperCase()})
+                {isEn ? '4-SEASON ROTATION SCHEDULE' : 'JADWAL ROTASI 4 MUSIM'} ({activePathwayCopy.title.toUpperCase()})
               </span>
 
               <div className="inline-flex items-center rounded-[4px] border border-[#2C313A] bg-[#16191E] p-0.5 text-xs">
@@ -404,35 +423,66 @@ export default function HomePage() {
 
             <div className="rounded-[4px] border border-[#2C313A] bg-[#20242B] divide-y divide-[#2C313A] overflow-hidden">
               {currentPlan.seasons.map((season) => {
-                const sInfo = getStructuredSeason(season.seasonIndex);
-                const waterInfo = getWaterStatusDetails(season.waterDeficit_mm);
+                const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange, locale);
+                const waterInfo = getWaterStatusDetails(season.waterDeficit_mm, locale);
+                const res = season.crop.cultivar_resolution;
+                const isFallback = res?.is_archetype_fallback ?? false;
                 return (
                   <div
                     key={season.seasonIndex}
                     className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-[#262B33] transition-colors"
                   >
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[11px] font-mono uppercase tracking-wider text-[#00C2CC]">
                           {sInfo.seasonLabel} ({sInfo.monthRange})
                         </span>
                         <span className="text-[#6E7781]">·</span>
                         <span className="text-[13.5px] font-medium text-[#F1F3F5]">
-                          {season.crop.name}
+                          {localizeCropName(season.crop, locale)}
                         </span>
+                        {season.crop.scientific_name && (
+                          <span className="text-[11px] italic text-[#8A949E]">
+                            ({season.crop.scientific_name})
+                          </span>
+                        )}
                       </div>
-                      <p className="text-[12px] text-[#8A949E] mt-0.5">
-                        Varietas: {season.crop.recommended_variety || ' Unggul Lokal'} · Durasi {season.crop.growth_duration_days} hari
+                      <p className="text-[12px] text-[#8A949E] mt-0.5 flex flex-wrap items-center gap-1.5">
+                        <span>
+                          {isEn ? 'Cultivar:' : 'Kultivar:'}{' '}
+                          <span className="text-[#C1C7CD]">
+                            {season.crop.recommended_variety || (isEn ? 'Phenotype Archetype' : 'Arketipe Fenotipe')}
+                          </span>
+                        </span>
+                        <span className="text-[#3E4552]">·</span>
+                        <span>{season.crop.growth_duration_days} {isEn ? 'days' : 'hari'}</span>
+                        {res && (
+                          <span
+                            className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${
+                              isFallback
+                                ? 'bg-[#3B2E14] text-[#FBBF24] border-[#92400E]/60'
+                                : 'bg-[#064E3B]/60 text-[#34D399] border-[#047857]/60'
+                            }`}
+                          >
+                            {isFallback
+                              ? isEn ? 'Archetype Fallback' : 'Fallback Arketipe'
+                              : `${res.cultivar.country_or_region_of_release[0]} · ${Math.round(res.confidence_score * 100)}%`}
+                          </span>
+                        )}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-4 text-[12px] font-mono shrink-0">
                       <div className="text-right">
-                        <span className="text-[#8A949E] block text-[10.5px]">Defisit Air</span>
+                        <span className="text-[#8A949E] block text-[10.5px]">
+                          {isEn ? 'Water Deficit' : 'Defisit Air'}
+                        </span>
                         <span className={waterInfo.colorClass}>{formatMm(season.waterDeficit_mm)}</span>
                       </div>
                       <div className="text-right min-w-[90px]">
-                        <span className="text-[#8A949E] block text-[10.5px]">Neraca Tanah</span>
+                        <span className="text-[#8A949E] block text-[10.5px]">
+                          {isEn ? 'Soil Delta' : 'Neraca Tanah'}
+                        </span>
                         <span className="text-[#00C2CC]">
                           {season.batteryDelta_pct >= 0 ? `+${season.batteryDelta_pct}%` : `${season.batteryDelta_pct}%`} ({formatKgPerHa(season.nitrogenDelta_kg_ha)})
                         </span>
@@ -447,7 +497,11 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               <div className="text-[11.5px] text-[#8A949E] flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2CC]" />
-                <span>Jadwal 4 musim adaptif teroptimasi untuk ketahanan air & pemulihan hara</span>
+                <span>
+                  {isEn
+                    ? 'Adaptive 4-season schedule optimized for water resilience, AEZ zoning & soil recovery'
+                    : 'Jadwal 4 musim adaptif teroptimasi untuk ketahanan air, zonasi AEZ & pemulihan hara'}
+                </span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -456,14 +510,14 @@ export default function HomePage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-[#20242B] hover:bg-[#282F3A] border border-[#2C313A] text-xs font-medium text-[#F1F3F5] transition-colors"
                 >
                   <FileText className="w-3.5 h-3.5 text-[#00C2CC]" />
-                  <span>Cetak Action Sheet</span>
+                  <span>{isEn ? 'Export Action Sheet' : 'Cetak Action Sheet'}</span>
                 </Link>
                 <Link
                   href="/field-advisor"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] bg-[#163A40] hover:bg-[#1C474F] text-[#00C2CC] border border-[#00C2CC]/40 text-xs font-medium transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Tanya AI Advisor</span>
+                  <span>{isEn ? 'Ask AI Advisor' : 'Tanya AI Advisor'}</span>
                 </Link>
               </div>
             </div>

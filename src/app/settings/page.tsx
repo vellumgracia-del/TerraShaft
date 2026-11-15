@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   User,
   Sliders,
@@ -22,7 +23,8 @@ import {
   Sparkles,
   ShieldCheck,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Languages
 } from 'lucide-react';
 
 type TabKey = 'profile' | 'preferences' | 'integrations' | 'security';
@@ -67,6 +69,7 @@ export default function SettingsPage() {
     priorities,
     setPriorityPreset
   } = useTerraShaftStore();
+  const { t, locale, setLocale, isEn } = useAppI18n();
 
   const [activeTab, setActiveTab] = useState<TabKey>('profile');
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
@@ -83,14 +86,17 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('terrashaft_user_profile');
-      if (saved) setProfile(JSON.parse(saved));
-      const savedKey = localStorage.getItem('terrashaft_gemini_key');
-      if (savedKey) setGeminiKey(savedKey);
-    } catch {
-      // ignore
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem('terrashaft_user_profile');
+        if (saved) setProfile(JSON.parse(saved));
+        const savedKey = localStorage.getItem('terrashaft_gemini_key');
+        if (savedKey) setGeminiKey(savedKey);
+      } catch {
+        // ignore
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const triggerToast = (msg: string) => {
@@ -154,10 +160,10 @@ export default function SettingsPage() {
           <span>TerraShaft Platform · Preferences</span>
         </div>
         <h1 className="text-xl lg:text-2xl font-semibold text-[#F1F3F5] tracking-tight">
-          Pengaturan Umum & Profil
+          {t('settings.title')}
         </h1>
         <p className="text-xs text-[#9BA3AE]">
-          Kelola profil penyuluh, preferensi wilayah kerja lahan, integrasi telemetri satelit, dan keamanan akun.
+          {t('settings.subtitle')}
         </p>
       </div>
 
@@ -332,10 +338,57 @@ export default function SettingsPage() {
           {activeTab === 'preferences' && (
             <div className="flex flex-col gap-5">
               <div className="border-b border-[#282C34] pb-3">
-                <h2 className="text-sm font-semibold text-[#F1F3F5]">Preferensi Workbench & Lahan</h2>
+                <h2 className="text-sm font-semibold text-[#F1F3F5]">
+                  {isEn ? 'Workspace & Field Preferences' : 'Preferensi Workbench & Lahan'}
+                </h2>
                 <p className="text-xs text-[#9BA3AE]">
-                  Atur lokasi default, mode kontras tinggi saat di sawah, dan jalur optimasi bawaan.
+                  {isEn
+                    ? 'Configure display language, default AOI coordinates, outdoor contrast, and optimization pathway.'
+                    : 'Atur bahasa tampilan, lokasi default, mode kontras tinggi saat di sawah, dan jalur optimasi bawaan.'}
                 </p>
+              </div>
+
+              {/* Language Switcher (UI Only - Does NOT modify calculations) */}
+              <div className="p-4 bg-[#121418] rounded-[6px] border border-[#242831] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold text-[#F1F3F5] flex items-center gap-1.5">
+                    <Languages className="w-4 h-4 text-[#00C2CC]" />
+                    <span>{t('settings.languageCardTitle')}</span>
+                  </div>
+                  <p className="text-[11px] text-[#8A949E] mt-0.5">
+                    {t('settings.languageCardDesc')}
+                  </p>
+                </div>
+                <div className="inline-flex items-center rounded-[5px] bg-[#16191E] border border-[#2C313A] p-0.5 text-xs font-semibold shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocale('en');
+                      triggerToast('Language switched to English (calculations unchanged)');
+                    }}
+                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${
+                      locale === 'en'
+                        ? 'bg-[#00C2CC] text-[#121417]'
+                        : 'text-[#C1C7CD] hover:text-white'
+                    }`}
+                  >
+                    English (EN)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocale('id');
+                      triggerToast('Bahasa diubah ke Indonesia (kalkulasi tetap sama)');
+                    }}
+                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${
+                      locale === 'id'
+                        ? 'bg-[#00C2CC] text-[#121417]'
+                        : 'text-[#C1C7CD] hover:text-white'
+                    }`}
+                  >
+                    Indonesia (ID)
+                  </button>
+                </div>
               </div>
 
               {/* Lokasi Default AOI */}

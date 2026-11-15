@@ -5,6 +5,7 @@ interface ReverseGeocodeResult {
   district?: string;
   province?: string;
   country?: string;
+  countryCode?: string;
   elevation_m: number;
   source: 'NOMINATIM_OPENMETEO_LIVE' | 'COORDINATE_FALLBACK';
 }
@@ -14,6 +15,10 @@ export interface SearchLocationItem {
   shortName: string;
   lat: number;
   lon: number;
+  country?: string;
+  countryCode?: string;
+  district?: string;
+  province?: string;
 }
 
 const reverseCache = new Map<string, { data: ReverseGeocodeResult; timestamp: number }>();
@@ -52,9 +57,9 @@ export async function GET(request: Request) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
-      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&q=${encodeURIComponent(
         normalizedQuery
-      )}&limit=5&accept-language=id,en`;
+      )}&limit=5&accept-language=en,id`;
 
       const res = await fetch(url, {
         headers: { 'User-Agent': USER_AGENT },
@@ -69,13 +74,29 @@ export async function GET(request: Request) {
       const raw = await res.json();
       const results: SearchLocationItem[] = Array.isArray(raw)
         ? raw
-            .map((item: { display_name?: string; name?: string; lat?: string; lon?: string }) => {
+            .map((item: {
+              display_name?: string;
+              name?: string;
+              lat?: string;
+              lon?: string;
+              address?: Record<string, string>;
+            }) => {
               const lat = parseFloat(String(item.lat ?? ''));
               const lon = parseFloat(String(item.lon ?? ''));
               const displayName = String(item.display_name || '').trim();
               const parts = displayName.split(',').map((s) => s.trim());
               const shortName = item.name || parts.slice(0, 2).join(', ') || displayName;
-              return { displayName, shortName, lat, lon };
+              const addr = item.address || {};
+              return {
+                displayName,
+                shortName,
+                lat,
+                lon,
+                country: addr.country,
+                countryCode: addr.country_code ? String(addr.country_code).toUpperCase() : undefined,
+                district: addr.county || addr.city || addr.town || addr.village,
+                province: addr.state || addr.region,
+              };
             })
             .filter((item) => !isNaN(item.lat) && !isNaN(item.lon) && item.displayName.length > 0)
         : [];
@@ -168,6 +189,7 @@ export async function GET(request: Request) {
   const regency = addr.county || addr.city || addr.state_district;
   const state = addr.state || addr.region;
   const country = addr.country;
+  const countryCode = typeof addr.country_code === 'string' ? addr.country_code.toUpperCase() : undefined;
 
   const parts = [locality, regency !== locality ? regency : null, state, country].filter(Boolean);
   const placeName =
@@ -175,7 +197,7 @@ export async function GET(request: Request) {
       ? parts.join(', ')
       : nomData?.display_name
       ? String(nomData.display_name).split(',').slice(0, 3).join(',').trim()
-      : `Titik Koordinat: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+      : `Coordinates: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
 
   const elevation_m =
     elevData !== null
@@ -187,6 +209,7 @@ export async function GET(request: Request) {
     district: locality || regency,
     province: state,
     country,
+    countryCode,
     elevation_m,
     source: nomData || elevData !== null ? 'NOMINATIM_OPENMETEO_LIVE' : 'COORDINATE_FALLBACK'
   };

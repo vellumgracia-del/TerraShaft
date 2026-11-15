@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Send,
   Sparkles,
@@ -36,8 +37,9 @@ interface ChatMessage {
 }
 
 export default function AdvisoryChatSection() {
-  const { location, elevation_m, soilData, climateData, selectedPathway, plans } =
+  const { location, elevation_m, soilData, climateData, selectedPathway, plans, agroecologicalProfile } =
     useTerraShaftStore();
+  const { locale, isEn } = useAppI18n();
 
   const activePlan = plans ? plans[selectedPathway] : null;
 
@@ -45,13 +47,9 @@ export default function AdvisoryChatSection() {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: `Halo. Saya adalah **TerraShaft Agronomist AI**.
-
-Saya terhubung langsung dengan telemetri satelit NASA (curah hujan, SMAP) dan profil tanah ISRIC untuk lahan aktif Anda di **${
-        location.placeName || 'Kupang Timur'
-      }**.
-
-Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran pemupukan berimbang, perbaikan tanah masam/padas, atau strategi mitigasi kekeringan. Semua saran merujuk pada dokumen ilmiah resmi (BRIN, Balitkabi, Balittanah, dan FAO-56).`,
+      text: isEn
+        ? `Hello. I am **TerraShaft Agronomist AI**.\n\nI am grounded directly in active NASA POWER climate telemetry, ISRIC SoilGrids v2.0 topsoil fractions, and global AEZ cultivar localization for **${location.placeName || 'your selected plot'}** (${agroecologicalProfile.country}, ${agroecologicalProfile.agroecological_zone}).\n\nAsk about site-specific crop rotation, soil pH/texture management, drought mitigation, or local cultivar suitability.`
+        : `Halo. Saya adalah **TerraShaft Agronomist AI**.\n\nSaya terhubung langsung dengan telemetri satelit NASA (curah hujan, SMAP) dan profil tanah ISRIC SoilGrids v2.0 untuk lahan aktif Anda di **${location.placeName || 'Kupang Timur'}** (${agroecologicalProfile.country}, ${agroecologicalProfile.agroecological_zone}).\n\nSilakan ajukan pertanyaan seputar rekomendasi kultivar terlokalisasi, takaran pemupukan berimbang, perbaikan tanah masam, atau strategi mitigasi kekeringan.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -60,6 +58,7 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [openCitations, setOpenCitations] = useState<Record<string, boolean>>({});
+  const messageSeqRef = useRef(1);
 
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -67,19 +66,26 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const quickChips = [
-    'Rekomendasi takaran pupuk dan perbaikan pH tanah ini',
-    'Mengapa kelembapan SMAP kritis di musim kemarau dan apa mitigasinya?',
-    'SOP jarak tanam dan pemupukan benih rotasi Musim 1',
-    'Cara memecah lapisan tanah padas dan menangani tanah lempung retak'
-  ];
+  const quickChips = isEn
+    ? [
+        'Recommended fertilizer & pH management for this soil profile',
+        'Why does root-zone moisture drop in dry season and how do we mitigate it?',
+        'Explain localized cultivar vs phenotype fallback choices for Season 1',
+        'How should heavy clay or low-AWC soils be prepared for rainfed planting?'
+      ]
+    : [
+        'Rekomendasi takaran pupuk dan perbaikan pH tanah ini',
+        'Mengapa kelembapan SMAP kritis di musim kemarau dan apa mitigasinya?',
+        'Jelaskan pemilihan kultivar lokal vs fallback arketipe untuk Musim 1',
+        'Cara menangani tanah lempung berat atau AWC rendah saat tadah hujan'
+      ];
 
   const handleSendMessage = async (textToSend?: string) => {
     const query = (textToSend || inputText).trim();
     if (!query || isLoading) return;
 
     const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
+      id: `user-${messageSeqRef.current++}`,
       sender: 'user',
       text: query,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -102,6 +108,7 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: query,
+          locale,
           apiKey: customKey || undefined,
           telemetry: {
             location,
@@ -109,7 +116,8 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
             soilData,
             climateData,
             selectedPathway,
-            activePlan
+            activePlan,
+            agroecologicalProfile
           }
         })
       });
@@ -121,7 +129,7 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
       const data = await response.json();
 
       const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}`,
+        id: `assistant-${messageSeqRef.current++}`,
         sender: 'assistant',
         text: data.reply || 'Tidak dapat memproses jawaban.',
         citations: data.citations || [],
@@ -133,7 +141,7 @@ Silakan ajukan pertanyaan seputar rekomendasi budidaya varietas unggul, takaran 
     } catch (err) {
       console.error('Chat error:', err);
       const errorMsg: ChatMessage = {
-        id: `err-${Date.now()}`,
+        id: `err-${messageSeqRef.current++}`,
         sender: 'assistant',
         text: 'Maaf, terjadi kendala saat menghubungkan ke mesin agronomi. Silakan periksa koneksi internet atau coba kembali.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })

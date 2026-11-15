@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Satellite,
   ChevronDown,
@@ -19,6 +20,7 @@ import {
 
 export default function DataSourceProvenanceCard() {
   const { climateData, soilData, provenance } = useTerraShaftStore();
+  const { t, locale, isEn } = useAppI18n();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const prov = provenance;
@@ -53,7 +55,7 @@ export default function DataSourceProvenanceCard() {
   const formatTime = (iso?: string) => {
     if (!iso) return '--:--';
     try {
-      return new Date(iso).toLocaleTimeString('id-ID', {
+      return new Date(iso).toLocaleTimeString(locale === 'en' ? 'en-US' : 'id-ID', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
@@ -71,10 +73,10 @@ export default function DataSourceProvenanceCard() {
           <Satellite className="w-5 h-5 text-[#C1C7CD] shrink-0 stroke-[1.75]" />
           <div>
             <h2 className="text-[15px] font-medium text-[#F1F3F5] tracking-tight">
-              Status Data Observasi & Provenansi Ilmiah
+              {t('provenance.title')}
             </h2>
             <p className="text-[12px] text-[#8A949E] mt-0.5">
-              Transparansi sumber telemetri satelit NASA POWER dan pemetaan tanah ISRIC SoilGrids v2.0
+              {t('provenance.subtitle')}
             </p>
           </div>
         </div>
@@ -84,7 +86,7 @@ export default function DataSourceProvenanceCard() {
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-xs font-mono text-[#00C2CC] hover:underline flex items-center gap-1"
         >
-          <span>{isExpanded ? 'Ringkas' : 'Rincian Lengkap'}</span>
+          <span>{isExpanded ? (isEn ? 'Collapse' : 'Ringkas') : (isEn ? 'Full Details' : 'Rincian Lengkap')}</span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
       </div>

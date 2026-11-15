@@ -339,7 +339,11 @@ export default function NasaChallengeResources() {
     }
   ];
 
-  const profilePills = [
+  const profilePills: Array<{
+    id: 'all' | 'global-core' | 'indonesia' | 'standard-baseline';
+    label: string;
+    count: number;
+  }> = [
     { id: 'all', label: 'Semua (13 Dataset)', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'global-core',
@@ -518,7 +522,7 @@ export default function NasaChallengeResources() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => setActiveProfile(p.id as any)}
+                onClick={() => setActiveProfile(p.id)}
                 className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium transition-all ${
                   activeProfile === p.id
                     ? 'bg-[#00C2CC] text-[#121417] font-semibold shadow-xs'

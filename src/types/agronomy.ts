@@ -1,10 +1,15 @@
+import type { ResolvedCultivarRecommendation } from './cultivar';
+
 export type CropCategory = 'Cereal' | 'Legume' | 'Cover Crop' | 'Cereal / Forage' | 'Tuber' | 'Other';
 export type DroughtTolerance = 'Low' | 'Moderate' | 'High' | 'Very High';
 export type SoilCarbonInput = 'Low' | 'Medium' | 'High' | 'Very High';
 
 export interface Crop {
   id: string;
+  species_id?: string;
+  scientific_name?: string;
   name: string;
+  name_en?: string;
   category: CropCategory;
   growth_duration_days: number;
   water_requirement_mm: number;
@@ -19,7 +24,9 @@ export interface Crop {
   icon: string;
   recommended_variety?: string;
   local_notes?: string;
+  local_notes_en?: string;
   is_custom?: boolean;
+  cultivar_resolution?: ResolvedCultivarRecommendation;
 }
 
 export type SoilSource = 'ISRIC_SOILGRIDS_LIVE' | 'REGIONAL_FALLBACK' | 'DEMO_SIMULATION';

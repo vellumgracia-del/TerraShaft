@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n, localizeCropName } from '@/lib/i18n';
 import {
   RotateCw,
   Sliders,
   ChevronDown,
   ChevronUp,
-  ShieldAlert
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { SeasonCropAllocation } from '@/types/agronomy';
 import {
@@ -32,40 +35,42 @@ export default function FourSeasonRotationCard() {
     setPriorityPreset,
     crops
   } = useTerraShaftStore();
+  const { t, locale, isEn } = useAppI18n();
 
   const [showSliders, setShowSliders] = useState(false);
   const [showAuditLog, setShowAuditLog] = useState(true);
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
-  // Generate dynamic, state-synchronized audit entries
+  // Generate dynamic, state-synchronized audit entries (localized for UI only)
   const dynamicAudit = generateDynamicAuditLog(
     location,
     climateData,
     soilData,
     currentPlan,
     priorities,
-    crops
+    crops,
+    locale
   );
 
   const pathways = [
     {
       id: 'A' as const,
-      label: 'Pathway A: Max Soil',
-      fullTitle: 'Pemulihan Baterai Tanah & Karbon',
-      desc: 'Wajib cover crop berakar dalam & legum penambat nitrogen tinggi'
+      label: isEn ? 'Pathway A: Max Soil' : 'Pathway A: Pemulihan Tanah',
+      fullTitle: t('rotation.pathwayASub'),
+      desc: t('rotation.pathwayADesc')
     },
     {
       id: 'B' as const,
-      label: 'Pathway B: Drought Resilience',
-      fullTitle: 'Siaga Cekaman Kekeringan',
-      desc: 'Hanya komoditas efisiensi air tinggi pada puncak kemarau'
+      label: isEn ? 'Pathway B: Drought Guard' : 'Pathway B: Benteng Kemarau',
+      fullTitle: t('rotation.pathwayBSub'),
+      desc: t('rotation.pathwayBDesc')
     },
     {
       id: 'C' as const,
-      label: 'Pathway C: Cash Flow',
-      fullTitle: 'Optimalisasi Nilai Ekonomi Tunai',
-      desc: 'Prioritaskan komoditas bernilai jual tinggi dalam batas aman air'
+      label: isEn ? 'Pathway C: Cash Flow' : 'Pathway C: Arus Kas',
+      fullTitle: t('rotation.pathwayCSub'),
+      desc: t('rotation.pathwayCDesc')
     }
   ];
 
@@ -80,11 +85,13 @@ export default function FourSeasonRotationCard() {
                 <RotateCw className="w-4 h-4" />
               </span>
               <h2 className="text-base sm:text-lg font-medium text-[#F1F3F5] tracking-tight">
-                Rencana Rotasi Pola Tanam 4 Musim
+                {t('rotation.title')}
               </h2>
             </div>
             <p className="text-xs text-[#8A949E] mt-1">
-              Optimasi kombinasi {Math.pow(Math.min(crops.length || 6, 8), 4).toLocaleString('id-ID')} permutasi siklus budidaya adaptif iklim
+              {isEn
+                ? `Evaluating ${Math.pow(Math.min(crops.length || 6, 8), 4).toLocaleString('en-US')} climate-adaptive 4-season crop permutations`
+                : `Optimasi kombinasi ${Math.pow(Math.min(crops.length || 6, 8), 4).toLocaleString('id-ID')} permutasi siklus budidaya adaptif iklim`}
             </p>
           </div>
 
@@ -95,7 +102,7 @@ export default function FourSeasonRotationCard() {
             className="h-9 px-3.5 rounded-[4px] border border-[#2C313A] text-xs font-mono text-[#C1C7CD] hover:bg-[#16191E] inline-flex items-center gap-2 whitespace-nowrap shrink-0 self-start sm:self-auto transition-colors"
           >
             <Sliders className="w-3.5 h-3.5 text-[#00C2CC] shrink-0" />
-            <span>Bobot Prioritas Petani</span>
+            <span>{t('rotation.priorityTitle')}</span>
             {showSliders ? <ChevronUp className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
           </button>
         </div>
@@ -123,7 +130,7 @@ export default function FourSeasonRotationCard() {
                   </span>
                   {planForPw && (
                     <span className="text-[10.5px] font-mono px-2 py-0.5 rounded-[3px] bg-[#16191E] border border-[#2C313A] text-[#C1C7CD] whitespace-nowrap shrink-0">
-                      Skor {planForPw.compositeScore}
+                      {isEn ? 'Score' : 'Skor'} {planForPw.compositeScore}
                     </span>
                   )}
                 </div>
@@ -141,7 +148,7 @@ export default function FourSeasonRotationCard() {
         <div className="p-5 bg-[#16191E] border border-[#2C313A] rounded-[4px] flex flex-col gap-4 animate-in fade-in duration-200">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="text-xs font-mono text-[#F1F3F5] uppercase tracking-wider">
-              Sesuaikan Bobot Penilaian Rekomendasi
+              {t('rotation.priorityTitle')}
             </span>
             <div className="flex items-center gap-2 text-xs">
               <span className="text-[#8A949E] font-mono">Preset:</span>
@@ -150,21 +157,21 @@ export default function FourSeasonRotationCard() {
                 onClick={() => setPriorityPreset('soil')}
                 className="px-3 py-1 rounded-[3px] bg-[#20242B] border border-[#2C313A] hover:bg-[#163A40] text-[#00C2CC] font-mono text-xs whitespace-nowrap"
               >
-                Tanah
+                {t('rotation.presetSoil')}
               </button>
               <button
                 type="button"
                 onClick={() => setPriorityPreset('water')}
                 className="px-3 py-1 rounded-[3px] bg-[#20242B] border border-[#2C313A] hover:bg-[#163A40] text-[#00C2CC] font-mono text-xs whitespace-nowrap"
               >
-                Air
+                {t('rotation.presetWater')}
               </button>
               <button
                 type="button"
                 onClick={() => setPriorityPreset('profit')}
                 className="px-3 py-1 rounded-[3px] bg-[#20242B] border border-[#2C313A] hover:bg-[#163A40] text-[#00C2CC] font-mono text-xs whitespace-nowrap"
               >
-                Profit
+                {t('rotation.presetProfit')}
               </button>
             </div>
           </div>
@@ -173,7 +180,7 @@ export default function FourSeasonRotationCard() {
             {/* Keuntungan Finansial */}
             <div className="bg-[#20242B] p-3.5 rounded-[4px] border border-[#2C313A] flex flex-col gap-2">
               <div className="flex justify-between text-xs font-mono text-[#F1F3F5]">
-                <span>Nilai Pasar / Keuntungan</span>
+                <span>{t('rotation.profitWeight')}</span>
                 <span className="font-mono text-[#00C2CC]">{priorities.profitWeight}%</span>
               </div>
               <input
@@ -189,7 +196,7 @@ export default function FourSeasonRotationCard() {
             {/* Efisiensi Air */}
             <div className="bg-[#20242B] p-3.5 rounded-[4px] border border-[#2C313A] flex flex-col gap-2">
               <div className="flex justify-between text-xs font-mono text-[#F1F3F5]">
-                <span>Efisiensi Air & Hemat</span>
+                <span>{t('rotation.waterWeight')}</span>
                 <span className="font-mono text-[#00C2CC]">{priorities.waterWeight}%</span>
               </div>
               <input
@@ -205,7 +212,7 @@ export default function FourSeasonRotationCard() {
             {/* Baterai Tanah */}
             <div className="bg-[#20242B] p-3.5 rounded-[4px] border border-[#2C313A] flex flex-col gap-2">
               <div className="flex justify-between text-xs font-mono text-[#F1F3F5]">
-                <span>Regenerasi Baterai Tanah</span>
+                <span>{t('rotation.soilWeight')}</span>
                 <span className="font-mono text-[#00C2CC]">{priorities.soilWeight}%</span>
               </div>
               <input
@@ -224,8 +231,11 @@ export default function FourSeasonRotationCard() {
       {/* Four Seasons Timeline Cards Grid: Uniform Heights & Aligned Sub-blocks */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
         {currentPlan?.seasons.map((season: SeasonCropAllocation) => {
-          const structured = getStructuredSeason(season.seasonIndex);
-          const waterInfo = getWaterStatusDetails(season.waterDeficit_mm);
+          const structured = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange, locale);
+          const waterInfo = getWaterStatusDetails(season.waterDeficit_mm, locale);
+          const cropDisplayName = localizeCropName(season.crop, locale);
+          const res = season.crop.cultivar_resolution;
+          const isFallback = res?.is_archetype_fallback ?? false;
 
           return (
             <div
@@ -253,14 +263,20 @@ export default function FourSeasonRotationCard() {
                 </span>
               </div>
 
-              {/* 2. Crop Identity */}
-              <div className="flex flex-col justify-between min-h-[76px]">
+              {/* 2. Crop Species & Localized Cultivar Identity */}
+              <div className="flex flex-col justify-between min-h-[96px]">
                 <div>
-                  <h4 className="text-sm font-medium text-[#F1F3F5] leading-snug line-clamp-1" title={season.crop.name}>
-                    {season.crop.name}
+                  <h4 className="text-sm font-medium text-[#F1F3F5] leading-snug line-clamp-1" title={cropDisplayName}>
+                    {cropDisplayName}
                   </h4>
-                  <p className="text-[11px] text-[#C1C7CD] mt-0.5 line-clamp-1" title={season.crop.recommended_variety || 'Benih Unggul Lokal'}>
-                    Varietas: <strong>{season.crop.recommended_variety || 'Benih Unggul Lokal'}</strong>
+                  {season.crop.scientific_name && (
+                    <span className="text-[10.5px] italic text-[#8A949E] block">
+                      {season.crop.scientific_name}
+                    </span>
+                  )}
+                  <p className="text-[11px] text-[#C1C7CD] mt-1 line-clamp-2" title={season.crop.recommended_variety || ''}>
+                    {t('rotation.cultivarLabel')}:{' '}
+                    <strong>{season.crop.recommended_variety || (isEn ? 'Phenotype Archetype' : 'Arketipe Fenotipe')}</strong>
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -268,23 +284,36 @@ export default function FourSeasonRotationCard() {
                     {season.crop.category}
                   </span>
                   <span className="px-2 py-0.5 rounded-[3px] bg-[#20242B] border border-[#2C313A] text-[10px] font-mono text-[#8A949E] whitespace-nowrap">
-                    {season.crop.growth_duration_days} Hari
+                    {season.crop.growth_duration_days} {t('crops.days')}
                   </span>
+                  {res && (
+                    <span
+                      title={res.assumptions_en}
+                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border whitespace-nowrap ${
+                        isFallback
+                          ? 'bg-[#3B2E14] text-[#FBBF24] border-[#92400E]/60'
+                          : 'bg-[#064E3B]/60 text-[#34D399] border-[#047857]/60'
+                      }`}
+                    >
+                      {isFallback ? <AlertTriangle className="w-2.5 h-2.5" /> : <ShieldCheck className="w-2.5 h-2.5" />}
+                      {isFallback ? t('rotation.archetypeFallback') : `${res.cultivar.country_or_region_of_release[0]} · ${Math.round(res.confidence_score * 100)}%`}
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* 3. Water Balance Breakdown */}
               <div className="p-3 rounded-[4px] bg-[#20242B] border border-[#2C313A] flex flex-col gap-1.5 text-xs mt-auto">
                 <div className="flex justify-between items-center text-[#8A949E]">
-                  <span>Kebutuhan Air:</span>
+                  <span>{isEn ? 'Water Demand:' : 'Kebutuhan Air:'}</span>
                   <span className="font-mono font-medium text-[#F1F3F5]">{formatMm(season.waterDemand_mm)}</span>
                 </div>
                 <div className="flex justify-between items-center text-[#8A949E]">
-                  <span>Estimasi Hujan:</span>
+                  <span>{isEn ? 'Expected Rain:' : 'Estimasi Hujan:'}</span>
                   <span className="font-mono text-[#00C2CC]">{formatMm(season.expectedRain_mm)}</span>
                 </div>
                 <div className="flex justify-between items-center font-medium pt-1.5 border-t border-[#2C313A]">
-                  <span className="text-[#8A949E]">Defisit Air:</span>
+                  <span className="text-[#8A949E]">{isEn ? 'Water Deficit:' : 'Defisit Air:'}</span>
                   <span className={`font-mono ${waterInfo.colorClass}`}>
                     {formatMm(season.waterDeficit_mm)}
                   </span>
@@ -294,14 +323,18 @@ export default function FourSeasonRotationCard() {
               {/* 4. Agronomic Soil & Nitrogen Delta */}
               <div className="grid grid-cols-2 gap-2.5 text-xs">
                 <div className="p-2.5 rounded-[4px] bg-[#20242B] border border-[#2C313A] text-center flex flex-col justify-center">
-                  <span className="text-[10px] text-[#8A949E] block font-mono">Baterai Hara</span>
+                  <span className="text-[10px] text-[#8A949E] block font-mono">
+                    {isEn ? 'Soil Battery' : 'Baterai Hara'}
+                  </span>
                   <span className="font-medium font-mono text-[#00C2CC] mt-0.5 whitespace-nowrap">
                     {season.batteryDelta_pct >= 0 ? `+${season.batteryDelta_pct}%` : `${season.batteryDelta_pct}%`}
                   </span>
                 </div>
 
                 <div className="p-2.5 rounded-[4px] bg-[#20242B] border border-[#2C313A] text-center flex flex-col justify-center">
-                  <span className="text-[10px] text-[#8A949E] block font-mono">Neraca N</span>
+                  <span className="text-[10px] text-[#8A949E] block font-mono">
+                    {isEn ? 'Net Nitrogen' : 'Neraca N'}
+                  </span>
                   <span className="font-medium font-mono text-[#00C2CC] mt-0.5 whitespace-nowrap">
                     {formatKgPerHa(season.nitrogenDelta_kg_ha)}
                   </span>
@@ -310,12 +343,14 @@ export default function FourSeasonRotationCard() {
 
               {/* 5. Status Pill Footer */}
               <div className="pt-3 border-t border-[#2C313A] flex items-center justify-between gap-2 text-[11px]">
-                <span className="text-[#8A949E] whitespace-nowrap font-mono">Status Air:</span>
+                <span className="text-[#8A949E] whitespace-nowrap font-mono">
+                  {isEn ? 'Water Status:' : 'Status Air:'}
+                </span>
                 <span
                   className={`px-2 py-0.5 rounded-[3px] font-mono text-[10.5px] border whitespace-nowrap ${waterInfo.badgeClass}`}
                   title={waterInfo.description}
                 >
-                  {waterInfo.status}
+                  {waterInfo.label}
                 </span>
               </div>
             </div>
@@ -330,7 +365,7 @@ export default function FourSeasonRotationCard() {
             <ShieldAlert className="w-4 h-4 text-[#8A949E] shrink-0" />
             <div>
               <span className="text-xs font-mono text-[#F1F3F5] uppercase tracking-wider block">
-                Logika Audit Algoritma: Alasan Eliminasi & Seleksi Varietas
+                {t('rotation.auditTitle')}
               </span>
               <span className="text-[11px] text-[#8A949E] font-mono">
                 {dynamicAudit.modeBadge}
@@ -342,14 +377,17 @@ export default function FourSeasonRotationCard() {
             onClick={() => setShowAuditLog(!showAuditLog)}
             className="text-xs text-[#00C2CC] font-mono hover:underline self-start sm:self-auto whitespace-nowrap shrink-0"
           >
-            {showAuditLog ? 'Sembunyikan Log' : 'Tampilkan Log'}
+            {showAuditLog ? (isEn ? 'Hide Log' : 'Sembunyikan Log') : (isEn ? 'Show Log' : 'Tampilkan Log')}
           </button>
         </div>
 
         {showAuditLog && (
           <div className="flex flex-col gap-2.5 pt-3 border-t border-[#2C313A] text-xs">
             <div className="p-3 rounded-[4px] bg-[#20242B] border border-[#2C313A] text-[11px] text-[#C1C7CD] leading-relaxed font-mono">
-              <strong className="text-[#F1F3F5]">Catatan Provenansi Audit:</strong> {dynamicAudit.provenanceNote}
+              <strong className="text-[#F1F3F5]">
+                {isEn ? 'Audit Provenance Note:' : 'Catatan Provenansi Audit:'}
+              </strong>{' '}
+              {dynamicAudit.provenanceNote}
             </div>
 
             {dynamicAudit.entries.map((entry) => (
@@ -368,8 +406,8 @@ export default function FourSeasonRotationCard() {
                     {entry.ruleId !== 'RULE_PRIORITY_WEIGHTS' && (
                       <>
                         {entry.outcome === 'TERELIMINASI'
-                          ? 'Didiskualifikasi otomatis oleh aturan: '
-                          : 'Terpilih melalui aturan: '}
+                          ? isEn ? 'Disqualified by rule: ' : 'Didiskualifikasi otomatis oleh aturan: '
+                          : isEn ? 'Selected via rule: ' : 'Terpilih melalui aturan: '}
                         <code
                           className={`font-mono font-medium ${
                             entry.outcome === 'TERPILIH' ? 'text-[#00C2CC]' : 'text-[#F87171]'
@@ -390,7 +428,7 @@ export default function FourSeasonRotationCard() {
                       : 'bg-[#2D1B1E] text-[#F87171] border-[#7F1D1D]/40'
                   }`}
                 >
-                  {entry.outcome}
+                  {isEn ? (entry.outcome === 'TERPILIH' ? 'SELECTED' : 'ELIMINATED') : entry.outcome}
                 </span>
               </div>
             ))}

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "i18n:readme": "tsx scripts/generate-readme.ts",
-    "test": "tsx src/lib/__tests__/agronomyEngine.test.ts && tsx src/lib/__tests__/apiProxies.test.ts && tsx src/lib/__tests__/provenanceAndAudit.test.ts && tsx src/lib/__tests__/aiAdvisor.test.ts"
+    "test": "tsx src/lib/__tests__/agronomyEngine.test.ts && tsx src/lib/__tests__/apiProxies.test.ts && tsx src/lib/__tests__/provenanceAndAudit.test.ts && tsx src/lib/__tests__/aiAdvisor.test.ts && tsx src/lib/__tests__/cultivarLocalization.test.ts"
   },
   "dependencies": {
     "@types/leaflet": "^1.9.22",

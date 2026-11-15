@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n, localizeCropName } from '@/lib/i18n';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -56,24 +57,25 @@ const CustomChartTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 export default function WaterBalanceCard() {
   const { plans, selectedPathway, soilData } = useTerraShaftStore();
+  const { locale, isEn } = useAppI18n();
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
   // Chart data from current rotation plan with structured seasons and clean precision
   const chartData = currentPlan?.seasons.map((season) => {
-    const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange);
+    const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange, locale);
     return {
       seasonName: `${sInfo.seasonLabel} (${sInfo.monthRange})`,
-      cropName: season.crop.name,
+      cropName: localizeCropName(season.crop, locale),
       rainfall_mm: Math.round(season.expectedRain_mm),
       demand_mm: Math.round(season.waterDemand_mm),
       deficit_mm: Number(season.waterDeficit_mm.toFixed(1))
     };
   }) || [
-    { seasonName: 'Musim 1 (Nov – Feb)', cropName: 'Orok-orok', rainfall_mm: 1010, demand_mm: 150, deficit_mm: 0 },
-    { seasonName: 'Musim 2 (Mar – Mei)', cropName: 'Kedelai', rainfall_mm: 360, demand_mm: 360, deficit_mm: 0 },
-    { seasonName: 'Musim 3 (Jun – Agu)', cropName: 'Orok-orok', rainfall_mm: 35, demand_mm: 150, deficit_mm: 115 },
-    { seasonName: 'Musim 4 (Sep – Okt)', cropName: 'Orok-orok', rainfall_mm: 47, demand_mm: 150, deficit_mm: 103 }
+    { seasonName: isEn ? 'Season 1 (Nov – Feb)' : 'Musim 1 (Nov – Feb)', cropName: 'Sunn Hemp', rainfall_mm: 1010, demand_mm: 150, deficit_mm: 0 },
+    { seasonName: isEn ? 'Season 2 (Mar – May)' : 'Musim 2 (Mar – Mei)', cropName: 'Soybean', rainfall_mm: 360, demand_mm: 360, deficit_mm: 0 },
+    { seasonName: isEn ? 'Season 3 (Jun – Aug)' : 'Musim 3 (Jun – Agu)', cropName: 'Sunn Hemp', rainfall_mm: 35, demand_mm: 150, deficit_mm: 115 },
+    { seasonName: isEn ? 'Season 4 (Sep – Oct)' : 'Musim 4 (Sep – Okt)', cropName: 'Sunn Hemp', rainfall_mm: 47, demand_mm: 150, deficit_mm: 103 }
   ];
 
   return (
@@ -86,16 +88,18 @@ export default function WaterBalanceCard() {
               <Droplets className="w-4 h-4" />
             </span>
             <h2 className="text-base font-bold text-[#F1F3F5] tracking-tight">
-              Neraca Air Lahan & Risiko Defisit (Dual-Axis Water Balance)
+              {isEn ? 'Field Water Balance & Deficit Risk (Dual-Axis)' : 'Neraca Air Lahan & Risiko Defisit (Dual-Axis Water Balance)'}
             </h2>
           </div>
           <p className="text-xs text-[#8A949E] mt-0.5">
-            Komparasi estimasi presipitasi via NASA POWER vs kebutuhan air tanaman (ETc)
+            {isEn
+              ? 'NASA POWER PRECTOTCORR precipitation vs FAO-56 crop water demand (ETc)'
+              : 'Komparasi estimasi presipitasi via NASA POWER vs kebutuhan air tanaman (ETc)'}
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs self-start sm:self-auto">
-          <span className="text-[#8A949E]">Kapasitas Retensi (AWC):</span>
+          <span className="text-[#8A949E]">{isEn ? 'Retention Capacity (AWC):' : 'Kapasitas Retensi (AWC):'}</span>
           <span className="font-mono font-bold text-[#00C2CC] bg-[#163A40] border border-[#009DA5]/40 px-2 py-0.5 rounded-[3px]">
             {formatMm(soilData?.awc ?? 30.3)} / 30cm
           </span>
@@ -169,10 +173,14 @@ export default function WaterBalanceCard() {
       <div className="p-3 bg-[#16191E] rounded-[4px] border border-[#2C313A] flex items-center justify-between text-xs text-[#8A949E]">
         <div className="flex items-center gap-1.5">
           <Info className="w-3.5 h-3.5 text-[#00C2CC] shrink-0" />
-          <span>Area arsir merah menandakan defisit air musiman yang melampaui cadangan air tanah AWC.</span>
+          <span>
+            {isEn
+              ? 'Red shaded region marks seasonal water deficit exceeding topsoil Available Water Capacity (AWC).'
+              : 'Area arsir merah menandakan defisit air musiman yang melampaui cadangan air tanah AWC.'}
+          </span>
         </div>
         <span className="font-semibold text-[#F1F3F5] hidden sm:inline">
-          Ambang Batas Kritis: 100 mm
+          {isEn ? 'Critical Threshold: 100 mm' : 'Ambang Batas Kritis: 100 mm'}
         </span>
       </div>
     </div>

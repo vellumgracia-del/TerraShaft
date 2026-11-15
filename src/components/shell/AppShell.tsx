@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import { AlertCircle } from 'lucide-react';
 
 interface AppShellProps {
@@ -24,6 +25,7 @@ export default function AppShell({ children }: AppShellProps) {
     hydrateCustomCrops,
     isFieldMode
   } = useTerraShaftStore();
+  const { isEn } = useAppI18n();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -110,7 +112,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1050] max-w-lg px-4 py-2.5 bg-[#2D1B1E]/95 backdrop-blur-md border border-[#7F1D1D]/60 rounded-[4px] shadow-2xl flex items-center gap-2.5 text-xs text-[#F87171]">
                   <AlertCircle className="w-4 h-4 shrink-0 text-[#F87171]" />
                   <span>
-                    <strong>Peringatan Validasi/Jaringan:</strong> {errorBioData}
+                    <strong>{isEn ? 'Validation / Network Warning:' : 'Peringatan Validasi/Jaringan:'}</strong> {errorBioData}
                   </span>
                 </div>
               )}
@@ -124,7 +126,7 @@ export default function AppShell({ children }: AppShellProps) {
                 <div className="p-3 bg-[#2D1B1E] border border-[#7F1D1D]/40 rounded-[4px] flex items-center gap-2.5 text-xs text-[#F87171]">
                   <AlertCircle className="w-4 h-4 shrink-0 text-[#F87171]" />
                   <span>
-                    <strong>Peringatan Validasi/Jaringan:</strong> {errorBioData}
+                    <strong>{isEn ? 'Validation / Network Warning:' : 'Peringatan Validasi/Jaringan:'}</strong> {errorBioData}
                   </span>
                 </div>
               )}

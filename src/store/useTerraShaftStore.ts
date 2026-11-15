@@ -3,9 +3,13 @@
 import { create } from 'zustand';
 import { Crop, SoilData, Priorities, RotationPlan } from '@/types/agronomy';
 import { ClimateData, LocationCoordinates } from '@/types/climate';
-import initialCrops from '@/data/crops_library.json';
+import type { AgroecologicalProfile, ResolvedCultivarRecommendation } from '@/types/cultivar';
 import { generateOptimizationPlans } from '@/lib/optimizationEngine';
 import { resolveTerraShaftProvenance, TerraShaftProvenance } from '@/types/provenance';
+import { buildAgroecologicalProfile } from '@/lib/agroecologicalZoning';
+import { localizeCropsForRegion } from '@/lib/cultivarLocalizer';
+
+export type AppLocale = 'en' | 'id';
 
 interface TerraShaftState {
   // Lokasi Lahan & Telemetri
@@ -26,10 +30,17 @@ interface TerraShaftState {
   errorBioData: string | null;
   provenance: TerraShaftProvenance;
 
+  // Application display language ('en' default for event/demo mode, 'id' Indonesian alternative)
+  locale: AppLocale;
+
   // Prioritas Petani / PPL
   priorities: Priorities;
 
-  // Pustaka Komoditas Tanaman (bawaan + kustom PPL)
+  // Global Agroecological Zoning & Localized Cultivar Layer
+  agroecologicalProfile: AgroecologicalProfile;
+  localizedCultivars: ResolvedCultivarRecommendation[];
+
+  // Pustaka Komoditas Tanaman (terlokalisasi per wilayah + kustom pengguna)
   crops: Crop[];
 
   // Hasil Optimasi 3 Skenario
@@ -37,7 +48,15 @@ interface TerraShaftState {
   plans: Record<'A' | 'B' | 'C', RotationPlan> | null;
 
   // Actions
-  setLocation: (lat: number, lon: number, placeName?: string, elevation?: number) => Promise<void>;
+  setLocale: (locale: AppLocale) => void;
+  hydrateLocale: () => void;
+  setLocation: (
+    lat: number,
+    lon: number,
+    placeName?: string,
+    elevation?: number,
+    regionMeta?: { country?: string; countryCode?: string; district?: string; province?: string }
+  ) => Promise<void>;
   fetchBioPhysicalData: (lat: number, lon: number) => Promise<void>;
   toggleFieldMode: () => void;
   setPriorities: (priorities: Partial<Priorities>) => void;
@@ -51,15 +70,24 @@ interface TerraShaftState {
 }
 
 const CUSTOM_CROPS_STORAGE_KEY = 'terrashaft_custom_crops_v1';
+const LOCALE_STORAGE_KEY = 'terrashaft_locale_v1';
 
-// Lokasi Default: Kupang Timur, NTT (Kawasan Lahan Kering Semi-Arid Indonesia)
+// Default location: Kupang Timur, NTT (Indonesia Semi-Arid Dryland Baseline)
 const DEFAULT_LOCATION: LocationCoordinates = {
   lat: -10.1542,
   lon: 123.8210,
   placeName: 'Kupang Timur, Kab. Kupang, Nusa Tenggara Timur',
   district: 'Kupang Timur',
-  province: 'Nusa Tenggara Timur'
+  province: 'Nusa Tenggara Timur',
+  country: 'Indonesia',
+  countryCode: 'ID'
 };
+
+const INITIAL_AEZ_PROFILE = buildAgroecologicalProfile(DEFAULT_LOCATION, 85, null, null);
+const INITIAL_LOCALIZED_CROPS = localizeCropsForRegion(INITIAL_AEZ_PROFILE);
+const INITIAL_CULTIVAR_RESOLUTIONS = INITIAL_LOCALIZED_CROPS
+  .map(c => c.cultivar_resolution)
+  .filter((r): r is ResolvedCultivarRecommendation => Boolean(r));
 
 const DEFAULT_PRIORITIES: Priorities = {
   profitWeight: 40,
@@ -82,18 +110,51 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   activeRequestId: 0,
   errorBioData: null,
   provenance: resolveTerraShaftProvenance(null, null, false, null),
+  locale: 'en',
   priorities: DEFAULT_PRIORITIES,
-  crops: initialCrops as Crop[],
+  agroecologicalProfile: INITIAL_AEZ_PROFILE,
+  localizedCultivars: INITIAL_CULTIVAR_RESOLUTIONS,
+  crops: INITIAL_LOCALIZED_CROPS,
   selectedPathway: 'A',
   plans: null,
+
+  setLocale: (locale: AppLocale) => {
+    // Switching display language MUST NOT modify telemetry, cultivar choices, or rotation calculations
+    set({ locale });
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+      } catch {
+        // Ignore storage errors
+      }
+    }
+  },
+
+  hydrateLocale: () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+      if (saved === 'en' || saved === 'id') {
+        set({ locale: saved });
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  },
 
   toggleFieldMode: () => {
     set((state) => ({ isFieldMode: !state.isFieldMode }));
   },
 
-  setLocation: async (lat: number, lon: number, placeName?: string, elevation?: number) => {
+  setLocation: async (
+    lat: number,
+    lon: number,
+    placeName?: string,
+    elevation?: number,
+    regionMeta?: { country?: string; countryCode?: string; district?: string; province?: string }
+  ) => {
     if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-      const errorMsg = `Koordinat tidak valid (${lat}, ${lon}): Latitude harus antara -90° dan 90°, Longitude antara -180° dan 180°.`;
+      const errorMsg = `Invalid coordinates (${lat}, ${lon}): Latitude must be between -90° and 90°, Longitude between -180° and 180°.`;
       set((state) => ({
         errorBioData: errorMsg,
         provenance: resolveTerraShaftProvenance(state.climateData, state.soilData, false, errorMsg)
@@ -101,21 +162,35 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
       return;
     }
 
-    const needsGeocode = !placeName || elevation === undefined;
+    const needsGeocode = !placeName || elevation === undefined || !regionMeta?.countryCode;
 
-    set(state => ({
-      location: {
-        ...state.location,
-        lat,
-        lon,
-        placeName: placeName || `Memuat nama lokasi (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)...`
-      },
-      elevation_m: elevation ?? state.elevation_m,
+    const preliminaryLocation: LocationCoordinates = {
+      lat,
+      lon,
+      placeName: placeName || `Resolving location (${lat.toFixed(4)}°, ${lon.toFixed(4)}°)...`,
+      district: regionMeta?.district,
+      province: regionMeta?.province,
+      country: regionMeta?.country,
+      countryCode: regionMeta?.countryCode
+    };
+    const nextElevation = elevation ?? get().elevation_m;
+    const preliminaryAez = buildAgroecologicalProfile(preliminaryLocation, nextElevation, get().climateData, get().soilData);
+    const customOnly = get().crops.filter(c => c.is_custom);
+    const preliminaryCrops = localizeCropsForRegion(preliminaryAez, customOnly);
+
+    set({
+      location: preliminaryLocation,
+      elevation_m: nextElevation,
+      agroecologicalProfile: preliminaryAez,
+      crops: preliminaryCrops,
+      localizedCultivars: preliminaryCrops
+        .map(c => c.cultivar_resolution)
+        .filter((r): r is ResolvedCultivarRecommendation => Boolean(r)),
       satelliteSyncTime: new Date().toISOString(),
       errorBioData: null,
       isLoadingBioData: true,
       loadingSources: { nasaPower: true, soilGrids: true }
-    }));
+    });
 
     if (needsGeocode && typeof window !== 'undefined') {
       fetch(`/api/geocode?lat=${lat}&lon=${lon}`)
@@ -124,15 +199,30 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
           if (!geo) return;
           const currentLoc = get().location;
           if (Math.abs(currentLoc.lat - lat) < 0.001 && Math.abs(currentLoc.lon - lon) < 0.001) {
-            set(state => ({
-              location: {
-                ...state.location,
-                placeName: placeName || geo.placeName || `Titik Koordinat: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`,
-                district: geo.district || state.location.district,
-                province: geo.province || state.location.province
-              },
-              elevation_m: elevation ?? (typeof geo.elevation_m === 'number' ? geo.elevation_m : state.elevation_m)
-            }));
+            const updatedLoc: LocationCoordinates = {
+              ...currentLoc,
+              placeName: placeName || geo.placeName || `Coordinates: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`,
+              district: regionMeta?.district || geo.district || currentLoc.district,
+              province: regionMeta?.province || geo.province || currentLoc.province,
+              country: regionMeta?.country || geo.country || currentLoc.country,
+              countryCode: regionMeta?.countryCode || geo.countryCode || currentLoc.countryCode
+            };
+            const updatedElev = elevation ?? (typeof geo.elevation_m === 'number' ? geo.elevation_m : get().elevation_m);
+            const updatedAez = buildAgroecologicalProfile(updatedLoc, updatedElev, get().climateData, get().soilData);
+            const existingCustom = get().crops.filter(c => c.is_custom);
+            const updatedCrops = localizeCropsForRegion(updatedAez, existingCustom);
+            set({
+              location: updatedLoc,
+              elevation_m: updatedElev,
+              agroecologicalProfile: updatedAez,
+              crops: updatedCrops,
+              localizedCultivars: updatedCrops
+                .map(c => c.cultivar_resolution)
+                .filter((r): r is ResolvedCultivarRecommendation => Boolean(r))
+            });
+            if (get().climateData && get().soilData) {
+              get().recalculate();
+            }
           }
         })
         .catch(() => {
@@ -141,7 +231,7 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
             set(state => ({
               location: {
                 ...state.location,
-                placeName: `Titik Koordinat: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`
+                placeName: `Coordinates: ${lat.toFixed(4)}°, ${lon.toFixed(4)}°`
               }
             }));
           }
@@ -363,7 +453,14 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
       ).map(c => ({ ...c, is_custom: true }));
 
       if (validCustom.length > 0) {
-        set({ crops: [...(initialCrops as Crop[]), ...validCustom] });
+        const aez = get().agroecologicalProfile;
+        const localized = localizeCropsForRegion(aez, validCustom);
+        set({
+          crops: localized,
+          localizedCultivars: localized
+            .map(c => c.cultivar_resolution)
+            .filter((r): r is ResolvedCultivarRecommendation => Boolean(r))
+        });
         get().recalculate();
       }
     } catch {
@@ -372,11 +469,30 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   },
 
   recalculate: () => {
-    const { climateData, soilData, priorities, crops } = get();
-    if (!climateData || !soilData) return;
+    const { location, elevation_m, climateData, soilData, priorities, crops } = get();
+    const customOnly = crops.filter(c => c.is_custom);
+    const updatedAez = buildAgroecologicalProfile(location, elevation_m, climateData, soilData);
+    const localizedCrops = localizeCropsForRegion(updatedAez, customOnly);
+    const localizedCultivars = localizedCrops
+      .map(c => c.cultivar_resolution)
+      .filter((r): r is ResolvedCultivarRecommendation => Boolean(r));
 
-    const generatedPlans = generateOptimizationPlans(crops, climateData, soilData, priorities);
-    set({ plans: generatedPlans });
+    if (!climateData || !soilData) {
+      set({
+        agroecologicalProfile: updatedAez,
+        crops: localizedCrops,
+        localizedCultivars
+      });
+      return;
+    }
+
+    const generatedPlans = generateOptimizationPlans(localizedCrops, climateData, soilData, priorities);
+    set({
+      agroecologicalProfile: updatedAez,
+      crops: localizedCrops,
+      localizedCultivars,
+      plans: generatedPlans
+    });
   },
 
   getProvenance: () => {

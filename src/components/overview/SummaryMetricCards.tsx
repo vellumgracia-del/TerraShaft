@@ -2,12 +2,14 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n, localizeCropName } from '@/lib/i18n';
 import { Info } from 'lucide-react';
 import { formatMm, formatNumber, getWaterStatusDetails } from '@/lib/formatters';
 import { getNasaSmapDisplayStatus } from '@/lib/provenance';
 
 export default function SummaryMetricCards() {
   const { climateData, soilData, plans, selectedPathway, provenance, isLoadingBioData } = useTerraShaftStore();
+  const { locale, isEn } = useAppI18n();
   const smapStatus = getNasaSmapDisplayStatus(provenance);
   const currentPlan = plans ? plans[selectedPathway] : null;
 
@@ -15,7 +17,9 @@ export default function SummaryMetricCards() {
   const gwetroot = climateData?.rootZoneSoilMoisture ?? 0.38;
   const isCriticalMoisture = gwetroot < 0.25;
   const isWatchMoisture = gwetroot >= 0.25 && gwetroot < 0.45;
-  const moistureStatus = isCriticalMoisture ? 'Defisit Kritis' : isWatchMoisture ? 'Waspada' : 'Memadai';
+  const moistureStatus = isEn
+    ? isCriticalMoisture ? 'Critical Deficit' : isWatchMoisture ? 'Watch' : 'Adequate'
+    : isCriticalMoisture ? 'Defisit Kritis' : isWatchMoisture ? 'Waspada' : 'Memadai';
   const moistureDot = isCriticalMoisture
     ? 'bg-[#FB7185]'
     : isWatchMoisture
@@ -37,12 +41,12 @@ export default function SummaryMetricCards() {
   if (currentPlan && currentPlan.seasons) {
     maxDeficit = Math.max(...currentPlan.seasons.map((s) => s.waterDeficit_mm), 0);
   }
-  const waterDetails = getWaterStatusDetails(maxDeficit);
+  const waterDetails = getWaterStatusDetails(maxDeficit, locale);
 
   // 5. Recommended Crop (Season 1)
   const season1Crop = currentPlan?.seasons?.[0]?.crop;
-  const season1Name = season1Crop?.name ?? 'Jagung Hibrida';
-  const season1Variety = season1Crop?.recommended_variety ?? 'Bisi-18 / Pioneer';
+  const season1Name = season1Crop ? localizeCropName(season1Crop, locale) : isEn ? 'Maize (Corn)' : 'Jagung Hibrida';
+  const season1Variety = season1Crop?.recommended_variety ?? (isEn ? 'Pending localization' : 'Menunggu lokalisasi');
   const season1Water = season1Crop?.water_requirement_mm ?? 450;
 
   return (
@@ -105,9 +109,9 @@ export default function SummaryMetricCards() {
             />
           </div>
           <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-0.5">
-            <span>Base: {initialBattery}%</span>
-            <span className="font-mono text-[#E06C75]" title="Jika monokultur terus menerus">
-              Monokultur: 10%
+            <span>{isEn ? 'Base:' : 'Basis:'} {initialBattery}%</span>
+            <span className="font-mono text-[#E06C75]" title={isEn ? 'Continuous monoculture baseline' : 'Jika monokultur terus menerus'}>
+              {isEn ? 'Monoculture: 10%' : 'Monokultur: 10%'}
             </span>
           </div>
         </div>
@@ -152,8 +156,8 @@ export default function SummaryMetricCards() {
         {/* 5. Komoditas Musim 1 */}
         <div className="p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Primary Season Crop</span>
-            <span className="font-mono text-[11px] text-[#8A949E]">Musim 1</span>
+            <span>{isEn ? 'Primary Season Crop' : 'Komoditas Musim 1'}</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">{isEn ? 'Season 1' : 'Musim 1'}</span>
           </div>
           <div className="text-base font-semibold text-[#F1F3F5] truncate" title={season1Name}>
             {season1Name}

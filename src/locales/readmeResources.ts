@@ -18,6 +18,7 @@ export const readmeResources = {
         "- [Latar Belakang](#latar-belakang)",
         "- [Solusi](#solusi)",
         "- [13 Dataset Terintegrasi & Peran Aktualnya di Sistem](#13-dataset-terintegrasi--peran-aktualnya-di-sistem)",
+        "- [Zonasi Agroekologi Global, Lokalisasi Kultivar & i18n](#zonasi-agroekologi-global-lokalisasi-kultivar--i18n)",
         "- [Cakupan Geografis dan Strategi Dataset](#cakupan-geografis-dan-strategi-dataset)",
         "- [Alur Kerja Sistem](#alur-kerja-sistem)",
         "- [Fitur Utama](#fitur-utama)",
@@ -107,12 +108,23 @@ Untuk menjaga akuntabilitas ilmiah dan menghindari *overclaim*, TerraShaft menge
 
 9. **NASA ECOSTRESS (JPL):** Basis pengetahuan indikator suhu permukaan daratan (*Land Surface Temperature*) dan cekaman termal tanaman untuk mendasari rekomendasi *cover crop* penurun suhu tanah di wilayah semi-arid (NTT, Madura, Gunungkidul).
 10. **NASA GEDI (LiDAR):** Basis pengetahuan struktur kanopi vertikal dan biomassa untuk panduan integrasi pohon pelindung penahan angin (*agroforestri*).
-11. **Riset Agronomi BRIN / Balittanah / Kementan:** Basis data RAG (\`agronomyKnowledgeBase.ts\`) dan parameter varietas unggul adaptif lokal (\`crops_library.json\`: Sorgum Bioguma, Kedelai Anjasmoro, Kacang Hijau Vima, Jagung Bisi-18, Padi Gogo Inpago, Orok-orok *Crotalaria juncea*, serta ameliorasi Dolomit tanah masam) pada asisten AI Field Advisor & mesin optimasi rotasi.
+11. **Riset Agronomi BRIN / Balittanah / Kementan:** Basis data RAG (\`agronomyKnowledgeBase.ts\`) dan rujukan kultivar nasional Indonesia terlokalisasi (\`cultivars_registry.json\` khusus wilayah \`ID\`: Sorgum Bioguma, Kedelai Anjasmoro, Kacang Hijau Vima, Jagung Bisi-18, Padi Gogo Inpago, *Crotalaria juncea*, serta ameliorasi Dolomit tanah masam) pada asisten AI Field Advisor & mesin optimasi rotasi.
 12. **FAO GAEZ v4 & FAO-56:** Standar batas toleransi agroklimat tanaman pangan, koefisien tanaman ($K_c$), dan validasi neraca air pada modul optimasi 4 musim.
 
 ### D. Standar Kalibrasi Pedologis
 
 13. **USDA NRCS (Soil Taxonomy & SSURGO/STATSGO2):** Standar klasifikasi **Segitiga Tekstur Tanah USDA** (\`classifySoilTexture\`) dan hubungan empiris tekstur–retensi air yang mendasari fungsi pedotransfer kalkulasi *Available Water Capacity* ($AWC$) serta referensi profil tanah regional.
+
+---
+
+## Zonasi Agroekologi Global, Lokalisasi Kultivar & i18n
+
+TerraShaft memisahkan secara ketat **taksonomi spesies tanaman** dari **kultivar/varietas terverifikasi regional** agar varietas Indonesia tidak pernah terbawa ke negara lain tanpa bukti registrasi:
+
+1. **Pemisahan Entitas Spesies vs Kultivar:** Spesies (\`src/data/crop_species.json\`) memuat parameter fisiologis generik (*Oryza sativa L.*, *Zea mays L.*, *Glycine max (L.) Merr.*, *Vigna radiata*, *Sorghum bicolor*, *Crotalaria juncea*). Kultivar (\`src/data/cultivars_registry.json\`) mengikat entitas varietas pada \`country_or_region_of_release\`, \`allowed_agroecological_zones\`, \`registration_status\`, \`evidence_source\`, dan \`confidence_score\`.
+2. **Pipeline Zonasi Agroekologi Global (\`src/lib/agroecologicalZoning.ts\`):** Mengonversi koordinat, elevasi, iklim NASA POWER, serta profil tanah ISRIC SoilGrids menjadi profil \`AgroecologicalProfile\` (negara, makro-wilayah, belahan bumi, sabuk elevasi, bulan kering, GDD, kelas fotoperiod, dan zona agroekologi).
+3. **Isolasi Geografis & Fallback Arketipe (\`src/lib/cultivarLocalizer.ts\`):** Kultivar Indonesia (seperti Inpago, Bisi-18, Anjasmoro, Vima, Bioguma) hanya direkomendasikan di Indonesia (\`ID\`). Untuk wilayah global seperti \`US\`, \`KE\`, \`IN\`, \`BR\`, atau \`AU\`, sistem menampilkan varietas terverifikasi setempat atau melakukan fallback transparan ke **Arketipe Fenotipe Spesies** tanpa halusinasi nama varietas.
+4. **Dukungan Dwibahasa i18n (\`en\` & \`id\`):** Aplikasi menggunakan \`i18next\` (\`src/locales/en.json\` default untuk demo internasional, \`src/locales/id.json\` alternatif bahasa Indonesia). Pergantian bahasa \`EN | ID\` hanya mengubah label antarmuka—telemetri, nama ilmiah, nama kultivar, unit metrik, dan hasil optimasi tetap identik.
 
 ---
 
@@ -188,12 +200,12 @@ Menggabungkan data kelembapan tanah zona perakaran, curah hujan bulanan, suhu, r
 Soil Battery adalah indeks komposit ($0–100\\%$) untuk memvisualisasikan simulasi dinamika kesehatan tanah dan neraca nitrogen alami ($\\Delta N$ dalam $\\text{kg N/ha}$), bukan pengganti uji laboratorium tanah:
 
 - **Discharging:** Penanaman sereal rakus hara secara berturut-turut menurunkan kapasitas indeks baterai tanah.
-- **Charging:** Penyisipan legum penambat nitrogen (Kedelai Anjasmoro, Kacang Hijau Vima) dan *cover crop* pemecah padas (Orok-orok *Crotalaria juncea*) memulihkan skor indeks baterai tanah.
+- **Charging:** Penyisipan spesies legum penambat nitrogen (*Glycine max*, *Vigna radiata*) dan *cover crop* pemecah padas (*Crotalaria juncea*) dengan kultivar terlokalisasi memulihkan skor indeks baterai tanah.
 
 ### 4. Tiga Skenario Rotasi Optimal (\`/rotation-planner\`)
 
 - **Pathway A — Soil Regeneration:** Memprioritaskan pemulihan indeks baterai tanah, fiksasi nitrogen biologis, dan biomassa penutup tanah.
-- **Pathway B — Drought Resilience:** Memblokir tanaman boros air pada periode defisit air tinggi dan memprioritaskan komoditas tahan kering (seperti Sorgum Bioguma atau Kacang Hijau Vima).
+- **Pathway B — Drought Resilience:** Memblokir tanaman boros air pada periode defisit air tinggi dan memprioritaskan spesies tahan kering dengan kultivar terlokalisasi (atau arketipe fenotipe spesies).
 - **Pathway C — Cash-Flow Optimized:** Memprioritaskan estimasi pendapatan bersih dengan tetap menjaga batas aman ketersediaan air tanah.
 
 ### 5. Water Balance Chart (\`/water-balance\`)
@@ -399,6 +411,7 @@ Proyek ini dikembangkan untuk tujuan riset, edukasi, dan inovasi pertanian berke
         "- [Background](#background)",
         "- [Solution](#solution)",
         "- [13 Integrated Datasets & Their Actual System Roles](#13-integrated-datasets--their-actual-system-roles)",
+        "- [Global Agroecological Zoning, Cultivar Localization & i18n](#global-agroecological-zoning-cultivar-localization--i18n)",
         "- [Geographic Coverage and Dataset Strategy](#geographic-coverage-and-dataset-strategy)",
         "- [System Workflow](#system-workflow)",
         "- [Key Features](#key-features)",
@@ -488,12 +501,23 @@ To uphold scientific rigor and avoid overclaiming, TerraShaft explicitly categor
 
 9. **NASA ECOSTRESS (JPL):** Knowledge-base indicators for Land Surface Temperature (LST) and canopy thermal stress, supporting soil-cooling cover crop recommendations in semi-arid Indonesian regions (East Nusa Tenggara, Madura, Gunungkidul).
 10. **NASA GEDI (LiDAR):** Canopy vertical structure and biomass reference knowledge for integrating windbreak shade trees (*agroforestry*).
-11. **BRIN / Balittanah / Ministry of Agriculture Research:** Curated RAG knowledge base (\`agronomyKnowledgeBase.ts\`) and local adaptive cultivar parameters (\`crops_library.json\`: Bioguma Sorghum, Anjasmoro Soybean, Vima Mungbean, Bisi-18 Hybrid Maize, Inpago Upland Rice, *Crotalaria juncea* Sunn Hemp, and acid-soil Dolomite liming) powering the AI Field Advisor & rotation engine.
+11. **BRIN / Balittanah / Ministry of Agriculture Research:** Curated RAG knowledge base (\`agronomyKnowledgeBase.ts\`) and Indonesia-scoped cultivar references (\`cultivars_registry.json\` bound strictly to \`ID\`: Bioguma Sorghum, Anjasmoro Soybean, Vima Mungbean, Bisi-18 Hybrid Maize, Inpago Upland Rice, *Crotalaria juncea*, plus acid-soil Dolomite liming) powering Indonesian regional consultations & rotation optimization.
 12. **FAO GAEZ v4 & FAO-56:** Agro-climatic crop suitability bounds, phenological crop coefficients ($K_c$), and water-balance validation rules in the 4-season optimization engine.
 
 ### D. Pedological Calibration Standards
 
 13. **USDA NRCS (Soil Taxonomy & SSURGO/STATSGO2):** Empirical **USDA Soil Texture Triangle** classification rules (\`classifySoilTexture\`) and texture–water retention relationships underlying the pedotransfer calculation of Available Water Capacity ($AWC$) and regional soil reference profiles.
+
+---
+
+## Global Agroecological Zoning, Cultivar Localization & i18n
+
+TerraShaft strictly separates **crop species taxonomy** from **regionally verified cultivars** so domestic varieties are never recommended outside their verified release territory:
+
+1. **Separated Taxonomy (\`src/data/crop_species.json\` vs \`src/data/cultivars_registry.json\`):** Evaluates agronomic species suitability first (*Oryza sativa L.*, *Zea mays L.*, *Glycine max (L.) Merr.*, *Vigna radiata*, *Sorghum bicolor*, *Crotalaria juncea*). Cultivar records bind varieties to explicit \`country_or_region_of_release\`, \`allowed_agroecological_zones\`, \`registration_status\`, \`evidence_source\`, and calibrated \`confidence_score\`.
+2. **Global Agroecological Zoning (\`src/lib/agroecologicalZoning.ts\`):** Transforms coordinates, elevation, NASA POWER climate telemetry, and ISRIC SoilGrids topsoil fractions into a normalized \`AgroecologicalProfile\` (country, macro-region, hemisphere, elevation band, dry-season months, annual GDD, photoperiod class, and AEZ class).
+3. **Cross-Border Guardrail & Archetype Fallback (\`src/lib/cultivarLocalizer.ts\`):** Indonesian varieties (Inpago, Bisi-18, Anjasmoro, Vima, Bioguma) are restricted strictly to \`ID\`. Global coordinates in verified regions (\`US\`, \`KE\`, \`IN\`, \`BR\`, \`AU\`) resolve local regional releases when compatible, while unmapped territories transparently fall back to a **Species Phenotype Archetype** without fabricating cultivar names, yields, or seed availability.
+4. **Bilingual Web App i18n (\`en\` default / \`id\` alternative):** Built with \`i18next\` (\`src/locales/en.json\`, \`src/locales/id.json\`, and \`src/lib/i18n.ts\`). English is active by default for event/demo mode; switching between \`EN\` and \`ID\` updates UI strings only and never changes underlying telemetry, scientific names, cultivar identities, units, or optimization outputs.
 
 ---
 
@@ -569,12 +593,12 @@ Integrates root-zone soil wetness, monthly precipitation, temperature, solar rad
 The Soil Battery is a composite heuristic index ($0–100\\%$) designed to communicate simulated soil health dynamics and biological nitrogen balance ($\\Delta N$ in $\\text{kg N/ha}$), not a replacement for laboratory soil testing:
 
 - **Discharging:** Consecutive nutrient-demanding cereal monocultures deplete the Soil Battery score.
-- **Charging:** Incorporating nitrogen-fixing legumes (Anjasmoro Soybean, Vima Mungbean) and hardpan-penetrating cover crops (*Crotalaria juncea*) recharges the Soil Battery index.
+- **Charging:** Incorporating nitrogen-fixing legumes (*Glycine max*, *Vigna radiata*) and hardpan-penetrating cover crops (*Crotalaria juncea*) with regionally verified cultivars recharges the Soil Battery index.
 
 ### 4. Three Optimal Rotation Scenarios (\`/rotation-planner\`)
 
 - **Pathway A — Soil Regeneration:** Maximizes Soil Battery recovery, biological nitrogen fixation, and organic biomass return.
-- **Pathway B — Drought Resilience:** Disqualifies water-intensive crops during severe deficit windows and prioritizes drought-tolerant cultivars (e.g., Bioguma Sorghum, Vima Mungbean).
+- **Pathway B — Drought Resilience:** Disqualifies water-intensive crops during severe deficit windows and prioritizes drought-tolerant species with localized cultivars (or transparent phenotype archetypes).
 - **Pathway C — Cash-Flow Optimized:** Maximizes projected net farm revenue while enforcing root-zone water safety constraints.
 
 ### 5. Water Balance Chart (\`/water-balance\`)

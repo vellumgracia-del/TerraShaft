@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Search,
   MapPin,
@@ -137,8 +138,10 @@ export default function InteractiveFieldExplorer() {
     soilData,
     plans,
     selectedPathway,
-    isLoadingBioData
+    isLoadingBioData,
+    agroecologicalProfile
   } = useTerraShaftStore();
+  const { t, isEn } = useAppI18n();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -159,7 +162,16 @@ export default function InteractiveFieldExplorer() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchingPlace, setIsSearchingPlace] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    Array<{ displayName: string; shortName: string; lat: number; lon: number }>
+    Array<{
+      displayName: string;
+      shortName: string;
+      lat: number;
+      lon: number;
+      country?: string;
+      countryCode?: string;
+      district?: string;
+      province?: string;
+    }>
   >([]);
 
   // Filter Presets State
@@ -209,27 +221,41 @@ export default function InteractiveFieldExplorer() {
 
   const getAgronomicInsight = () => {
     if (isLoadingBioData) {
-      return 'Menghubungkan ke API telemetri NASA POWER dan ISRIC SoilGrids v2.0...';
+      return isEn
+        ? 'Connecting to NASA POWER & ISRIC SoilGrids v2.0 API telemetry...'
+        : 'Menghubungkan ke API telemetri NASA POWER dan ISRIC SoilGrids v2.0...';
     }
     const isNasaFallback = climateData?.source === 'FALLBACK_CLIMATOLOGY';
     const isSoilFallback = soilData?.source === 'REGIONAL_FALLBACK';
 
     if (isNasaFallback && isSoilFallback) {
-      return 'Mode failover regional: Menggunakan profil agroklimat dan pedologi regional terkalibrasi.';
+      return isEn
+        ? `Regional failover mode (${agroecologicalProfile.country}): calibrated agroclimate & pedotransfer estimate.`
+        : `Mode failover regional (${agroecologicalProfile.country}): profil agroklimat dan pedologi terkalibrasi.`;
     }
     if (!isNasaFallback && isSoilFallback) {
-      return 'Telemetri iklim bersumber dari NASA POWER. Profil tanah menggunakan estimasi pedotransfer regional.';
+      return isEn
+        ? 'Climate telemetry from NASA POWER. Soil profile using regional pedotransfer fallback.'
+        : 'Telemetri iklim bersumber dari NASA POWER. Profil tanah menggunakan estimasi pedotransfer regional.';
     }
     if (isNasaFallback && !isSoilFallback) {
-      return 'Profil tanah bersumber dari ISRIC SoilGrids (0-30cm). Data iklim menggunakan klimatologi regional.';
+      return isEn
+        ? 'Topsoil profile from ISRIC SoilGrids (0-30cm). Climate baseline using regional climatology.'
+        : 'Profil tanah bersumber dari ISRIC SoilGrids (0-30cm). Data iklim menggunakan klimatologi regional.';
     }
     if (isCriticalMoisture) {
-      return 'Cadangan air zona akar defisit kritis (<0.25). Prioritaskan komoditas toleran kekeringan (Sorgum / Orok-orok).';
+      return isEn
+        ? `Critical root-zone moisture (<0.25 GWETROOT) in ${agroecologicalProfile.agroecological_zone}: prioritize drought-tolerant species & localized cultivars.`
+        : `Cadangan air zona akar defisit kritis (<0.25) di ${agroecologicalProfile.agroecological_zone}: prioritaskan spesies tahan kekeringan terlokalisasi.`;
     }
     if (currentPlan && currentPlan.soilBatteryScore > currentPlan.initialBatteryScore) {
-      return `Pola rotasi ${currentPlan.title} memulihkan baterai tanah dari ${currentPlan.initialBatteryScore}% ke ${currentPlan.soilBatteryScore}%.`;
+      return isEn
+        ? `Active ${currentPlan.title} sequence restores Soil Battery from ${currentPlan.initialBatteryScore}% to ${currentPlan.soilBatteryScore}% (${agroecologicalProfile.country_code}).`
+        : `Pola rotasi ${currentPlan.title} memulihkan baterai tanah dari ${currentPlan.initialBatteryScore}% ke ${currentPlan.soilBatteryScore}%.`;
     }
-    return 'Kondisi air tanah memadai untuk budidaya multi-musim terencana.';
+    return isEn
+      ? `Soil moisture adequate for planned 4-season rotation in ${agroecologicalProfile.country}.`
+      : 'Kondisi air tanah memadai untuk budidaya multi-musim terencana.';
   };
 
   // Build Tile Layers
@@ -482,14 +508,33 @@ export default function InteractiveFieldExplorer() {
     shortName: string;
     lat: number;
     lon: number;
+    country?: string;
+    countryCode?: string;
+    district?: string;
+    province?: string;
   }) => {
     setSearchResults([]);
     setSearchQuery(item.shortName);
-    await setLocation(item.lat, item.lon, item.displayName);
+    await setLocation(item.lat, item.lon, item.displayName, undefined, {
+      country: item.country,
+      countryCode: item.countryCode,
+      district: item.district,
+      province: item.province
+    });
   };
 
   const handleSelectPreset = async (preset: PresetItem) => {
-    await setLocation(preset.lat, preset.lon, preset.full, preset.elevation);
+    const presetCountryMap: Record<string, { country: string; countryCode: string }> = {
+      'Machakos (Kenya)': { country: 'Kenya', countryCode: 'KE' },
+      'Central Valley (USA)': { country: 'United States', countryCode: 'US' },
+      'Murray-Darling (Australia)': { country: 'Australia', countryCode: 'AU' },
+      'Petrolina (Brazil)': { country: 'Brazil', countryCode: 'BR' }
+    };
+    const meta =
+      preset.category === 'global'
+        ? presetCountryMap[preset.name]
+        : { country: 'Indonesia', countryCode: 'ID' };
+    await setLocation(preset.lat, preset.lon, preset.full, preset.elevation, meta);
   };
 
   const handleManualCoordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -528,7 +573,7 @@ export default function InteractiveFieldExplorer() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari lokasi, desa, kabupaten, atau koordinat (misal: -10.15, 123.82)..."
+              placeholder={t('header.searchPlaceholder')}
               className="flex-1 bg-transparent text-xs text-[#F1F3F5] placeholder-[#8A949E] outline-none"
             />
             {isSearchingPlace && (

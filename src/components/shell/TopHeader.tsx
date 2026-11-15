@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   RefreshCw,
   Bell,
@@ -12,7 +13,8 @@ import {
   Settings,
   Menu,
   UserCog,
-  LogOut
+  LogOut,
+  Languages
 } from 'lucide-react';
 
 interface TopHeaderProps {
@@ -29,6 +31,7 @@ export default function TopHeader({
     fetchBioPhysicalData,
     provenance
   } = useTerraShaftStore();
+  const { t, locale, setLocale } = useAppI18n();
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -39,29 +42,32 @@ export default function TopHeader({
   });
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('terrashaft_user_profile');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.name || parsed.email) {
-          const rawName = (parsed.name || 'Ravi Arnan Irianto').trim();
-          const initials = rawName
-            .split(' ')
-            .filter(Boolean)
-            .map((w: string) => w[0])
-            .join('')
-            .slice(0, 2)
-            .toUpperCase() || 'RI';
-          setProfile({
-            name: rawName.toUpperCase(),
-            email: parsed.email || 'raviarnankeren@gmail.com',
-            initials
-          });
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem('terrashaft_user_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.name || parsed.email) {
+            const rawName = (parsed.name || 'Ravi Arnan Irianto').trim();
+            const initials = rawName
+              .split(' ')
+              .filter(Boolean)
+              .map((w: string) => w[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase() || 'RI';
+            setProfile({
+              name: rawName.toUpperCase(),
+              email: parsed.email || 'raviarnankeren@gmail.com',
+              initials
+            });
+          }
         }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Close dropdown on click outside or escape key
@@ -124,14 +130,47 @@ export default function TopHeader({
 
       {/* Right: Minimal Planet Utility Toolbar */}
       <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        {/* Global Language Switcher (EN default / ID alternative, UI only) */}
+        <div
+          className="inline-flex items-center rounded-[5px] bg-[#1A1E24] border border-[#2C313A] p-0.5 text-[11px] font-semibold"
+          role="group"
+          aria-label={t('app.languageLabel')}
+        >
+          <Languages className="w-3.5 h-3.5 text-[#8A949E] mx-1.5 hidden sm:inline" />
+          <button
+            type="button"
+            onClick={() => setLocale('en')}
+            title={t('app.switchToEn')}
+            className={`px-2 py-1 rounded-[3px] transition-colors cursor-pointer ${
+              locale === 'en'
+                ? 'bg-[#00C2CC] text-[#121417]'
+                : 'text-[#9BA3AE] hover:text-white'
+            }`}
+          >
+            {t('app.langEn')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale('id')}
+            title={t('app.switchToId')}
+            className={`px-2 py-1 rounded-[3px] transition-colors cursor-pointer ${
+              locale === 'id'
+                ? 'bg-[#00C2CC] text-[#121417]'
+                : 'text-[#9BA3AE] hover:text-white'
+            }`}
+          >
+            {t('app.langId')}
+          </button>
+        </div>
+
         {/* Live Telemetry Sync Refresh Button (Icon Only) */}
         <button
           type="button"
           onClick={() => fetchBioPhysicalData(location.lat, location.lon)}
           disabled={isLoadingBioData}
-          title={isLoadingBioData ? 'Menyinkronkan telemetri satelit...' : `Sinkronisasi telemetri satelit (${badge?.text || 'NASA POWER & ISRIC SoilGrids'})`}
+          title={isLoadingBioData ? t('header.refreshing') : `${t('header.refreshTelemetry')} (${badge?.text || 'NASA POWER & ISRIC SoilGrids'})`}
           className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors disabled:opacity-50"
-          aria-label="Sinkronisasi telemetri satelit"
+          aria-label={t('header.refreshTelemetry')}
         >
           <RefreshCw className={`w-4 h-4 ${isLoadingBioData ? 'animate-spin text-[#00C2CC]' : 'text-[#C1C7CD] hover:text-white'}`} />
         </button>
@@ -139,7 +178,7 @@ export default function TopHeader({
         {/* Notifications / Telemetry Provenance */}
         <Link
           href="/data-sources"
-          title="Status Telemetri & Provenansi Data"
+          title={t('nav.nasaData')}
           className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors relative"
         >
           <Bell className="w-4 h-4" />
@@ -149,7 +188,7 @@ export default function TopHeader({
         {/* Help / Scientific Documentation */}
         <Link
           href="/data-sources"
-          title="Dokumentasi Ilmiah & Sumber Satelit"
+          title={t('provenance.title')}
           className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors"
         >
           <HelpCircle className="w-4 h-4" />
@@ -158,7 +197,7 @@ export default function TopHeader({
         {/* Settings / Workbench Preference */}
         <Link
           href="/settings"
-          title="Pengaturan Workbench & Profil Pengguna"
+          title={t('nav.settings')}
           className="w-9 h-9 rounded-[5px] inline-flex items-center justify-center text-[#C1C7CD] hover:text-white hover:bg-[#20242B] transition-colors"
         >
           <Settings className="w-4 h-4" />

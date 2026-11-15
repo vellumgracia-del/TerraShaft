@@ -7,6 +7,7 @@ import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import PlanetFooter from '@/components/landing/PlanetFooter';
 import ScrollExpandSection from '@/components/landing/ScrollExpandSection';
+import { useAppI18n } from '@/lib/i18n';
 import {
   ArrowRight,
   Satellite,
@@ -25,6 +26,7 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const { locale, setLocale } = useAppI18n();
   const [isScrolled, setIsScrolled] = useState(false);
   const isScrolledRef = useRef(false);
   const lenisRef = useRef<Lenis | null>(null);
@@ -171,11 +173,32 @@ export default function LandingPage() {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          <div className="inline-flex items-center rounded-[4px] bg-[#16191E]/90 border border-[#282C34] p-0.5 text-[11px] font-semibold">
+            <button
+              type="button"
+              onClick={() => setLocale('en')}
+              className={`px-2 py-1 rounded-[3px] transition-colors cursor-pointer ${
+                locale === 'en' ? 'bg-[#00C2CC] text-[#121417]' : 'text-[#A6AFB8] hover:text-white'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocale('id')}
+              className={`px-2 py-1 rounded-[3px] transition-colors cursor-pointer ${
+                locale === 'id' ? 'bg-[#00C2CC] text-[#121417]' : 'text-[#A6AFB8] hover:text-white'
+              }`}
+            >
+              ID
+            </button>
+          </div>
+
           <Link
             href="/login"
             className="text-xs sm:text-[13px] font-medium text-[#C1C7CD] hover:text-white px-3 py-1.5 transition-colors"
           >
-            Sign In
+            {locale === 'en' ? 'Sign In' : 'Masuk'}
           </Link>
 
           <Link
@@ -186,7 +209,7 @@ export default function LandingPage() {
                 : 'px-3 py-1.5 text-[#00C2CC] hover:text-[#33D4DC] bg-transparent'
             }`}
           >
-            <span>Launch Platform</span>
+            <span>{locale === 'en' ? 'Launch Platform' : 'Buka Platform'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
