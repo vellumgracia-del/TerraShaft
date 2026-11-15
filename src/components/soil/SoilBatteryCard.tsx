@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { useAppI18n } from '@/lib/i18n';
+import { useAppI18n, localizeTextureClass } from '@/lib/i18n';
 import {
   BatteryCharging,
   ArrowUpRight,
@@ -26,7 +26,7 @@ interface SoilBatteryCardProps {
 
 export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardProps) {
   const { plans, selectedPathway, soilData, climateData } = useTerraShaftStore();
-  const { isEn } = useAppI18n();
+  const { isEn, locale } = useAppI18n();
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
@@ -44,7 +44,7 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
   const phVal = soilData?.ph ?? 6.4;
   const cecVal = soilData?.cec ?? 19.5;
   const awcVal = soilData?.awc ?? 30.3;
-  const textureClass = soilData?.textureClass ?? 'Lempung Berliat (Clay Loam)';
+  const textureClass = localizeTextureClass(soilData?.textureClass ?? 'Lempung Berliat (Clay Loam)', locale);
   const bulkDensity = estimateBulkDensity(socBaseline);
   const moistureReserveMm = estimateCurrentMoistureReserve(awcVal, climateData?.rootZoneSoilMoisture ?? 0.38);
 
@@ -136,7 +136,8 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
           </div>
 
           <div className="text-xs text-[#8A949E] text-center mt-2 font-mono">
-            Baseline Awal Lahan: <strong className="text-[#F1F3F5] font-mono">{initialBattery}%</strong>
+            {isEn ? 'Initial Plot Baseline:' : 'Baseline Awal Lahan:'}{' '}
+            <strong className="text-[#F1F3F5] font-mono">{initialBattery}%</strong>
           </div>
         </div>
 
@@ -149,17 +150,21 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
                 <Leaf className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs text-[#8A949E] block font-mono">Estimasi Kontribusi N Biologis Kumulatif</span>
+                <span className="text-xs text-[#8A949E] block font-mono">
+                  {isEn ? 'Cumulative Biological N Contribution' : 'Estimasi Kontribusi N Biologis Kumulatif'}
+                </span>
                 <span className="text-sm font-medium text-[#F1F3F5] font-mono">
                   {formatKgPerHa(nitrogenBalance)}
                 </span>
                 <span className="text-[10px] text-[#8A949E] block mt-0.5">
-                  Tidak berarti seluruh nitrogen langsung tersedia bagi tanaman.
+                  {isEn
+                    ? 'Not all fixed nitrogen is immediately plant-available.'
+                    : 'Tidak berarti seluruh nitrogen langsung tersedia bagi tanaman.'}
                 </span>
               </div>
             </div>
             <span className="text-[11px] font-mono text-[#00C2CC] bg-[#163A40] px-2 py-1 rounded-[3px] border border-[#009DA5]/40 shrink-0">
-              Fiksasi Biologis
+              {isEn ? 'Biological Fixation' : 'Fiksasi Biologis'}
             </span>
           </div>
 
@@ -170,17 +175,23 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
                 <Droplets className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs text-[#8A949E] block font-mono">Estimasi Penghematan Air Siklus</span>
+                <span className="text-xs text-[#8A949E] block font-mono">
+                  {isEn ? 'Cycle Water Savings Estimate' : 'Estimasi Penghematan Air Siklus'}
+                </span>
                 <span className="text-sm font-medium text-[#F1F3F5] font-mono">
-                  Hingga {formatPercentage(waterSavings)} Efisiensi Air
+                  {isEn
+                    ? `Up to ${formatPercentage(waterSavings)} Water Efficiency`
+                    : `Hingga ${formatPercentage(waterSavings)} Efisiensi Air`}
                 </span>
                 <span className="text-[10px] text-[#8A949E] block mt-0.5">
-                  Dibandingkan model baseline monokultur; bukan jaminan hasil lapangan.
+                  {isEn
+                    ? 'Compared to monoculture baseline; not a field yield guarantee.'
+                    : 'Dibandingkan model baseline monokultur; bukan jaminan hasil lapangan.'}
                 </span>
               </div>
             </div>
             <span className="text-[11px] font-mono text-[#00C2CC] bg-[#163A40] px-2 py-1 rounded-[3px] border border-[#009DA5]/40 shrink-0">
-              vs Monokultur
+              {isEn ? 'vs Monoculture' : 'vs Monokultur'}
             </span>
           </div>
 
@@ -191,9 +202,13 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
                 <Layers className="w-4 h-4" />
               </div>
               <div>
-                <span className="text-xs text-[#8A949E] block font-mono">Karbon Organik Tanah (SOC ISRIC)</span>
+                <span className="text-xs text-[#8A949E] block font-mono">
+                  {isEn ? 'Soil Organic Carbon (ISRIC SOC)' : 'Karbon Organik Tanah (SOC ISRIC)'}
+                </span>
                 <span className="text-sm font-medium text-[#F1F3F5] font-mono">
-                  {socBaseline}% C-Organik (Lapisan 0-30cm)
+                  {isEn
+                    ? `${socBaseline}% Organic C (0-30cm Topsoil)`
+                    : `${socBaseline}% C-Organik (Lapisan 0-30cm)`}
                 </span>
               </div>
             </div>
@@ -209,14 +224,17 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <span className="text-xs font-mono text-[#F1F3F5] uppercase tracking-wider block">
-              Profil Fisika & Kimia Tanah Lapisan 0-30 cm (ISRIC SoilGrids v2.0)
+              {isEn
+                ? 'Topsoil Physical & Chemical Profile 0-30 cm (ISRIC SoilGrids v2.0)'
+                : 'Profil Fisika & Kimia Tanah Lapisan 0-30 cm (ISRIC SoilGrids v2.0)'}
             </span>
             <span className="text-[11px] text-[#8A949E]">
-              Kelas Tekstur USDA: <strong className="text-[#F1F3F5]">{textureClass}</strong>
+              {isEn ? 'USDA Texture Class:' : 'Kelas Tekstur USDA:'}{' '}
+              <strong className="text-[#F1F3F5]">{textureClass}</strong>
             </span>
           </div>
           <span className="px-2.5 py-1 rounded-[3px] bg-[#20242B] border border-[#2C313A] text-xs font-mono text-[#00C2CC] self-start sm:self-auto">
-            Cadangan Air Aktif: {moistureReserveMm} / {formatMm(awcVal)}
+            {isEn ? 'Active Moisture Reserve:' : 'Cadangan Air Aktif:'} {moistureReserveMm} / {formatMm(awcVal)}
           </span>
         </div>
 
@@ -226,31 +244,31 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
             <div
               style={{ width: `${sandPct}%` }}
               className="bg-[#F59E0B] h-full transition-all"
-              title={`Pasir (Sand): ${sandPct}%`}
+              title={`${isEn ? 'Sand' : 'Pasir (Sand)'}: ${sandPct}%`}
             />
             <div
               style={{ width: `${siltPct}%` }}
               className="bg-[#0284C7] h-full transition-all"
-              title={`Debu (Silt): ${siltPct}%`}
+              title={`${isEn ? 'Silt' : 'Debu (Silt)'}: ${siltPct}%`}
             />
             <div
               style={{ width: `${clayPct}%` }}
               className="bg-[#009DA5] h-full transition-all"
-              title={`Liat (Clay): ${clayPct}%`}
+              title={`${isEn ? 'Clay' : 'Liat (Clay)'}: ${clayPct}%`}
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#C1C7CD] font-mono">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-xs bg-[#F59E0B]" />
-              <span>Pasir (Sand): <strong className="text-[#F1F3F5]">{sandPct}%</strong></span>
+              <span>{isEn ? 'Sand:' : 'Pasir (Sand):'} <strong className="text-[#F1F3F5]">{sandPct}%</strong></span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-xs bg-[#0284C7]" />
-              <span>Debu (Silt): <strong className="text-[#F1F3F5]">{siltPct}%</strong></span>
+              <span>{isEn ? 'Silt:' : 'Debu (Silt):'} <strong className="text-[#F1F3F5]">{siltPct}%</strong></span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-xs bg-[#009DA5]" />
-              <span>Liat (Clay): <strong className="text-[#F1F3F5]">{clayPct}%</strong></span>
+              <span>{isEn ? 'Clay:' : 'Liat (Clay):'} <strong className="text-[#F1F3F5]">{clayPct}%</strong></span>
             </span>
           </div>
         </div>
@@ -258,42 +276,56 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
         {/* 4 Soil Chemical & Pedotransfer Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
           <div className="p-2.5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-            <span className="text-[10px] text-[#8A949E] block font-mono">Derajat Keasaman (pH H2O)</span>
+            <span className="text-[10px] text-[#8A949E] block font-mono">
+              {isEn ? 'Soil Acidity (pH H2O)' : 'Derajat Keasaman (pH H2O)'}
+            </span>
             <span className="text-sm font-medium font-mono text-[#F1F3F5] mt-0.5 block">
               {phVal.toFixed(1)}
             </span>
             <span className="text-[10px] text-[#00C2CC] font-mono">
-              {phVal < 5.5 ? 'Masam' : phVal > 7.5 ? 'Alkalis' : 'Netral Optimal'}
+              {phVal < 5.5
+                ? isEn ? 'Acidic' : 'Masam'
+                : phVal > 7.5
+                ? isEn ? 'Alkaline' : 'Alkalis'
+                : isEn ? 'Optimal Neutral' : 'Netral Optimal'}
             </span>
           </div>
 
           <div className="p-2.5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-            <span className="text-[10px] text-[#8A949E] block font-mono">KTK / CEC Tanah</span>
+            <span className="text-[10px] text-[#8A949E] block font-mono">
+              {isEn ? 'Soil CEC' : 'KTK / CEC Tanah'}
+            </span>
             <span className="text-sm font-medium font-mono text-[#F1F3F5] mt-0.5 block">
               {cecVal.toFixed(1)} <span className="text-[10px] font-normal">cmol/kg</span>
             </span>
             <span className="text-[10px] text-[#00C2CC] font-mono">
-              Retensi Kation Hara
+              {isEn ? 'Nutrient Cation Retention' : 'Retensi Kation Hara'}
             </span>
           </div>
 
           <div className="p-2.5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-            <span className="text-[10px] text-[#8A949E] block font-mono">Kerapatan Lindak (BD)</span>
+            <span className="text-[10px] text-[#8A949E] block font-mono">
+              {isEn ? 'Bulk Density (BD)' : 'Kerapatan Lindak (BD)'}
+            </span>
             <span className="text-sm font-medium font-mono text-[#F1F3F5] mt-0.5 block">
               {bulkDensity.toFixed(2)} <span className="text-[10px] font-normal">g/cm3</span>
             </span>
             <span className={`text-[10px] font-mono ${bulkDensity > 1.45 ? 'text-[#F87171]' : 'text-[#00C2CC]'}`}>
-              {bulkDensity > 1.45 ? 'Indikasi Padas Olah' : 'Porositas Baik'}
+              {bulkDensity > 1.45
+                ? isEn ? 'Compaction Risk' : 'Indikasi Padas Olah'
+                : isEn ? 'Good Porosity' : 'Porositas Baik'}
             </span>
           </div>
 
           <div className="p-2.5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-            <span className="text-[10px] text-[#8A949E] block font-mono">Kapasitas Air Tersedia</span>
+            <span className="text-[10px] text-[#8A949E] block font-mono">
+              {isEn ? 'Available Water Capacity' : 'Kapasitas Air Tersedia'}
+            </span>
             <span className="text-sm font-medium font-mono text-[#F1F3F5] mt-0.5 block">
               {formatMm(awcVal)}
             </span>
             <span className="text-[10px] text-[#8A949E] font-mono">
-              Jeluk 0-30 cm
+              {isEn ? 'Depth 0-30 cm' : 'Jeluk 0-30 cm'}
             </span>
           </div>
         </div>
@@ -303,7 +335,15 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
       <div className="p-3 bg-[#16191E] rounded-[4px] border border-[#2C313A] flex items-start gap-2 text-xs text-[#8A949E]">
         <Info className="w-4 h-4 text-[#009DA5] shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong>Catatan Ilmiah:</strong> Skor Baterai Tanah adalah indikator <em>screening model</em> berbasis kaidah agronomi pergantian legum penambat nitrogen dan cover crop, bukan pengukuran laboratorium <em>real-time</em>.
+          {isEn ? (
+            <>
+              <strong>Scientific Note:</strong> Soil Battery Score is a <em>screening model</em> indicator based on nitrogen-fixing legume rotation and cover-crop principles, not a <em>real-time</em> laboratory measurement.
+            </>
+          ) : (
+            <>
+              <strong>Catatan Ilmiah:</strong> Skor Baterai Tanah adalah indikator <em>screening model</em> berbasis kaidah agronomi pergantian legum penambat nitrogen dan cover crop, bukan pengukuran laboratorium <em>real-time</em>.
+            </>
+          )}
         </p>
       </div>
     </div>

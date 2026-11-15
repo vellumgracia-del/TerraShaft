@@ -95,4 +95,6 @@ export function localizePathwayCopy(
   };
 }
 
+export { localizeTextureClass } from '@/lib/formatters';
+
 export default i18nInstance;

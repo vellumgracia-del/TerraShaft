@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { useAppI18n } from '@/lib/i18n';
+import { useAppI18n, localizeTextureClass } from '@/lib/i18n';
 import {
   MapPin,
   Layers,
@@ -28,7 +28,7 @@ export default function ActiveTelemetrySidebar() {
     isLoadingBioData,
     fetchBioPhysicalData
   } = useTerraShaftStore();
-  const { isEn } = useAppI18n();
+  const { isEn, locale } = useAppI18n();
   const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const activePlan = plans ? plans[selectedPathway] : null;
@@ -111,7 +111,9 @@ export default function ActiveTelemetrySidebar() {
             <div className="flex flex-col gap-1.5 text-[11.5px]">
               <div className="flex justify-between items-center py-0.5 border-b border-[#20252D]">
                 <span className="text-[#9BA3AE]">{isEn ? 'Texture' : 'Tekstur'}</span>
-                <span className="font-medium text-[#F1F3F5]">{soilData.textureClass}</span>
+                <span className="font-medium text-[#F1F3F5]">
+                  {localizeTextureClass(soilData.textureClass, locale)}
+                </span>
               </div>
               <div className="flex justify-between items-center py-0.5 border-b border-[#20252D]">
                 <span className="text-[#9BA3AE]">pH H2O</span>

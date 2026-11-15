@@ -385,10 +385,14 @@ export function getOverallDisplayStatus(prov?: TerraShaftProvenance): SourceDisp
 /**
  * Action Sheet Provenance Block Resolver
  */
-export function getActionSheetProvenanceDisplay(prov?: TerraShaftProvenance): ActionSheetProvenanceDisplay {
+export function getActionSheetProvenanceDisplay(
+  prov?: TerraShaftProvenance,
+  locale: 'en' | 'id' = 'id'
+): ActionSheetProvenanceDisplay {
   const nasaStatus = getNasaPowerDisplayStatus(prov);
   const soilStatus = getSoilGridsDisplayStatus(prov);
   const overall = getOverallDisplayStatus(prov);
+  const isEn = locale === 'en';
 
   let banner = '';
   let scientificNote = '';
@@ -397,33 +401,53 @@ export function getActionSheetProvenanceDisplay(prov?: TerraShaftProvenance): Ac
   const soilLiveOrCached = prov?.isricSoilGrids.mode === 'live' || prov?.isricSoilGrids.mode === 'cached';
 
   if (nasaLiveOrCached && soilLiveOrCached) {
-    banner = 'Status sumber data: NASA POWER dan ISRIC SoilGrids berhasil merespons API';
-    scientificNote = 'NASA POWER dan ISRIC SoilGrids berhasil merespons API. Tetap validasi rekomendasi dengan kondisi lapangan dan penyuluh setempat.';
+    banner = isEn
+      ? 'Data source status: NASA POWER and ISRIC SoilGrids APIs responded'
+      : 'Status sumber data: NASA POWER dan ISRIC SoilGrids berhasil merespons API';
+    scientificNote = isEn
+      ? 'NASA POWER and ISRIC SoilGrids APIs responded successfully. Always validate recommendations against local field conditions and extension guidance.'
+      : 'NASA POWER dan ISRIC SoilGrids berhasil merespons API. Tetap validasi rekomendasi dengan kondisi lapangan dan penyuluh setempat.';
   } else if (nasaLiveOrCached && !soilLiveOrCached) {
-    banner = 'Status sumber data: NASA POWER (API OK / historical baseline) · ISRIC SoilGrids (Regional fallback)';
-    scientificNote = 'NASA POWER berhasil diakses melalui API. Nilai ini merupakan baseline agroklimatologi historis, bukan sensor real-time di lahan. Profil tanah sedang menggunakan fallback regional karena SoilGrids tidak tersedia.';
+    banner = isEn
+      ? 'Data source status: NASA POWER (API OK / historical baseline) · ISRIC SoilGrids (Regional fallback)'
+      : 'Status sumber data: NASA POWER (API OK / historical baseline) · ISRIC SoilGrids (Regional fallback)';
+    scientificNote = isEn
+      ? 'NASA POWER responded via API (historical agroclimatology baseline, not an in-situ sensor). Soil profile is using regional pedotransfer fallback while SoilGrids is unavailable.'
+      : 'NASA POWER berhasil diakses melalui API. Nilai ini merupakan baseline agroklimatologi historis, bukan sensor real-time di lahan. Profil tanah sedang menggunakan fallback regional karena SoilGrids tidak tersedia.';
   } else if (!nasaLiveOrCached && soilLiveOrCached) {
-    banner = 'Status sumber data: ISRIC SoilGrids (API OK) · NASA POWER (Regional fallback)';
-    scientificNote = 'ISRIC SoilGrids berhasil diakses melalui API (0-30cm). Data iklim sedang menggunakan fallback klimatologi regional terkalibrasi.';
+    banner = isEn
+      ? 'Data source status: ISRIC SoilGrids (API OK) · NASA POWER (Regional fallback)'
+      : 'Status sumber data: ISRIC SoilGrids (API OK) · NASA POWER (Regional fallback)';
+    scientificNote = isEn
+      ? 'ISRIC SoilGrids responded via API (0-30cm topsoil). Climate baseline is using calibrated regional climatology fallback.'
+      : 'ISRIC SoilGrids berhasil diakses melalui API (0-30cm). Data iklim sedang menggunakan fallback klimatologi regional terkalibrasi.';
   } else if (prov?.overallMode === 'demo') {
-    banner = 'Status sumber data: DEMO MODE (Bukan observasi live, disimulasikan untuk demonstrasi)';
-    scientificNote = 'Data demo/simulasi aktif. Nilai bukan observasi lapangan langsung; gunakan untuk evaluasi antarmuka dan logika optimasi.';
+    banner = isEn
+      ? 'Data source status: DEMO MODE (Simulated for demonstration, not live observation)'
+      : 'Status sumber data: DEMO MODE (Bukan observasi live, disimulasikan untuk demonstrasi)';
+    scientificNote = isEn
+      ? 'Demo/simulation data active. Values are not live field observations; use only to evaluate interface and optimization logic.'
+      : 'Data demo/simulasi aktif. Nilai bukan observasi lapangan langsung; gunakan untuk evaluasi antarmuka dan logika optimasi.';
   } else {
-    banner = 'Status sumber data: REGIONAL FALLBACK (Model agroklimat & pedologi regional terkalibrasi)';
-    scientificNote = 'Data demo/fallback aktif. Nilai bukan observasi lapangan langsung. Rekomendasi dihitung menggunakan model agroklimat dan pedologi regional terkalibrasi Nusa Tenggara.';
+    banner = isEn
+      ? 'Data source status: REGIONAL FALLBACK (Calibrated regional agroclimate & soil model)'
+      : 'Status sumber data: REGIONAL FALLBACK (Model agroklimat & pedologi regional terkalibrasi)';
+    scientificNote = isEn
+      ? 'Regional fallback model active. Values are not direct field observations and are derived from calibrated regional agroclimate and pedotransfer baselines.'
+      : 'Data demo/fallback aktif. Nilai bukan observasi lapangan langsung. Rekomendasi dihitung menggunakan model agroklimat dan pedologi regional terkalibrasi Nusa Tenggara.';
   }
 
   const compactNasa = nasaStatus.isOfficialApiResponse
     ? 'API OK / historical baseline'
     : nasaStatus.shortLabel.includes('Demo')
-    ? 'simulasi demo'
-    : 'fallback regional';
+    ? isEn ? 'demo simulation' : 'simulasi demo'
+    : isEn ? 'regional fallback' : 'fallback regional';
 
   const compactSoil = soilStatus.isOfficialApiResponse
     ? 'API OK (0-30cm)'
     : soilStatus.shortLabel.includes('Demo')
-    ? 'simulasi demo'
-    : 'fallback regional';
+    ? isEn ? 'demo simulation' : 'simulasi demo'
+    : isEn ? 'regional fallback' : 'fallback regional';
 
   return {
     compactSourceBlock: {

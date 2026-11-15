@@ -5,7 +5,7 @@ import Link from 'next/link';
 import SummaryMetricCards from '@/components/overview/SummaryMetricCards';
 import AgroecologicalProfileCard from '@/components/overview/AgroecologicalProfileCard';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { useAppI18n, localizeCropName, localizePathwayCopy } from '@/lib/i18n';
+import { useAppI18n, localizeCropName, localizePathwayCopy, localizeTextureClass } from '@/lib/i18n';
 import {
   Search,
   Rss,
@@ -144,16 +144,16 @@ export default function HomePage() {
       icon: FileText,
       title: isEn ? '4-Season rotation orders' : 'Rencana rotasi 4 musim',
       sublabel: isEn
-        ? `Optimization API · Pathway ${selectedPathway} (${currentPlan?.title ?? 'Max Soil Regeneration'})`
-        : `Optimization API · Jalur ${selectedPathway} (${currentPlan?.title ?? 'Pemulihan Tanah'})`
+        ? `Optimization API · ${localizePathwayCopy(selectedPathway, locale).title}`
+        : `Optimization API · ${localizePathwayCopy(selectedPathway, locale).title}`
     },
     {
       href: '/soil-battery',
       icon: Layers,
       title: isEn ? 'Soil battery subscriptions' : 'Pemantauan baterai tanah',
       sublabel: isEn
-        ? `Pedotransfer 0-30cm API · Score ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
-        : `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${soilData?.textureClass?.split('(')[0]?.trim() || 'Sandy Clay Loam'})`
+        ? `Pedotransfer 0-30cm API · Score ${currentPlan?.soilBatteryScore ?? 100}% (${localizeTextureClass(soilData?.textureClass || '', locale)})`
+        : `Pedotransfer 0-30cm API · Skor ${currentPlan?.soilBatteryScore ?? 100}% (${localizeTextureClass(soilData?.textureClass || '', locale)})`
     },
     {
       href: '/water-balance',

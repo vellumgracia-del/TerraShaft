@@ -50,7 +50,7 @@ export default function ActionSheetPage() {
     );
   }
 
-  const actionSheetProv = getActionSheetProvenanceDisplay(provenance);
+  const actionSheetProv = getActionSheetProvenanceDisplay(provenance, locale);
   const overallDisplay = getOverallDisplayStatus(provenance);
 
   const initialBattery = currentPlan.initialBatteryScore;
@@ -99,7 +99,7 @@ export default function ActionSheetPage() {
       setTimeout(() => setExportSuccess(false), 4000);
     } catch (err) {
       console.error('Export Action Sheet failed:', err);
-      alert('Gagal mengekspor berkas gambar. Silakan coba lagi.');
+      alert(isEn ? 'Failed to export image file. Please try again.' : 'Gagal mengekspor berkas gambar. Silakan coba lagi.');
     } finally {
       if (wasDark) {
         document.documentElement.setAttribute('data-field-mode', 'true');
@@ -209,7 +209,11 @@ export default function ActionSheetPage() {
       {exportSuccess && (
         <div className="p-3 rounded-[4px] bg-[#163A40] border border-[#009DA5]/40 text-[#00C2CC] text-xs font-bold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4" />
-          <span>Gambar Action Sheet berhasil diunduh (1080×1350 px PNG)!</span>
+          <span>
+            {isEn
+              ? 'Action Sheet image downloaded successfully (1080×1350 px PNG)!'
+              : 'Gambar Action Sheet berhasil diunduh (1080×1350 px PNG)!'}
+          </span>
         </div>
       )}
 
@@ -235,20 +239,26 @@ export default function ActionSheetPage() {
               <div className="h-12 w-px bg-[#2C313A]" />
               <div>
                 <h1 className="text-2xl font-extrabold text-[#F1F3F5] tracking-tight">
-                  ACTION SHEET PANDUAN LAPANGAN
+                  {isEn ? 'FIELD GUIDE ACTION SHEET' : 'ACTION SHEET PANDUAN LAPANGAN'}
                 </h1>
                 <p className="text-sm text-[#8A949E] font-semibold mt-0.5">
-                  Optimasi Pola Rotasi 4 Musim & Regenerasi Baterai Tanah
+                  {isEn
+                    ? '4-Season Adaptive Rotation & Soil Battery Regeneration'
+                    : 'Optimasi Pola Rotasi 4 Musim & Regenerasi Baterai Tanah'}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
               <span className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] bg-[#163A40] border border-[#009DA5]/40 px-3 py-1 rounded-[3px]">
-                Dokumen Resmi PPL
+                {isEn ? 'Extension Field Brief' : 'Dokumen Resmi PPL'}
               </span>
               <p className="text-sm text-[#8A949E] mt-2 font-mono">
-                {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+                {new Date().toLocaleDateString(isEn ? 'en-US' : 'id-ID', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </p>
             </div>
           </div>
@@ -256,18 +266,26 @@ export default function ActionSheetPage() {
           {/* Farm Location Details Banner */}
           <div className="p-6 rounded-[4px] bg-[#20242B] border border-[#2C313A] grid grid-cols-3 gap-6 text-sm">
             <div>
-              <span className="text-xs text-[#8A949E] font-semibold uppercase">Lokasi Budidaya</span>
+              <span className="text-xs text-[#8A949E] font-semibold uppercase">
+                {isEn ? 'Cultivation Location' : 'Lokasi Budidaya'}
+              </span>
               <p className="text-base font-bold text-[#F1F3F5] mt-1">{location.placeName}</p>
             </div>
             <div>
-              <span className="text-xs text-[#8A949E] font-semibold uppercase">Koordinat Spasial</span>
+              <span className="text-xs text-[#8A949E] font-semibold uppercase">
+                {isEn ? 'Spatial Coordinates' : 'Koordinat Spasial'}
+              </span>
               <p className="text-base font-bold font-mono text-[#F1F3F5] mt-1">
                 LAT {formatCoordinate(location.lat)}° | LON {formatCoordinate(location.lon)}°
               </p>
             </div>
             <div>
-              <span className="text-xs text-[#8A949E] font-semibold uppercase">Ketinggian Lahan</span>
-              <p className="text-base font-bold text-[#F1F3F5] mt-1">{Math.round(elevation_m)} m dpl</p>
+              <span className="text-xs text-[#8A949E] font-semibold uppercase">
+                {isEn ? 'Plot Elevation' : 'Ketinggian Lahan'}
+              </span>
+              <p className="text-base font-bold text-[#F1F3F5] mt-1">
+                {Math.round(elevation_m)} {t('header.elevationUnit')}
+              </p>
             </div>
           </div>
 
@@ -282,7 +300,9 @@ export default function ActionSheetPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                <span className="font-bold text-xs uppercase tracking-wide">Status Sumber Data</span>
+                <span className="font-bold text-xs uppercase tracking-wide">
+                  {isEn ? 'Data Source Status' : 'Status Sumber Data'}
+                </span>
               </div>
               <span className="font-mono text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-[3px] bg-[#16191E] border border-current">
                 {overallDisplay.shortLabel}
@@ -307,18 +327,22 @@ export default function ActionSheetPage() {
           <div className="p-8 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex items-center justify-between">
             <div>
               <span className="text-sm font-bold uppercase tracking-wider text-[#00C2CC]">
-                Skenario Terpilih: Jalur {selectedPathway}
+                {isEn
+                  ? `Selected Scenario: Pathway ${selectedPathway}`
+                  : `Skenario Terpilih: Jalur ${selectedPathway}`}
               </span>
               <h2 className="text-3xl font-extrabold text-[#F1F3F5] mt-1">
-                {currentPlan.title}
+                {pathwayMeta.title}
               </h2>
               <p className="text-sm text-[#8A949E] mt-2 max-w-xl leading-relaxed">
-                {currentPlan.description}
+                {pathwayMeta.description}
               </p>
             </div>
 
             <div className="text-center p-6 bg-[#20242B] rounded-[4px] border border-[#2C313A] shadow-sm">
-              <span className="text-xs font-bold uppercase text-[#8A949E] block">Skor Komposit</span>
+              <span className="text-xs font-bold uppercase text-[#8A949E] block">
+                {isEn ? 'Composite Score' : 'Skor Komposit'}
+              </span>
               <span className="text-5xl font-black font-mono text-[#00C2CC]">
                 {formatScore(currentPlan.compositeScore)}
               </span>
@@ -329,39 +353,52 @@ export default function ActionSheetPage() {
           {/* Key Field Success Indicators */}
           <div className="grid grid-cols-4 gap-4 text-center">
             <div className="p-5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-              <span className="text-xs text-[#8A949E] font-bold uppercase block">Baterai Tanah</span>
+              <span className="text-xs text-[#8A949E] font-bold uppercase block">
+                {isEn ? 'Soil Battery' : 'Baterai Tanah'}
+              </span>
               <span className="text-3xl font-extrabold font-mono text-[#F1F3F5] mt-1 block">
                 {initialBattery}% ➔ {finalBattery}%
               </span>
               <span className="text-xs font-bold text-[#00C2CC] mt-1 inline-block">
-                +{deltaBattery}% Pemulihan
+                {deltaBattery >= 0 ? `+${deltaBattery}%` : `${deltaBattery}%`}{' '}
+                {isEn ? 'Recovery' : 'Pemulihan'}
               </span>
             </div>
 
             <div className="p-5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-              <span className="text-xs text-[#8A949E] font-bold uppercase block">Hemat Air</span>
+              <span className="text-xs text-[#8A949E] font-bold uppercase block">
+                {isEn ? 'Water Saved' : 'Hemat Air'}
+              </span>
               <span className="text-3xl font-extrabold font-mono text-[#00C2CC] mt-1 block">
                 {currentPlan.waterSavingsPct}%
               </span>
               <span className="text-xs text-[#8A949E] mt-1 inline-block leading-tight">
-                Estimasi vs baseline
+                {isEn ? 'Est. vs baseline' : 'Estimasi vs baseline'}
               </span>
             </div>
 
             <div className="p-5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-              <span className="text-xs text-[#8A949E] font-bold uppercase block">Pasokan Nitrogen (ΔN)</span>
+              <span className="text-xs text-[#8A949E] font-bold uppercase block">
+                {isEn ? 'Nitrogen Supply (ΔN)' : 'Pasokan Nitrogen (ΔN)'}
+              </span>
               <span className="text-3xl font-extrabold font-mono text-[#00C2CC] mt-1 block">
                 +{currentPlan.netNitrogenDelta}
               </span>
-              <span className="text-xs text-[#8A949E] mt-1 inline-block">kg N / hektar</span>
+              <span className="text-xs text-[#8A949E] mt-1 inline-block">
+                {isEn ? 'kg N / hectare' : 'kg N / hektar'}
+              </span>
             </div>
 
             <div className="p-5 rounded-[4px] bg-[#20242B] border border-[#2C313A]">
-              <span className="text-xs text-[#8A949E] font-bold uppercase block">Indeks Profit</span>
+              <span className="text-xs text-[#8A949E] font-bold uppercase block">
+                {isEn ? 'Profit Index' : 'Indeks Profit'}
+              </span>
               <span className="text-3xl font-extrabold font-mono text-[#00C2CC] mt-1 block">
                 {currentPlan.projectedProfitIndex}
               </span>
-              <span className="text-xs text-[#8A949E] mt-1 inline-block">Skala 0-100</span>
+              <span className="text-xs text-[#8A949E] mt-1 inline-block">
+                {isEn ? 'Scale 0-100' : 'Skala 0-100'}
+              </span>
             </div>
           </div>
 
@@ -369,12 +406,16 @@ export default function ActionSheetPage() {
           <div className="flex flex-col gap-3">
             <h3 className="text-lg font-bold text-[#F1F3F5] tracking-tight flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-[#00C2CC]" />
-              <span>Rencana Pergiliran Tanaman 4 Musim Berkelanjutan</span>
+              <span>
+                {isEn
+                  ? 'Sustainable 4-Season Crop Rotation Plan'
+                  : 'Rencana Pergiliran Tanaman 4 Musim Berkelanjutan'}
+              </span>
             </h3>
 
             <div className="grid grid-cols-4 gap-4">
               {currentPlan.seasons.map((season) => {
-                const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange);
+                const sInfo = getStructuredSeason(season.seasonIndex, season.seasonName, season.monthRange, locale);
                 const iconEmoji = getCropEmoji(season.crop.icon);
 
                 return (
@@ -389,23 +430,26 @@ export default function ActionSheetPage() {
 
                     <div>
                       <span className="text-3xl mb-1 block">{iconEmoji}</span>
-                      <h4 className="text-lg font-bold text-[#F1F3F5] leading-tight">{season.crop.name}</h4>
+                      <h4 className="text-lg font-bold text-[#F1F3F5] leading-tight">
+                        {localizeCropName(season.crop, locale)}
+                      </h4>
                       <p className="text-xs text-[#8A949E] mt-1 font-medium">
-                        Varietas: {season.crop.recommended_variety || 'Unggul Lokal'}
+                        {isEn ? 'Cultivar:' : 'Varietas:'}{' '}
+                        {season.crop.recommended_variety || (isEn ? 'Phenotype Archetype' : 'Unggul Lokal')}
                       </p>
                     </div>
 
                     <div className="p-3 rounded-[3px] bg-[#16191E] border border-[#2C313A] text-xs flex flex-col gap-1">
                       <div className="flex justify-between">
-                        <span className="text-[#8A949E]">Kebutuhan Air:</span>
+                        <span className="text-[#8A949E]">{isEn ? 'Water Demand:' : 'Kebutuhan Air:'}</span>
                         <span className="font-mono font-bold text-[#F1F3F5]">{formatMm(season.waterDemand_mm)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#8A949E]">Defisit Air:</span>
+                        <span className="text-[#8A949E]">{isEn ? 'Water Deficit:' : 'Defisit Air:'}</span>
                         <span className="font-mono font-bold text-[#8A949E]">{formatMm(season.waterDeficit_mm)}</span>
                       </div>
                       <div className="flex justify-between font-bold text-[#00C2CC] pt-1 border-t border-[#2C313A]">
-                        <span>Efek Baterai:</span>
+                        <span>{isEn ? 'Battery Delta:' : 'Efek Baterai:'}</span>
                         <span>{season.batteryDelta_pct >= 0 ? `+${season.batteryDelta_pct}%` : `${season.batteryDelta_pct}%`}</span>
                       </div>
                     </div>
@@ -420,7 +464,15 @@ export default function ActionSheetPage() {
             <div className="flex items-center gap-3">
               <Satellite className="w-5 h-5 text-[#00C2CC] shrink-0" />
               <p className="max-w-3xl leading-relaxed">
-                <strong>Pernyataan Ilmiah:</strong> Dihitung dengan algoritma optimasi TerraShaft berbasis asimilasi data NASA POWER dan profil tanah ISRIC SoilGrids. Skor Baterai Tanah adalah indikator <em>screening model</em>; rekomendasi wajib divalidasi bersama Penyuluh Pertanian Lapangan (PPL).
+                {isEn ? (
+                  <>
+                    <strong>Scientific Disclaimer:</strong> Computed by TerraShaft optimization engine assimilating NASA POWER telemetry and ISRIC SoilGrids profiles. Soil Battery Score is a <em>screening model</em> indicator; validate all recommendations with local agricultural extension officers.
+                  </>
+                ) : (
+                  <>
+                    <strong>Pernyataan Ilmiah:</strong> Dihitung dengan algoritma optimasi TerraShaft berbasis asimilasi data NASA POWER dan profil tanah ISRIC SoilGrids. Skor Baterai Tanah adalah indikator <em>screening model</em>; rekomendasi wajib divalidasi bersama Penyuluh Pertanian Lapangan (PPL).
+                  </>
+                )}
               </p>
             </div>
             <span className="font-mono font-bold text-[#F1F3F5] text-sm shrink-0">
