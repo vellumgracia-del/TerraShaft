@@ -70,6 +70,7 @@ export default function HomePage() {
     elevation_m,
     climateData,
     soilData,
+    vegetationData,
     crops,
     plans,
     selectedPathway,
@@ -354,15 +355,15 @@ export default function HomePage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00C2CC] animate-pulse" />
               <span className="text-[#C1C7CD] font-medium">Sensors:</span>
-              <span className="text-[#F1F3F5]">NASA SMAP L4</span>
+              <span className="text-[#F1F3F5]">NASA POWER (ET0 · SMAP · PRECTOT)</span>
               <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">GPM IMERG</span>
+              <span className="text-[#F1F3F5]">
+                {vegetationData
+                  ? `${vegetationData.primarySensor} NDVI ${vegetationData.compositeNdvi.toFixed(2)}`
+                  : 'Sentinel-2 · Landsat · MODIS'}
+              </span>
               <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">POWER ET0</span>
-              <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">Sentinel-2 (10m)</span>
-              <span className="text-[#3E4552]">·</span>
-              <span className="text-[#F1F3F5]">SRTM DEM ({elevation_m}m)</span>
+              <span className="text-[#F1F3F5]">DEM ({elevation_m}m)</span>
             </div>
             <Link href="/data-sources" className="text-[#00C2CC] hover:underline flex items-center gap-1 font-sans text-[11px]">
               <span>13 Datasets</span>

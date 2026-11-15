@@ -291,7 +291,7 @@ export default function LandingPage() {
                   NASA Earth Telemetry
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Direct assimilation of SMAP L4 (root-zone soil moisture), GPM IMERG (daily precipitation), CERES (solar irradiance), and MERRA-2.
+                  Live NASA POWER agroclimatology (SMAP L4 GWETROOT, GPM-derived precipitation, CERES irradiance) paired with Sentinel-2, Landsat &amp; MODIS NDVI via Planetary Computer.
                 </p>
               </div>
             </div>

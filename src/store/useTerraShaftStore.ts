@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { Crop, SoilData, Priorities, RotationPlan } from '@/types/agronomy';
 import { ClimateData, LocationCoordinates } from '@/types/climate';
+import { VegetationData } from '@/types/vegetation';
 import initialCrops from '@/data/crops_library.json';
 import { generateOptimizationPlans } from '@/lib/optimizationEngine';
 import { resolveTerraShaftProvenance, TerraShaftProvenance } from '@/types/provenance';
@@ -17,6 +18,7 @@ interface TerraShaftState {
   // Data Biofisik Satelit & Tanah
   soilData: SoilData | null;
   climateData: ClimateData | null;
+  vegetationData: VegetationData | null;
   isLoadingBioData: boolean;
   loadingSources: {
     nasaPower: boolean;
@@ -74,6 +76,7 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
   isFieldMode: true,
   soilData: null,
   climateData: null,
+  vegetationData: null,
   isLoadingBioData: false,
   loadingSources: {
     nasaPower: false,
@@ -274,15 +277,46 @@ export const useTerraShaftStore = create<TerraShaftState>((set, get) => ({
       }
     };
 
-    await Promise.allSettled([fetchNasa(), fetchSoil()]);
+    const fetchVegetation = async () => {
+      try {
+        const res = await fetch(`/api/vegetation-indices?lat=${lat}&lon=${lon}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: VegetationData = await res.json();
+        if (get().activeRequestId !== nextReqId) return null;
+        set(state => ({
+          vegetationData: data,
+          provenance: resolveTerraShaftProvenance(
+            state.climateData,
+            state.soilData,
+            state.isLoadingBioData,
+            null,
+            state.loadingSources,
+            data
+          )
+        }));
+        return data;
+      } catch (err) {
+        console.warn('Vegetation indices fetch failed, skipping live NDVI:', err);
+        return null;
+      }
+    };
+
+    await Promise.allSettled([fetchNasa(), fetchSoil(), fetchVegetation()]);
 
     if (get().activeRequestId === nextReqId) {
-      set({
+      set(state => ({
         isLoadingBioData: false,
         loadingSources: { nasaPower: false, soilGrids: false },
         satelliteSyncTime: new Date().toISOString(),
-        provenance: resolveTerraShaftProvenance(get().climateData, get().soilData, false, null)
-      });
+        provenance: resolveTerraShaftProvenance(
+          state.climateData,
+          state.soilData,
+          false,
+          null,
+          { nasaPower: false, soilGrids: false },
+          state.vegetationData
+        )
+      }));
       get().recalculate();
     }
   },

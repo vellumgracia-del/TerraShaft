@@ -33,7 +33,7 @@ export interface ChallengeDataset {
   description: string;
   adaptationValue: string;
   terraShaftRole: string;
-  statusBadge: 'Active API' | 'Integrated Bio-Model' | 'RAG Knowledge Base' | 'Calibrated Reference';
+  statusBadge: 'Active API' | 'Indirect API' | 'Integrated Bio-Model' | 'RAG Knowledge Base' | 'Calibrated Reference';
   officialUrl: string;
 }
 
@@ -71,12 +71,12 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     geographicScopeNote: 'Global & Indonesia: Estimasi kelembapan zona perakaran 0–100 cm berbasis asimilasi model L4 NASA.',
     isCoreBaseline: true,
     resolution: '9 km / 36 km (L4 root-zone model)',
-    frequency: '2–3 hari (Live parameter GWETROOT via NASA POWER API)',
+    frequency: '2–3 hari (Indirect via NASA POWER GWETROOT)',
     variables: ['Surface Soil Moisture (0-5 cm)', 'Root-Zone Soil Wetness (0-100 cm)', 'Freeze/Thaw State'],
     description: 'Menyediakan estimasi global kelembapan tanah zona perakaran tanaman melalui asimilasi data observasi satelit NASA dan model transfer daratan.',
     adaptationValue: 'Mengidentifikasi cekaman kekeringan dini sebelum daun layu, ketersediaan air perakaran, potensi infiltrasi, dan evaluasi tanaman rotasi hemat air.',
-    terraShaftRole: 'Indikator kelembapan zona perakaran pada Baterai Tanah dan ambang batas peringatan dini defisit air di sistem optimasi 4 musim.',
-    statusBadge: 'Active API',
+    terraShaftRole: 'Indikator kelembapan zona perakaran pada Baterai Tanah dan ambang batas peringatan dini defisit air (diambil via parameter GWETROOT NASA POWER).',
+    statusBadge: 'Indirect API',
     officialUrl: 'https://smap.jpl.nasa.gov/'
   },
   {
@@ -111,12 +111,12 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     geographicScopeNote: 'Global & Indonesia: Akumulasi hujan dan deteksi presipitasi ekstrem resolusi 0.1° (~10 km).',
     isCoreBaseline: true,
     resolution: '0.1° (~10 km)',
-    frequency: 'Harian / Akumulasi Bulanan (Terintegrasi via PRECTOTCORR)',
+    frequency: 'Harian / Akumulasi Bulanan (Indirect via NASA POWER PRECTOTCORR)',
     variables: ['Precipitation Rate (mm/jam)', 'Accumulated Rainfall (mm)', 'Storm Frequency'],
     description: 'Konstelasi satelit internasional untuk estimasi laju dan akumulasi presipitasi global resolusi tinggi.',
     adaptationValue: 'Menilai keandalan curah hujan, frekuensi badai ekstrem pemicu erosi tanah, dan tren jangka panjang masukan lengas tanah.',
-    terraShaftRole: 'Perhitungan water budget input (P) pada modul Neraca Air dan analisis risiko erosi pada periode peralihan musim.',
-    statusBadge: 'Active API',
+    terraShaftRole: 'Perhitungan water budget input (P) pada modul Neraca Air dan analisis risiko erosi (diambil via parameter PRECTOTCORR NASA POWER).',
+    statusBadge: 'Indirect API',
     officialUrl: 'https://gpm.nasa.gov/data/imerg'
   },
   {
@@ -131,12 +131,12 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     geographicScopeNote: 'Global & Indonesia: Topografi 30m global untuk analisis lereng, limpasan, dan risiko erosi.',
     isCoreBaseline: true,
     resolution: '1 arc-second (~30 meter)',
-    frequency: 'Model Topografi Global Terstandarisasi',
+    frequency: 'On-Demand (Indirect via Open-Meteo Elevation DEM API)',
     variables: ['Elevation (m)', 'Slope Gradient (%)', 'Aspect', 'Flow Accumulation'],
     description: 'Model elevasi digital global berbasis radar interferometrik untuk analisis geomorfologi dan topografi permukaan bumi.',
     adaptationValue: 'Menganalisis kemiringan lereng, aliran limpasan permukaan (runoff), risiko erosi, dan penataan stabilisasi tanah miring.',
-    terraShaftRole: 'Koreksi topografi elevasi pada AOI, estimasi limpasan curah hujan, dan rekomendasi tanaman lereng (vetiver/orok-orok).',
-    statusBadge: 'Integrated Bio-Model',
+    terraShaftRole: 'Koreksi topografi elevasi pada AOI dan rekomendasi tanaman lereng (diambil melalui proxy Open-Meteo Elevation API).',
+    statusBadge: 'Indirect API',
     officialUrl: 'https://www.earthdata.nasa.gov/sensors/srtm'
   },
   {
@@ -151,12 +151,12 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     geographicScopeNote: 'Global & Indonesia: Landsat 30m untuk detail spasial, MODIS/VIIRS untuk dinamika temporal harian.',
     isCoreBaseline: true,
     resolution: '30m (Landsat) · 250m–1km (MODIS/VIIRS)',
-    frequency: 'Harian (MODIS) / 8–16 hari (Landsat)',
+    frequency: '16-Day MODIS / 8–16 Day Landsat (Active STAC & TiTiler API)',
     variables: ['Surface Reflectance', 'NDVI (Normalized Difference Veg Index)', 'EVI', 'Bare Ground Windows'],
     description: 'Reflektansi permukaan terkoreksi atmosfer dan indeks vegetasi untuk memantau biomassa dan kesehatan kanopi.',
     adaptationValue: 'Memetakan vigor tanaman, mendeteksi transisi musiman, mengidentifikasi lahan bera tanpa tutupan, dan membandingkan opsi rotasi visual.',
-    terraShaftRole: 'Visualisasi vegetasi GIS Explorer, deteksi fase bera pada petak lahan, dan kalibrasi koefisien tanaman (Kc).',
-    statusBadge: 'Integrated Bio-Model',
+    terraShaftRole: 'Telemetri live NDVI/EVI per koordinat via Microsoft Planetary Computer STAC & TiTiler (landsat-c2-l2 dan modis-13Q1-061).',
+    statusBadge: 'Active API',
     officialUrl: 'https://landsat.gsfc.nasa.gov/'
   },
   {
@@ -171,12 +171,12 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     geographicScopeNote: 'Global & Indonesia: Citra optik 10m bebas akses untuk delineasi petak mikro dan analisis klorofil.',
     isCoreBaseline: true,
     resolution: '10m / 20m / 60m',
-    frequency: '5 hari (Konstelasi 2A/2B)',
+    frequency: '5 hari (Active STAC & TiTiler API via Planetary Computer)',
     variables: ['13 Spectral Bands', 'Red-Edge Chlorophyll Bands', 'SWIR Moisture Bands', 'NDWI'],
     description: 'Citra optik multispektral bebas akses beresolusi spasial tinggi dengan pita khusus analisis status vegetasi dan lengas daun.',
     adaptationValue: 'Memetakan indeks klorofil kanopi, deteksi dini klorosis hara, batas kepemilikan petak mikro petani, dan monitoring lahan bera.',
-    terraShaftRole: 'Penyedia resolusi tinggi pendamping Landsat untuk delineasi batas AOI dan analisis petak beresolusi 10 meter.',
-    statusBadge: 'Integrated Bio-Model',
+    terraShaftRole: 'Telemetri live NDVI 10m (B04/B08) per koordinat via Microsoft Planetary Computer STAC & TiTiler (sentinel-2-l2a).',
+    statusBadge: 'Active API',
     officialUrl: 'https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2'
   },
   {
@@ -403,6 +403,11 @@ export default function NasaChallengeResources() {
           label: 'ACTIVE API',
           style: 'bg-[#122822] text-[#2DD4BF] border-[#2DD4BF]/40 font-semibold'
         };
+      case 'Indirect API':
+        return {
+          label: 'INDIRECT PROXY API',
+          style: 'bg-[#1A2630] text-[#00C2CC] border-[#00C2CC]/40 font-semibold'
+        };
       case 'Integrated Bio-Model':
         return {
           label: 'INTEGRATED BIO-MODEL',
@@ -543,7 +548,7 @@ export default function NasaChallengeResources() {
               1. Global Core (Universal & Aktif)
             </span>
             <p className="text-[#8A949E]">
-              Selalu aktif di semua lokasi dunia termasuk Indonesia: NASA POWER, SMAP L4, ISRIC SoilGrids, GPM IMERG, Landsat & MODIS/VIIRS, Sentinel-2, SRTM DEM, dan GLDAS/ERA5.
+              Direct API: NASA POWER, ISRIC SoilGrids, Sentinel-2, Landsat & MODIS/VIIRS (Planetary Computer). Indirect proxy: SMAP L4 & GPM IMERG (via POWER), SRTM DEM (via Open-Meteo). Referensi kalibrasi: GLDAS/ERA5.
             </p>
           </div>
           <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">

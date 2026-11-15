@@ -5,6 +5,7 @@
 
 import { ClimateData } from './climate';
 import { SoilData } from './agronomy';
+import { VegetationData } from './vegetation';
 
 export type DataMode =
   | 'demo'
@@ -37,6 +38,7 @@ export interface TerraShaftProvenance {
   nasaGpm?: DataProvenance;
   nasaSmap?: DataProvenance;
   isricSoilGrids: DataProvenance;
+  vegetationTelemetry?: DataProvenance;
   overallMode: DataMode;
   headerBadge: {
     label: string;
@@ -57,7 +59,8 @@ export function resolveTerraShaftProvenance(
   soil: SoilData | null,
   isLoading = false,
   errorMsg: string | null = null,
-  loadingSources?: { nasaPower?: boolean; soilGrids?: boolean }
+  loadingSources?: { nasaPower?: boolean; soilGrids?: boolean },
+  vegetation?: VegetationData | null
 ): TerraShaftProvenance {
   const isNasaLoading = isLoading && (loadingSources ? loadingSources.nasaPower !== false : true);
   const isSoilLoading = isLoading && (loadingSources ? loadingSources.soilGrids !== false : true);
@@ -287,9 +290,28 @@ export function resolveTerraShaftProvenance(
     disclosureText = `Data telemetri ${cachedSources} disajikan dari memori cache lokal untuk respons cepat.`;
   }
 
+  const vegetationTelemetry: DataProvenance | undefined = vegetation
+    ? {
+        mode:
+          vegetation.source === 'PLANETARY_COMPUTER_LIVE'
+            ? vegetation.cached
+              ? 'cached'
+              : 'live'
+            : 'fallback',
+        provider: 'Microsoft Planetary Computer STAC & TiTiler',
+        dataset: 'Sentinel-2 L2A · Landsat C2 L2 · MODIS 13Q1',
+        fetchedAt: vegetation.fetchedAt,
+        isOfficialObservation: vegetation.source === 'PLANETARY_COMPUTER_LIVE',
+        isSimulated: false,
+        isFallback: vegetation.source === 'FALLBACK_VEGETATION',
+        isCached: Boolean(vegetation.cached)
+      }
+    : undefined;
+
   return {
     nasaPower,
     isricSoilGrids,
+    vegetationTelemetry,
     overallMode,
     headerBadge,
     disclosureText
