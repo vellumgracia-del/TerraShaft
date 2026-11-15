@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { useAppI18n } from '@/lib/i18n';
+import { getApiKeyStatus, loadApiKey } from '@/lib/keyVault';
 import { AGRONOMY_KNOWLEDGE_BASE } from '@/data/agronomyKnowledgeBase';
 import {
   Send,
@@ -183,8 +184,8 @@ export default function AdvisoryChatSection() {
 
   useEffect(() => {
     try {
-      const savedKey = localStorage.getItem('terrashaft_gemini_key');
-      setHasCustomKey(Boolean(savedKey && savedKey.trim().length > 0));
+      const keyStatus = getApiKeyStatus();
+      setHasCustomKey(keyStatus.hasKey);
 
       const rawChat = sessionStorage.getItem(CHAT_STORAGE_KEY);
       if (rawChat) {
@@ -257,12 +258,7 @@ export default function AdvisoryChatSection() {
     setIsLoading(true);
 
     try {
-      let customKey: string | null = null;
-      try {
-        customKey = localStorage.getItem('terrashaft_gemini_key');
-      } catch {
-        // ignore
-      }
+      const customKey = await loadApiKey();
 
       const response = await fetch('/api/ai/advisor', {
         method: 'POST',

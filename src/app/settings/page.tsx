@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
 import { useAppI18n } from '@/lib/i18n';
+import { saveApiKey, getApiKeyStatus, clearApiKey, StoredKeyStatus } from '@/lib/keyVault';
 import {
   User,
   Sliders,
@@ -72,9 +73,13 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Gemini API Key state
+  // AI API Key state (never re-populate saved plaintext key into input)
   const [geminiKey, setGeminiKey] = useState('');
-  const [showKey, setShowKey] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<StoredKeyStatus>({
+    hasKey: false,
+    provider: 'unknown',
+    maskedHint: ''
+  });
 
   // Password state
   const [currPassword, setCurrPassword] = useState('');
@@ -87,8 +92,7 @@ export default function SettingsPage() {
       try {
         const saved = localStorage.getItem('terrashaft_user_profile');
         if (saved) setProfile(JSON.parse(saved));
-        const savedKey = localStorage.getItem('terrashaft_gemini_key');
-        if (savedKey) setGeminiKey(savedKey);
+        setKeyStatus(getApiKeyStatus());
       } catch {
         // ignore
       }
@@ -111,13 +115,30 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveApiKey = () => {
+  const handleSaveApiKey = async () => {
     try {
-      localStorage.setItem('terrashaft_gemini_key', geminiKey.trim());
-      triggerToast('Kunci Gemini API berhasil diperbarui.');
+      const nextStatus = await saveApiKey(geminiKey);
+      setKeyStatus(nextStatus);
+      setGeminiKey('');
+      triggerToast(
+        nextStatus.hasKey
+          ? isEn
+            ? 'AI API key encrypted and saved.'
+            : 'Kunci AI API berhasil dienkripsi dan disimpan.'
+          : isEn
+          ? 'API key cleared.'
+          : 'Kunci AI API dihapus.'
+      );
     } catch {
-      triggerToast('Gagal menyimpan kunci API.');
+      triggerToast(isEn ? 'Failed to save API key.' : 'Gagal menyimpan kunci API.');
     }
+  };
+
+  const handleClearApiKey = () => {
+    clearApiKey();
+    setKeyStatus({ hasKey: false, provider: 'unknown', maskedHint: '' });
+    setGeminiKey('');
+    triggerToast(isEn ? 'Stored API key removed.' : 'Kunci AI API yang tersimpan telah dihapus.');
   };
 
   const handleClearCache = () => {
@@ -555,38 +576,56 @@ export default function SettingsPage() {
                       Opsional. Mendukung kunci DeepSeek (sk-...) atau Google Gemini (AIzaSy...) agar Field Advisor AI dapat menjawab konsultasi bebas berbasis RAG.
                     </p>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC]">
-                    {geminiKey
-                      ? geminiKey.trim().startsWith('sk-')
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] shrink-0">
+                    {keyStatus.hasKey
+                      ? keyStatus.provider === 'deepseek'
                         ? 'DEEPSEEK TERPASANG'
                         : 'GEMINI TERPASANG'
                       : 'SERVER / DETERMINISTIK'}
                   </span>
                 </div>
 
+                {keyStatus.hasKey && (
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[4px] bg-[#16191E] border border-[#242831] text-[11px]">
+                    <span className="font-mono text-[#C1C7CD]">
+                      {isEn ? 'Stored key:' : 'Kunci tersimpan:'}{' '}
+                      <span className="text-[#00C2CC]">{keyStatus.maskedHint}</span>{' '}
+                      <span className="text-[#8A949E]">(AES-GCM)</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearApiKey}
+                      className="text-[#F87171] hover:underline font-medium cursor-pointer shrink-0"
+                    >
+                      {isEn ? 'Remove' : 'Hapus'}
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <input
-                      type={showKey ? 'text' : 'password'}
+                      type="password"
                       value={geminiKey}
+                      autoComplete="off"
                       onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder="Masukkan sk-... (DeepSeek) atau AIzaSy... (Gemini)"
-                      className="w-full bg-[#16191E] border border-[#282C34] focus:border-[#00C2CC] rounded-[4px] px-3 py-2 pr-9 text-xs text-[#F1F3F5] outline-none font-mono"
+                      placeholder={
+                        keyStatus.hasKey
+                          ? isEn
+                            ? 'Enter a new key to replace...'
+                            : 'Masukkan API key baru untuk mengganti...'
+                          : 'Masukkan sk-... (DeepSeek) atau AIzaSy... (Gemini)'
+                      }
+                      className="w-full bg-[#16191E] border border-[#282C34] focus:border-[#00C2CC] rounded-[4px] px-3 py-2 text-xs text-[#F1F3F5] outline-none font-mono"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowKey(!showKey)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8A949E] hover:text-[#F1F3F5]"
-                    >
-                      {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
                   </div>
                   <button
                     type="button"
                     onClick={handleSaveApiKey}
-                    className="px-3.5 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-xs font-semibold rounded-[4px] transition-colors"
+                    disabled={!geminiKey.trim()}
+                    className="px-3.5 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] disabled:opacity-50 text-[#121417] text-xs font-semibold rounded-[4px] transition-colors cursor-pointer"
                   >
-                    Simpan
+                    {isEn ? 'Save' : 'Simpan'}
                   </button>
                 </div>
               </div>
