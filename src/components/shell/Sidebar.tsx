@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAppI18n } from '@/lib/i18n';
 import {
   LayoutGrid,
   Search,
@@ -111,6 +112,19 @@ export default function Sidebar({
   onToggleCollapse
 }: SidebarProps) {
   const pathname = usePathname();
+  const { t, locale } = useAppI18n();
+
+  const labelMap: Record<string, string> = {
+    overview: t('nav.overview'),
+    'field-map': t('overview.mapTitle').split('&')[0].trim(),
+    'data-sources': t('nav.nasaData'),
+    'crop-library': t('nav.cropLibrary'),
+    'rotation-planner': t('nav.rotation'),
+    'soil-battery': t('nav.soilBattery'),
+    'water-balance': t('nav.waterBalance'),
+    'field-advisor': t('nav.advisor'),
+    'action-sheet': t('nav.actionSheet')
+  };
 
   const rootItems = NAV_ITEMS.filter((i) => i.group === 'root');
   const addDataItems = NAV_ITEMS.filter((i) => i.group === 'add_data');
@@ -119,13 +133,14 @@ export default function Sidebar({
   const renderNavItem = (item: (typeof NAV_ITEMS)[number]) => {
     const Icon = item.icon;
     const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+    const localizedLabel = labelMap[item.id] || item.label;
 
     return (
       <Link
         key={item.id}
         href={item.href}
         onClick={onNavigate}
-        title={collapsed ? item.label : undefined}
+        title={collapsed ? localizedLabel : undefined}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-[4px] text-[13px] transition-colors ${
           isActive
             ? 'bg-[#163A40] text-[#F1F3F5] font-medium'
@@ -137,7 +152,7 @@ export default function Sidebar({
             isActive ? 'text-[#00C2CC]' : 'text-[#9BA3AE]'
           }`}
         />
-        {!collapsed && <span className="truncate">{item.label}</span>}
+        {!collapsed && <span className="truncate">{localizedLabel}</span>}
       </Link>
     );
   };
@@ -154,8 +169,8 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            aria-label={collapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'}
-            title={collapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'}
+            aria-label={collapsed ? (locale === 'en' ? 'Expand Sidebar' : 'Perluas Sidebar') : (locale === 'en' ? 'Collapse Sidebar' : 'Ciutkan Sidebar')}
+            title={collapsed ? (locale === 'en' ? 'Expand Sidebar' : 'Perluas Sidebar') : (locale === 'en' ? 'Collapse Sidebar' : 'Ciutkan Sidebar')}
             className={`group inline-flex items-center justify-center transition-colors cursor-pointer outline-none focus:outline-none focus:ring-0 ring-0 focus-visible:ring-0 ${
               collapsed
                 ? 'w-9 h-7 rounded-[3px] bg-[#20252D] hover:bg-[#2A303A] text-[#9BA3AE] hover:text-white border border-[#282C34]'
@@ -215,7 +230,7 @@ export default function Sidebar({
         <div className="flex flex-col gap-1">
           {!collapsed && (
             <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#8A949E] px-3 mb-1">
-              ADD DATA
+              {t('nav.resourcesSection')}
             </div>
           )}
           <nav className="flex flex-col gap-0.5">
@@ -227,7 +242,7 @@ export default function Sidebar({
         <div className="flex flex-col gap-1">
           {!collapsed && (
             <div className="text-[10.5px] font-semibold uppercase tracking-[0.07em] text-[#8A949E] px-3 mb-1">
-              VIEW DATA DELIVERY
+              {t('nav.mainSection')}
             </div>
           )}
           <nav className="flex flex-col gap-0.5">

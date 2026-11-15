@@ -81,14 +81,20 @@ export function formatScore(score: number | undefined | null): string {
  * Deficit 41-100mm = Defisit sedang (butuh irigasi hemat / mulsa)
  * Deficit >100mm = Defisit kritis (ambang stres kekeringan berat)
  */
-export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
+export function getWaterStatusDetails(
+  deficitMm: number,
+  locale: 'en' | 'id' = 'id'
+): WaterStatusInfo {
+  const isEn = locale === 'en';
   if (deficitMm <= 0.05) {
     const s = 'Tidak ada defisit' as const;
     return {
       status: s,
-      label: s,
-      description: 'Presipitasi mencukupi kebutuhan air tanaman',
-      subLabel: 'Tidak ada defisit air',
+      label: isEn ? 'No deficit' : s,
+      description: isEn
+        ? 'Precipitation meets crop water demand'
+        : 'Presipitasi mencukupi kebutuhan air tanaman',
+      subLabel: isEn ? 'No water deficit' : 'Tidak ada defisit air',
       isCritical: false,
       colorClass: 'text-[#00C2CC]',
       badgeClass: 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
@@ -98,9 +104,11 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
     const s = 'Defisit ringan' as const;
     return {
       status: s,
-      label: s,
-      description: `Defisit ${formatMm(deficitMm)} masih dalam batas cadangan air tanah`,
-      subLabel: `Defisit ringan · ${formatMm(deficitMm)}`,
+      label: isEn ? 'Mild deficit' : s,
+      description: isEn
+        ? `${formatMm(deficitMm)} deficit buffered by soil AWC`
+        : `Defisit ${formatMm(deficitMm)} masih dalam batas cadangan air tanah`,
+      subLabel: isEn ? `Mild deficit · ${formatMm(deficitMm)}` : `Defisit ringan · ${formatMm(deficitMm)}`,
       isCritical: false,
       colorClass: 'text-[#00C2CC]',
       badgeClass: 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40'
@@ -110,9 +118,13 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
     const s = 'Defisit sedang' as const;
     return {
       status: s,
-      label: s,
-      description: `Defisit ${formatMm(deficitMm)} mendekati ambang toleransi tanaman`,
-      subLabel: `Defisit sedang · ${formatMm(deficitMm)}`,
+      label: isEn ? 'Moderate deficit' : s,
+      description: isEn
+        ? `${formatMm(deficitMm)} deficit approaching crop tolerance threshold`
+        : `Defisit ${formatMm(deficitMm)} mendekati ambang toleransi tanaman`,
+      subLabel: isEn
+        ? `Moderate deficit · ${formatMm(deficitMm)}`
+        : `Defisit sedang · ${formatMm(deficitMm)}`,
       isCritical: false,
       colorClass: 'text-[#C1C7CD]',
       badgeClass: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
@@ -121,9 +133,11 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
   const s = 'Defisit kritis' as const;
   return {
     status: s,
-    label: s,
-    description: `Defisit ${formatMm(deficitMm)} melampaui ambang kritis 100 mm`,
-    subLabel: `Defisit kritis · ${formatMm(deficitMm)}`,
+    label: isEn ? 'Critical deficit' : s,
+    description: isEn
+      ? `${formatMm(deficitMm)} deficit exceeds 100 mm critical stress threshold`
+      : `Defisit ${formatMm(deficitMm)} melampaui ambang kritis 100 mm`,
+    subLabel: isEn ? `Critical deficit · ${formatMm(deficitMm)}` : `Defisit kritis · ${formatMm(deficitMm)}`,
     isCritical: true,
     colorClass: 'text-[#F87171]',
     badgeClass: 'bg-[#2D1B1E] text-[#F87171] border-[#7F1D1D]/40'
@@ -133,45 +147,68 @@ export function getWaterStatusDetails(deficitMm: number): WaterStatusInfo {
 export function getStructuredSeason(
   seasonIndex: number,
   rawName?: string,
-  rawRange?: string
+  rawRange?: string,
+  locale: 'en' | 'id' = 'id'
 ): StructuredSeasonInfo {
+  const isEn = locale === 'en';
   switch (seasonIndex) {
-    case 1:
+    case 1: {
+      const range = rawRange || 'Nov – Feb';
+      const defaultName = isEn ? 'Primary Wet Season' : 'Hujan Utama (Rendeng)';
       return {
         seasonIndex: 1,
         seasonNumber: 1,
-        seasonLabel: 'Musim 1',
-        seasonName: rawName || 'Hujan Utama (Rendeng)',
-        monthRange: rawRange || 'Nov – Feb',
-        formalPeriod: 'Musim 1: Nov – Feb (Rendeng)'
+        seasonLabel: isEn ? 'Season 1' : 'Musim 1',
+        seasonName: isEn ? translateSeasonNameEn(rawName) || defaultName : rawName || defaultName,
+        monthRange: range,
+        formalPeriod: isEn ? `Season 1: ${range}` : `Musim 1: ${range} (Rendeng)`
       };
-    case 2:
+    }
+    case 2: {
+      const range = rawRange || (isEn ? 'Mar – May' : 'Mar – Mei');
+      const defaultName = isEn ? 'Early Transition' : 'Peralihan Awal (Gadu 1)';
       return {
         seasonIndex: 2,
         seasonNumber: 2,
-        seasonLabel: 'Musim 2',
-        seasonName: rawName || 'Peralihan Awal (Gadu 1)',
-        monthRange: rawRange || 'Mar – Mei',
-        formalPeriod: 'Musim 2: Mar – Mei (Gadu 1)'
+        seasonLabel: isEn ? 'Season 2' : 'Musim 2',
+        seasonName: isEn ? translateSeasonNameEn(rawName) || defaultName : rawName || defaultName,
+        monthRange: range,
+        formalPeriod: isEn ? `Season 2: ${range}` : `Musim 2: ${range} (Gadu 1)`
       };
-    case 3:
+    }
+    case 3: {
+      const range = rawRange || (isEn ? 'Jun – Aug' : 'Jun – Agu');
+      const defaultName = isEn ? 'Early Dry Season' : 'Kemarau Awal (Gadu 2)';
       return {
         seasonIndex: 3,
         seasonNumber: 3,
-        seasonLabel: 'Musim 3',
-        seasonName: rawName || 'Kemarau Awal (Gadu 2)',
-        monthRange: rawRange || 'Jun – Agu',
-        formalPeriod: 'Musim 3: Jun – Agu (Kemarau Awal)'
+        seasonLabel: isEn ? 'Season 3' : 'Musim 3',
+        seasonName: isEn ? translateSeasonNameEn(rawName) || defaultName : rawName || defaultName,
+        monthRange: range,
+        formalPeriod: isEn ? `Season 3: ${range}` : `Musim 3: ${range} (Kemarau Awal)`
       };
+    }
     case 4:
-    default:
+    default: {
+      const range = rawRange || (isEn ? 'Sep – Oct' : 'Sep – Okt');
+      const defaultName = isEn ? 'Peak Dry / Cover Window' : 'Puncak Kemarau (Bera / Cover Crop)';
       return {
         seasonIndex: 4,
         seasonNumber: 4,
-        seasonLabel: 'Musim 4',
-        seasonName: rawName || 'Puncak Kemarau (Bera / Cover Crop)',
-        monthRange: rawRange || 'Sep – Okt',
-        formalPeriod: 'Musim 4: Sep – Okt (Puncak Kemarau)'
+        seasonLabel: isEn ? 'Season 4' : 'Musim 4',
+        seasonName: isEn ? translateSeasonNameEn(rawName) || defaultName : rawName || defaultName,
+        monthRange: range,
+        formalPeriod: isEn ? `Season 4: ${range}` : `Musim 4: ${range} (Puncak Kemarau)`
       };
+    }
   }
+}
+
+function translateSeasonNameEn(rawName?: string): string | undefined {
+  if (!rawName) return undefined;
+  if (rawName.includes('Hujan Utama')) return 'Primary Wet Season';
+  if (rawName.includes('Peralihan Awal')) return 'Early Transition';
+  if (rawName.includes('Kemarau Awal')) return 'Early Dry Season';
+  if (rawName.includes('Puncak Kemarau')) return 'Peak Dry / Cover Window';
+  return rawName;
 }

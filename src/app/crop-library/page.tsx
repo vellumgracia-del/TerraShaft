@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n, localizeCropName } from '@/lib/i18n';
+import AgroecologicalProfileCard from '@/components/overview/AgroecologicalProfileCard';
 import { Crop, CropCategory, DroughtTolerance } from '@/types/agronomy';
 import { Database, Plus, Check, Sparkles, Trash2 } from 'lucide-react';
 import { getCropEmoji, formatMm } from '@/lib/formatters';
 
 export default function CropLibraryPage() {
   const { crops, addCustomCrop, removeCustomCrop } = useTerraShaftStore();
+  const { t, locale, isEn } = useAppI18n();
   const [isAddingNew, setIsAddingNew] = useState(false);
 
   const [name, setName] = useState('');
@@ -68,10 +71,10 @@ export default function CropLibraryPage() {
           </div>
           <div>
             <h2 className="text-base font-medium text-[#F1F3F5] leading-tight">
-              Pustaka Komoditas Tanaman
+              {t('crops.title')}
             </h2>
             <p className="text-xs text-[#8A949E]">
-              Basis data agronomi ({crops.length} komoditas) untuk optimasi rotasi adaptif iklim
+              {t('crops.subtitle')}
             </p>
           </div>
         </div>
@@ -83,10 +86,13 @@ export default function CropLibraryPage() {
             className="px-3.5 py-2 rounded-[3px] bg-[#009DA5] hover:bg-[#00B4BD] text-white text-xs font-medium flex items-center gap-1.5 transition-all shadow-xs self-start sm:self-auto"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Tambah Varietas Kustom</span>
+            <span>{t('crops.addCustomTitle')}</span>
           </button>
         )}
       </div>
+
+      {/* Global AEZ & Cultivar Isolation Context */}
+      <AgroecologicalProfileCard />
 
       {/* Add Custom Crop Form */}
       {isAddingNew && (
@@ -238,68 +244,109 @@ export default function CropLibraryPage() {
         </form>
       )}
 
-      {/* List of Crops */}
+      {/* List of Separated Species & Localized Cultivars */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {crops.map((crop: Crop) => (
-          <div
-            key={crop.id}
-            className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] hover:border-[#009DA5]/60 transition-all flex flex-col justify-between gap-3 shadow-xs"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl p-2 bg-[#20242B] rounded-[4px]">{getCropEmoji(crop.icon)}</span>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="text-sm font-medium text-[#F1F3F5]">{crop.name}</h4>
-                    {crop.is_custom && (
-                      <span className="px-1.5 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40 font-mono text-[10px] font-medium">
-                        KUSTOM
-                      </span>
-                    )}
+        {crops.map((crop: Crop) => {
+          const displayName = localizeCropName(crop, locale);
+          const res = crop.cultivar_resolution;
+          const isFallback = res?.is_archetype_fallback ?? false;
+          const reasons = res ? (isEn ? res.suitability_reasons_en : res.suitability_reasons_id) : [];
+
+          return (
+            <div
+              key={crop.id}
+              className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] hover:border-[#009DA5]/60 transition-all flex flex-col justify-between gap-3 shadow-xs"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-2xl p-2 bg-[#20242B] rounded-[4px] shrink-0">{getCropEmoji(crop.icon)}</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="text-sm font-medium text-[#F1F3F5] truncate">{displayName}</h4>
+                      {crop.is_custom && (
+                        <span className="px-1.5 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40 font-mono text-[10px] font-medium">
+                          {isEn ? 'CUSTOM' : 'KUSTOM'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-[#8A949E] font-mono block truncate">
+                      {crop.scientific_name ? `${crop.scientific_name} · ${crop.category}` : crop.category}
+                    </span>
                   </div>
-                  <span className="text-xs text-[#8A949E] font-mono">{crop.category}</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40">
+                    Profit: {crop.economic_profit_index}
+                  </span>
+                  {crop.is_custom && (
+                    <button
+                      type="button"
+                      onClick={() => removeCustomCrop(crop.id)}
+                      title={t('crops.deleteBtn')}
+                      className="p-1.5 rounded-[3px] border border-[#7F1D1D]/40 bg-[#2D1B1E] text-[#F87171] hover:opacity-80 transition-opacity"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40">
-                  Profit: {crop.economic_profit_index}
-                </span>
-                {crop.is_custom && (
-                  <button
-                    type="button"
-                    onClick={() => removeCustomCrop(crop.id)}
-                    title="Hapus varietas kustom"
-                    className="p-1.5 rounded-[3px] border border-[#7F1D1D]/40 bg-[#2D1B1E] text-[#F87171] hover:opacity-80 transition-opacity"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
+              <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-[#2C313A] text-center font-mono">
+                <div className="bg-[#20242B] p-1.5 rounded-[3px]">
+                  <span className="text-[10px] text-[#8A949E] block">{t('crops.duration')}</span>
+                  <span className="font-medium text-[#F1F3F5]">{crop.growth_duration_days}d</span>
+                </div>
+                <div className="bg-[#20242B] p-1.5 rounded-[3px]">
+                  <span className="text-[10px] text-[#8A949E] block">{t('crops.waterReq')}</span>
+                  <span className="font-medium text-[#00C2CC]">{formatMm(crop.water_requirement_mm)}</span>
+                </div>
+                <div className="bg-[#20242B] p-1.5 rounded-[3px]">
+                  <span className="text-[10px] text-[#8A949E] block">{t('crops.droughtTol')}</span>
+                  <span className="font-medium text-[#C1C7CD]">{crop.drought_tolerance}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-[#2C313A] text-center font-mono">
-              <div className="bg-[#20242B] p-1.5 rounded-[3px]">
-                <span className="text-[10px] text-[#8A949E] block">Umur</span>
-                <span className="font-medium text-[#F1F3F5]">{crop.growth_duration_days}h</span>
-              </div>
-              <div className="bg-[#20242B] p-1.5 rounded-[3px]">
-                <span className="text-[10px] text-[#8A949E] block">Air (ETc)</span>
-                <span className="font-medium text-[#00C2CC]">{formatMm(crop.water_requirement_mm)}</span>
-              </div>
-              <div className="bg-[#20242B] p-1.5 rounded-[3px]">
-                <span className="text-[10px] text-[#8A949E] block">Toleransi</span>
-                <span className="font-medium text-[#C1C7CD]">{crop.drought_tolerance}</span>
-              </div>
+              {/* Cultivar Localization Evidence Box */}
+              {res ? (
+                <div className="text-[11px] bg-[#20242B] border border-[#282C34] p-2.5 rounded-[4px] flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-[#F1F3F5] truncate" title={res.cultivar.cultivar_name}>
+                      {res.cultivar.cultivar_name}
+                    </span>
+                    <span
+                      title={isEn ? 'Agroecological cultivar match score' : 'Skor kecocokan kultivar terhadap zona agroekologi'}
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-[3px] text-[10px] font-mono border shrink-0 ${
+                        isFallback
+                          ? 'bg-[#16191E] text-[#FBBF24] border-[#78350F]/60'
+                          : 'bg-[#16191E] text-[#00C2CC] border-[#2C313A]'
+                      }`}
+                    >
+                      <span>{isEn ? 'Match' : 'Cocok'} {Math.round(res.confidence_score * 100)}%</span>
+                    </span>
+                  </div>
+                  <div className="text-[10.5px] text-[#9BA3AE] font-mono">
+                    {res.cultivar.breeding_program} · {res.cultivar.registration_status}
+                  </div>
+                  <div className="text-[10.5px] text-[#8A949E]">
+                    <span className="text-[#C1C7CD]">{t('rotation.evidenceSource')}:</span> {res.cultivar.evidence_source}
+                  </div>
+                  {reasons.length > 0 && (
+                    <div className="text-[10.5px] text-[#A6AFB8] border-t border-[#2C313A] pt-1.5">
+                      {reasons[0]}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                crop.recommended_variety && (
+                  <div className="text-[11px] text-[#8A949E] bg-[#20242B] p-2 rounded-[3px] font-mono">
+                    {t('rotation.cultivarLabel')}: <strong className="text-[#F1F3F5]">{crop.recommended_variety}</strong>
+                  </div>
+                )
+              )}
             </div>
-
-            {crop.recommended_variety && (
-              <div className="text-[11px] text-[#8A949E] bg-[#20242B] p-2 rounded-[3px] font-mono">
-                Varietas: <strong className="text-[#F1F3F5]">{crop.recommended_variety}</strong>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

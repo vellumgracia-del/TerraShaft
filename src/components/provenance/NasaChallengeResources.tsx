@@ -1,20 +1,25 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Satellite,
-  ExternalLink,
   Search,
-  Filter,
   CheckCircle2,
   Globe,
   Sprout,
-  ShieldCheck,
   ArrowUpRight
 } from 'lucide-react';
 
 export type DatasetDomainGroup = 'soil' | 'weather' | 'crop-land' | 'water-topo' | 'agri-econ';
 export type GeographicProfile = 'global-core' | 'indonesia-profile' | 'standard-baseline';
+export type DatasetIntegrationStatus =
+  | 'Live API'
+  | 'Indirect API'
+  | 'Static Local Registry'
+  | 'Knowledge Base'
+  | 'Reference Standard'
+  | 'Planned Integration';
 
 export interface ChallengeDataset {
   id: string;
@@ -33,12 +38,12 @@ export interface ChallengeDataset {
   description: string;
   adaptationValue: string;
   terraShaftRole: string;
-  statusBadge: 'Active API' | 'Indirect API' | 'Integrated Bio-Model' | 'RAG Knowledge Base' | 'Calibrated Reference';
+  statusBadge: DatasetIntegrationStatus;
   officialUrl: string;
 }
 
 export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
-  // 1. Live Telemetry & Earth Observation Satellites
+  // 1. Live Telemetry APIs (Called directly via backend route handlers)
   {
     id: 'nasa-power',
     name: 'NASA POWER Agroclimatology & Solar Radiation',
@@ -48,36 +53,16 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'climate-reanalysis',
     domainGroup: 'weather',
     geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Suhu harian, radiasi surya, kelembapan udara, dan presipitasi live per koordinat.',
+    geographicScopeNote: 'Global & Indonesia: Live REST API (/api/nasa-climate) for T2M, ALLSKY_SFC_SW_DWN, GWETROOT, and PRECTOTCORR.',
     isCoreBaseline: true,
     resolution: '0.5° x 0.5° (~50 km)',
-    frequency: 'Harian & Baseline Historis (Active On-Demand REST API)',
-    variables: ['Solar Radiation (ALLSKY_SFC_SW_DWN)', 'T2M (Min/Max/Mean)', 'RH2M', 'PRECTOTCORR', 'Wind Speed'],
+    frequency: 'Daily & Historical Baseline (Live REST API)',
+    variables: ['Solar Radiation (ALLSKY_SFC_SW_DWN)', 'T2M (Min/Max/Mean)', 'PRECTOTCORR', 'GWETROOT'],
     description: 'Kumpulan data surya, meteorologi, dan klimatologi global yang dioptimalkan untuk riset dan aplikasi pertanian terintegrasi.',
     adaptationValue: 'Menghitung penggunaan air tanaman, kondisi musim tanam, risiko suhu ekstrem, dan kesesuaian iklim komoditas rotasi.',
-    terraShaftRole: 'Sumber telemetri iklim utama yang menghitung laju ET0 harian FAO-56 Hargreaves-Samani secara langsung per koordinat petak.',
-    statusBadge: 'Active API',
+    terraShaftRole: 'Live API utama (/api/nasa-climate): menyediakan suhu harian, radiasi surya (ET0 Hargreaves-Samani), GWETROOT (indikator lengas akar), dan PRECTOTCORR (curah hujan).',
+    statusBadge: 'Live API',
     officialUrl: 'https://power.larc.nasa.gov/'
-  },
-  {
-    id: 'nasa-smap',
-    name: 'Soil Moisture Active Passive (SMAP L4)',
-    acronym: 'SMAP L4 GWETROOT',
-    agency: 'NASA JPL & GSFC',
-    agencyCategory: 'NASA',
-    category: 'nasa-satellites',
-    domainGroup: 'soil',
-    geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Estimasi kelembapan zona perakaran 0–100 cm berbasis asimilasi model L4 NASA.',
-    isCoreBaseline: true,
-    resolution: '9 km / 36 km (L4 root-zone model)',
-    frequency: '2–3 hari (Indirect via NASA POWER GWETROOT)',
-    variables: ['Surface Soil Moisture (0-5 cm)', 'Root-Zone Soil Wetness (0-100 cm)', 'Freeze/Thaw State'],
-    description: 'Menyediakan estimasi global kelembapan tanah zona perakaran tanaman melalui asimilasi data observasi satelit NASA dan model transfer daratan.',
-    adaptationValue: 'Mengidentifikasi cekaman kekeringan dini sebelum daun layu, ketersediaan air perakaran, potensi infiltrasi, dan evaluasi tanaman rotasi hemat air.',
-    terraShaftRole: 'Indikator kelembapan zona perakaran pada Baterai Tanah dan ambang batas peringatan dini defisit air (diambil via parameter GWETROOT NASA POWER).',
-    statusBadge: 'Indirect API',
-    officialUrl: 'https://smap.jpl.nasa.gov/'
   },
   {
     id: 'isric-soilgrids',
@@ -88,56 +73,76 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'soil-institutes',
     domainGroup: 'soil',
     geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Fraksi pasir, debu, liat, SOC, pH, dan CEC kedalaman 0–30 cm.',
+    geographicScopeNote: 'Global & Indonesia: Live REST API (/api/soil-profile) untuk fraksi pasir, debu, liat, SOC, pH, dan CEC (0–30 cm).',
     isCoreBaseline: true,
     resolution: '250 meter',
-    frequency: 'Active On-Demand REST API (Cache 30 Hari)',
+    frequency: 'Live REST API (/api/soil-profile, Cache 30 Hari)',
     variables: ['Clay Fraction (%)', 'Sand Fraction (%)', 'Silt Fraction (%)', 'SOC (g/kg)', 'pH H2O', 'CEC (cmol/kg)'],
     description: 'Sistem pemetaan digital tanah global berbasis machine learning yang mengintegrasikan puluhan ribu profil tanah terestrial.',
     adaptationValue: 'Menentukan kapasitas retensi lengas tanah, kerentanan retak Vertisol, ketersediaan hara, dan batas kritis aerasi akar.',
-    terraShaftRole: 'Penyedia sifat fisik/kimia tanah utama yang diolah persamaan pedotransfer Saxton-Rawls untuk menghitung kapasitas simpan air (AWC).',
-    statusBadge: 'Active API',
+    terraShaftRole: 'Live API (/api/soil-profile): mengambil sifat fisik/kimia tanah 0–30 cm untuk menghitung Available Water Capacity (AWC) dan klasifikasi tekstur USDA.',
+    statusBadge: 'Live API',
     officialUrl: 'https://www.isric.org/explore/soilgrids'
   },
   {
+    id: 'nasa-srtm',
+    name: 'Shuttle Radar Topography Mission DEM (via Open-Meteo Elevation)',
+    acronym: 'SRTM · Open-Meteo DEM',
+    agency: 'NASA / NGA & Open-Meteo DEM',
+    agencyCategory: 'NASA',
+    category: 'nasa-satellites',
+    domainGroup: 'water-topo',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Global & Indonesia: Lookup elevasi titik koordinat via /api/geocode; analisis lereng & limpasan raster bersifat rencana.',
+    isCoreBaseline: true,
+    resolution: '~30–90 meter DEM',
+    frequency: 'Live Point Elevation Lookup (/api/geocode)',
+    variables: ['Elevation (m)', 'Slope Context (Planned)', 'Aspect (Planned)'],
+    description: 'Model elevasi digital global berbasis radar interferometrik untuk penentuan ketinggian lokasi (sabuk elevasi dataran rendah/menengah/tinggi) pada zonasi AEZ.',
+    adaptationValue: 'Menentukan sabuk elevasi lokasi pada pipeline AEZ dan menjadi acuan konteks topografi lereng.',
+    terraShaftRole: 'Live API /api/geocode mengambil elevasi titik dari Open-Meteo Elevation (berbasis SRTM/Copernicus DEM) untuk zonasi agroekologi; analisis kemiringan lereng & runoff raster belum berjalan di runtime.',
+    statusBadge: 'Live API',
+    officialUrl: 'https://www.earthdata.nasa.gov/sensors/srtm'
+  },
+  {
+    id: 'nasa-smap',
+    name: 'Soil Moisture Active Passive (SMAP L4 Reference)',
+    acronym: 'SMAP (via NASA POWER GWETROOT)',
+    agency: 'NASA JPL & GSFC',
+    agencyCategory: 'NASA',
+    category: 'nasa-satellites',
+    domainGroup: 'soil',
+    geographicProfile: 'global-core',
+    geographicScopeNote: 'Tidak memanggil direct SMAP API; runtime menggunakan parameter model-assimilated GWETROOT dari NASA POWER.',
+    isCoreBaseline: true,
+    resolution: '0.5° grid via NASA POWER (SMAP native 9 km Planned)',
+    frequency: 'Direct SMAP Granule API: Planned Integration',
+    variables: ['GWETROOT (NASA POWER Model-Assimilated)', 'Direct SMAP L4 9km (Planned)'],
+    description: 'Referensi misi satelit kelembapan tanah NASA SMAP. Pada implementasi saat ini, TerraShaft tidak memiliki route API SMAP langsung.',
+    adaptationValue: 'Menjadi rujukan konsep indikator lengas zona akar untuk peringatan dini stres air.',
+    terraShaftRole: 'Di runtime, indikator kelembapan akar menggunakan NASA POWER GWETROOT (bukan direct SMAP API). Integrasi granule SMAP L4 9 km langsung adalah Planned Integration.',
+    statusBadge: 'Planned Integration',
+    officialUrl: 'https://smap.jpl.nasa.gov/'
+  },
+  {
     id: 'nasa-gpm-imerg',
-    name: 'Global Precipitation Measurement & IMERG',
-    acronym: 'GPM IMERG',
+    name: 'Global Precipitation Measurement & IMERG (Reference)',
+    acronym: 'GPM IMERG (Planned Direct)',
     agency: 'NASA GSFC & JAXA',
     agencyCategory: 'NASA',
     category: 'nasa-satellites',
     domainGroup: 'weather',
     geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Akumulasi hujan dan deteksi presipitasi ekstrem resolusi 0.1° (~10 km).',
+    geographicScopeNote: 'Tidak memanggil direct GPM/IMERG API; curah hujan runtime berasal dari parameter NASA POWER PRECTOTCORR.',
     isCoreBaseline: true,
-    resolution: '0.1° (~10 km)',
-    frequency: 'Harian / Akumulasi Bulanan (Indirect via NASA POWER PRECTOTCORR)',
-    variables: ['Precipitation Rate (mm/jam)', 'Accumulated Rainfall (mm)', 'Storm Frequency'],
-    description: 'Konstelasi satelit internasional untuk estimasi laju dan akumulasi presipitasi global resolusi tinggi.',
-    adaptationValue: 'Menilai keandalan curah hujan, frekuensi badai ekstrem pemicu erosi tanah, dan tren jangka panjang masukan lengas tanah.',
-    terraShaftRole: 'Perhitungan water budget input (P) pada modul Neraca Air dan analisis risiko erosi (diambil via parameter PRECTOTCORR NASA POWER).',
+    resolution: '0.5° via NASA POWER PRECTOTCORR (IMERG 0.1°)',
+    frequency: 'Daily / Monthly Baseline (Indirect via NASA POWER PRECTOTCORR)',
+    variables: ['PRECTOTCORR (NASA POWER Runtime)', 'Precipitation Rate & Accumulation'],
+    description: 'Konstelasi satelit estimasi presipitasi resolusi tinggi. Diambil melalui parameter terasimilasi PRECTOTCORR pada NASA POWER API.',
+    adaptationValue: 'Menilai keandalan curah hujan musiman dan pasokan lengas pada modul Neraca Air.',
+    terraShaftRole: 'Di runtime, modul Neraca Air membaca parameter PRECTOTCORR dari /api/nasa-climate (NASA POWER), bukan integrasi langsung endpoint NASA GPM/IMERG.',
     statusBadge: 'Indirect API',
     officialUrl: 'https://gpm.nasa.gov/data/imerg'
-  },
-  {
-    id: 'nasa-srtm',
-    name: 'Shuttle Radar Topography Mission DEM',
-    acronym: 'SRTM DEM',
-    agency: 'NASA & NGA',
-    agencyCategory: 'NASA',
-    category: 'nasa-satellites',
-    domainGroup: 'water-topo',
-    geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Topografi 30m global untuk analisis lereng, limpasan, dan risiko erosi.',
-    isCoreBaseline: true,
-    resolution: '1 arc-second (~30 meter)',
-    frequency: 'On-Demand (Indirect via Open-Meteo Elevation DEM API)',
-    variables: ['Elevation (m)', 'Slope Gradient (%)', 'Aspect', 'Flow Accumulation'],
-    description: 'Model elevasi digital global berbasis radar interferometrik untuk analisis geomorfologi dan topografi permukaan bumi.',
-    adaptationValue: 'Menganalisis kemiringan lereng, aliran limpasan permukaan (runoff), risiko erosi, dan penataan stabilisasi tanah miring.',
-    terraShaftRole: 'Koreksi topografi elevasi pada AOI dan rekomendasi tanaman lereng (diambil melalui proxy Open-Meteo Elevation API).',
-    statusBadge: 'Indirect API',
-    officialUrl: 'https://www.earthdata.nasa.gov/sensors/srtm'
   },
   {
     id: 'nasa-landsat-modis-viirs',
@@ -148,15 +153,15 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'nasa-satellites',
     domainGroup: 'crop-land',
     geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Landsat 30m untuk detail spasial, MODIS/VIIRS untuk dinamika temporal harian.',
-    isCoreBaseline: true,
+    geographicScopeNote: 'Referensi kerangka vegetasi; belum memproses band spektral NDVI/EVI langsung di runtime.',
+    isCoreBaseline: false,
     resolution: '30m (Landsat) · 250m–1km (MODIS/VIIRS)',
-    frequency: '16-Day MODIS / 8–16 Day Landsat (Active STAC & TiTiler API)',
+    frequency: '16-Day MODIS / 8–16 Day Landsat (Live STAC & TiTiler API)',
     variables: ['Surface Reflectance', 'NDVI (Normalized Difference Veg Index)', 'EVI', 'Bare Ground Windows'],
     description: 'Reflektansi permukaan terkoreksi atmosfer dan indeks vegetasi untuk memantau biomassa dan kesehatan kanopi.',
-    adaptationValue: 'Memetakan vigor tanaman, mendeteksi transisi musiman, mengidentifikasi lahan bera tanpa tutupan, dan membandingkan opsi rotasi visual.',
-    terraShaftRole: 'Telemetri live NDVI/EVI per koordinat via Microsoft Planetary Computer STAC & TiTiler (landsat-c2-l2 dan modis-13Q1-061).',
-    statusBadge: 'Active API',
+    adaptationValue: 'Memetakan vigor tanaman, mendeteksi transisi musiman, dan memverifikasi fase bera secara spasial.',
+    terraShaftRole: 'Telemetri live NDVI/EVI per koordinat via /api/vegetation-indices (Microsoft Planetary Computer STAC & TiTiler: landsat-c2-l2 & modis-13Q1-061).',
+    statusBadge: 'Live API',
     officialUrl: 'https://landsat.gsfc.nasa.gov/'
   },
   {
@@ -168,15 +173,15 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'space-partners',
     domainGroup: 'crop-land',
     geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Citra optik 10m bebas akses untuk delineasi petak mikro dan analisis klorofil.',
-    isCoreBaseline: true,
+    geographicScopeNote: 'Referensi spasial petak AOI pada dokumentasi; belum ada pemrosesan band optik 10m atau API Copernicus.',
+    isCoreBaseline: false,
     resolution: '10m / 20m / 60m',
-    frequency: '5 hari (Active STAC & TiTiler API via Planetary Computer)',
+    frequency: '5 hari (Live STAC & TiTiler API via Planetary Computer)',
     variables: ['13 Spectral Bands', 'Red-Edge Chlorophyll Bands', 'SWIR Moisture Bands', 'NDWI'],
     description: 'Citra optik multispektral bebas akses beresolusi spasial tinggi dengan pita khusus analisis status vegetasi dan lengas daun.',
     adaptationValue: 'Memetakan indeks klorofil kanopi, deteksi dini klorosis hara, batas kepemilikan petak mikro petani, dan monitoring lahan bera.',
-    terraShaftRole: 'Telemetri live NDVI 10m (B04/B08) per koordinat via Microsoft Planetary Computer STAC & TiTiler (sentinel-2-l2a).',
-    statusBadge: 'Active API',
+    terraShaftRole: 'Telemetri live NDVI 10m (B04/B08) per koordinat via /api/vegetation-indices (Microsoft Planetary Computer STAC & TiTiler: sentinel-2-l2a).',
+    statusBadge: 'Live API',
     officialUrl: 'https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2'
   },
   {
@@ -188,37 +193,37 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'climate-reanalysis',
     domainGroup: 'weather',
     geographicProfile: 'global-core',
-    geographicScopeNote: 'Global & Indonesia: Reanalisis atmosfer dan transfer energi daratan kontinu.',
-    isCoreBaseline: true,
+    geographicScopeNote: 'Standar referensi reanalisis iklim & daratan; tidak dipanggil via API runtime.',
+    isCoreBaseline: false,
     resolution: '0.25° (GLDAS) / 31 km (ERA5)',
-    frequency: 'Sub-harian hingga Harian Kontinu',
-    variables: ['Hourly Temperature', 'Layered Soil Moisture', 'Relative Humidity', 'Solar Radiation', 'ET Fluxes'],
-    description: 'Menggabungkan model transfer massa-energi permukaan bumi kontinu dengan miliaran observasi in-situ dan satelit.',
-    adaptationValue: 'Mengisi celah kekosongan data stasiun cuaca terestrial lokal, analisis tren iklim jangka panjang, dan fitur deret waktu.',
-    terraShaftRole: 'Validasi kontinuitas cuaca jam-jaman dan kalibrasi cadangan parameter suhu tanah multi-kedalaman.',
-    statusBadge: 'Calibrated Reference',
+    frequency: 'Reference Standard (Static Documentation / Concept)',
+    variables: ['Atmospheric Reanalysis Framework', 'Layered Soil Moisture Concept'],
+    description: 'Model reanalisis atmosfer dan transfer energi permukaan daratan yang mendasari literatur agrometeorologi global.',
+    adaptationValue: 'Memberi konteks ilmiah mengenai kesinambungan deret waktu cuaca dan keseimbangan energi permukaan.',
+    terraShaftRole: 'Berfungsi sebagai Reference Standard dalam dokumentasi teknis; data cuaca runtime seluruhnya diambil melalui NASA POWER API (/api/nasa-climate).',
+    statusBadge: 'Reference Standard',
     officialUrl: 'https://ldas.gsfc.nasa.gov/'
   },
 
-  // 2. Indonesia Regional & Dryland Agroforestry Enhancement
+  // 2. Knowledge Base, Local Cultivar Registry & Standards
   {
     id: 'fao-gaez',
-    name: 'FAO Global Agro-Ecological Zones (GAEZ v4) & FAO-56',
-    acronym: 'FAO GAEZ v4',
+    name: 'FAO GAEZ v4 & FAO-56 Agrometeorology Standards',
+    acronym: 'FAO GAEZ v4 · FAO-56',
     agency: 'FAO & IIASA',
     agencyCategory: 'FAO',
     category: 'climate-reanalysis',
     domainGroup: 'agri-econ',
-    geographicProfile: 'indonesia-profile',
-    geographicScopeNote: 'Global & Indonesia: Zonasi agro-ekologis dan kesesuaian biofisik lahan puluhan komoditas pangan.',
-    isCoreBaseline: true,
-    resolution: '5 arc-minute (~9 km)',
-    frequency: 'Edisi Global v4 Terstandarisasi',
-    variables: ['Agro-Climatic Crop Suitability', 'Soil Constraints (Salinity, Depth, Texture)', 'Potential Yield Indices', 'FAO-56 Dual Kc'],
-    description: 'Model global penentuan zona agro-ekologis dan kesesuaian biofisik lahan untuk puluhan komoditas pangan dunia.',
-    adaptationValue: 'Mengevaluasi apakah komoditas rotasi selaras dengan iklim dan tanah lokal dari perspektif agronomi global teruji.',
-    terraShaftRole: 'Kriteria validasi agronomis pada modul Field Advisor AI dan formula kesesuaian rotasi tanaman di iklim semi-arid.',
-    statusBadge: 'RAG Knowledge Base',
+    geographicProfile: 'standard-baseline',
+    geographicScopeNote: 'Standar konseptual Kc/ET0 FAO-56 & entri basis pengetahuan GAEZ; tidak ada query raster GAEZ di runtime.',
+    isCoreBaseline: false,
+    resolution: 'Conceptual Standard & Knowledge Base Doc',
+    frequency: 'Reference Standard (No Runtime GAEZ API)',
+    variables: ['FAO-56 ET0/Kc Framework', 'Agro-Ecological Zoning Concepts (Doc)'],
+    description: 'Kerangka referensi FAO-56 (evapotranspirasi & koefisien tanaman) serta literatur zonasi agro-ekologis FAO GAEZ v4.',
+    adaptationValue: 'Menjadi rujukan metodologis konseptual pada kalkulasi kebutuhan air (ETc) dan narasi penasihat AI.',
+    terraShaftRole: 'Reference Standard & entri RAG (agronomyKnowledgeBase.ts). Belum ada pengambilan data GAEZ, raster query, maupun skor GAEZ di mesin optimasi runtime.',
+    statusBadge: 'Reference Standard',
     officialUrl: 'https://gaez.fao.org/'
   },
   {
@@ -230,15 +235,15 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'nasa-satellites',
     domainGroup: 'crop-land',
     geographicProfile: 'indonesia-profile',
-    geographicScopeNote: 'Penguatan Indonesia: Deteksi hotspot panas dan stres air tanaman di wilayah tadah hujan (NTT, Madura).',
+    geographicScopeNote: 'Sumber dokumen RAG lokal; belum ada pemanggilan API atau layer LST ECOSTRESS runtime.',
     isCoreBaseline: false,
-    resolution: '70 meter',
-    frequency: '1–5 hari (Orbit ISS)',
-    variables: ['Land-Surface Temperature (LST)', 'Evapotranspiration (ET)', 'Evaporative Stress Index (ESI)'],
-    description: 'Pengukuran radiometer termal resolusi tinggi untuk memetakan suhu permukaan daratan dan laju kehilangan air tanaman.',
-    adaptationValue: 'Mendeteksi titik panas (hotspots) stres tanaman, paparan cekaman termal, kerentanan akar dangkal, dan kebutuhan air petak mikro.',
-    terraShaftRole: 'Deteksi kerentanan tanaman monokultur saat gelombang panas kemarau dan pembuktian efisiensi cover crop penurun suhu tanah.',
-    statusBadge: 'RAG Knowledge Base',
+    resolution: '70 meter (Mission Spec)',
+    frequency: 'Knowledge Base Only (No Live ECOSTRESS API)',
+    variables: ['Land-Surface Temperature Literature', 'Thermal Stress Concepts'],
+    description: 'Referensi ilmiah pengamatan suhu permukaan daratan dan indeks cekaman evaporatif NASA ECOSTRESS.',
+    adaptationValue: 'Memberi konteks pengetahuan pada asisten AI terkait manajemen cekaman panas dan penggunaan tanaman penutup tanah.',
+    terraShaftRole: 'Berperan khusus sebagai sumber dokumen Knowledge Base (RAG) di agronomyKnowledgeBase.ts; tidak ada pengambilan data ECOSTRESS secara langsung.',
+    statusBadge: 'Knowledge Base',
     officialUrl: 'https://ecostress.jpl.nasa.gov/'
   },
   {
@@ -250,112 +255,115 @@ export const NASA_CHALLENGE_DATASETS: ChallengeDataset[] = [
     category: 'nasa-satellites',
     domainGroup: 'crop-land',
     geographicProfile: 'indonesia-profile',
-    geographicScopeNote: 'Penguatan Indonesia: Struktur vertikal kanopi LiDAR untuk agroforestri dan perkebunan pohon pelindung.',
+    geographicScopeNote: 'Sumber dokumen RAG agroforestri; belum ada pengambilan footprint LiDAR GEDI di runtime.',
     isCoreBaseline: false,
-    resolution: '25 meter footprint LiDAR',
-    frequency: 'Misi LiDAR ISS Terkalibrasi',
-    variables: ['Canopy Height Profile', 'Leaf Area Index (LAI)', 'Above-Ground Biomass Density (AGBD)'],
-    description: 'Pengukuran struktur kanopi dan biomassa berbasis laser altimeter berpresisi tinggi dari Stasiun Luar Angkasa.',
-    adaptationValue: 'Memahami kerapatan vegetasi, cekaman kanopi, dan perubahan biomassa jangka panjang di lanskap sekitar lahan budidaya.',
-    terraShaftRole: 'Penilaian integrasi pohon pelindung (agroforestri) penahan angin kering dan estimasi sekuestrasi karbon residu biomassa.',
-    statusBadge: 'RAG Knowledge Base',
+    resolution: '25 meter footprint LiDAR (Mission Spec)',
+    frequency: 'Knowledge Base Only (No Live GEDI API)',
+    variables: ['Canopy Structure Literature', 'Agroforestry Windbreak Guidance'],
+    description: 'Referensi ilmiah misi LiDAR struktur kanopi dan biomassa vertikal NASA GEDI.',
+    adaptationValue: 'Menyediakan konteks edukatif untuk integrasi pohon pelindung dan agroforestri dalam konsultasi AI Field Advisor.',
+    terraShaftRole: 'Sumber teks Knowledge Base (RAG) di agronomyKnowledgeBase.ts tanpa pengambilan API LiDAR maupun pemrosesan kanopi di runtime.',
+    statusBadge: 'Knowledge Base',
     officialUrl: 'https://gedi.umd.edu/'
   },
   {
     id: 'brin-kementan',
-    name: 'Riset Agronomi Tropis & Juknis Varietas BRIN / Kementan',
-    acronym: 'BRIN · Balittanah',
-    agency: 'BRIN & Kementerian Pertanian Republik Indonesia',
+    name: 'Regional Cultivar Registry & BRIN / Extension Knowledge Base',
+    acronym: 'Static Registry · BRIN/Kementan',
+    agency: 'Curated JSON Metadata (BRIN, USDA, KALRO, ICAR, EMBRAPA, GRDC Refs)',
     agencyCategory: 'BRIN / Kementan',
     category: 'national-agronomy',
     domainGroup: 'agri-econ',
     geographicProfile: 'indonesia-profile',
-    geographicScopeNote: 'Penguatan Indonesia: Panduan budidaya varietas adaptif iklim kering dan pengelolaan tanah Vertisol.',
+    geographicScopeNote: '23 entri kultivar statis (ID, US, KE, TZ, UG, IN, BR, AU) + guardrail lintas batas & fallback Phenotype Archetype.',
     isCoreBaseline: false,
-    resolution: 'Uji Multilokasi & Rekomendasi Balai Riset',
-    frequency: 'Monograf Resmi & Panduan Teknis Mutakhir',
-    variables: ['Kebutuhan Lengas Varietas', 'Penambatan N2 Simbiotik', 'Ameliorasi Kapur & Bahan Organik', 'Toleransi Kekeringan'],
-    description: 'Basis pengetahuan ilmiah nasional mengenai tanaman pangan palawija toleran kekeringan dan manajemen tanah tropis sub-optimal.',
-    adaptationValue: 'Menyediakan parameter spesifik varietas lokal (Sorgum Bioguma, Kedelai Anjasmoro, Kacang Hijau Vima, Jagung Bisi, Orok-orok) yang realistis di tingkat petani.',
-    terraShaftRole: 'Rujukan agronomi utama pada mesin optimasi rotasi 4 musim dan RAG knowledge base asisten Field Advisor AI.',
-    statusBadge: 'RAG Knowledge Base',
+    resolution: '23 Curated Static Entries (cultivars_registry.json)',
+    frequency: 'Static Local Registry (No Live Seed Availability API)',
+    variables: ['Country/Region Release Guardrail', 'Maturity & Tolerance Metadata', 'BRIN/Balittanah RAG Docs'],
+    description: 'Registri lokal statis berisi 23 varietas lintas 6 spesies utama (crop_species.json & cultivars_registry.json) beserta dokumen RAG agronomi.',
+    adaptationValue: 'Memastikan kultivar Indonesia (Inpago, Bisi-18, Anjasmoro, Vima, Bioguma) hanya muncul di wilayah ID, dan wilayah lain memakai registri lokal atau Phenotype Archetype.',
+    terraShaftRole: 'Static Local Registry & Knowledge Base yang terhubung ke cultivarLocalizer.ts dan optimizationEngine.ts; belum terhubung ke API ketersediaan benih/registrasi resmi eksternal.',
+    statusBadge: 'Static Local Registry',
     officialUrl: 'https://brin.go.id/'
   },
-
-  // 3. Calibrated Standard Benchmark
   {
     id: 'usda-ssurgo',
-    name: 'USDA NRCS SSURGO / STATSGO2 Soil Pedotransfer Baseline',
-    acronym: 'SSURGO · STATSGO2',
+    name: 'USDA Soil Taxonomy & SSURGO / STATSGO2 Pedological Reference',
+    acronym: 'USDA Soil Refs (SSURGO)',
     agency: 'USDA Natural Resources Conservation Service',
     agencyCategory: 'USDA',
     category: 'usda-usgs',
     domainGroup: 'soil',
     geographicProfile: 'standard-baseline',
-    geographicScopeNote: 'Standar Kalibrasi: Persamaan pedotransfer baku Saxton-Rawls & baseline failover CONUS.',
+    geographicScopeNote: 'Acuan konseptual Segitiga Tekstur USDA; tidak ada query live SSURGO/STATSGO2 di backend.',
     isCoreBaseline: false,
-    resolution: 'Field-scale (SSURGO) · Regional (STATSGO2)',
-    frequency: 'Database Terkalibrasi Berkelanjutan',
-    variables: ['Soil Texture Fractions', 'Organic Matter (SOC %)', 'Available Water Capacity (AWC)', 'Hydrologic Soil Group'],
-    description: 'Standar database atribut fisik dan hidrologi tanah terinci yang mendasari formulasi hubungan tekstur-retensi air.',
-    adaptationValue: 'Menyediakan dasar perhitungan matematis untuk memprediksi kapasitas simpan air (AWC) dan dinamika aerasi tanah.',
-    terraShaftRole: 'Formulasi pedotransfer baku Saxton-Rawls untuk menghitung AWC tanah dan fallback terkalibrasi khusus wilayah CONUS.',
-    statusBadge: 'Calibrated Reference',
+    resolution: 'Conceptual Reference & CONUS Regional Fallback',
+    frequency: 'Reference Standard (No Live SSURGO Query)',
+    variables: ['USDA Soil Texture Triangle', 'Pedological Reference Constants'],
+    description: 'Literatur taksonomi tanah USDA dan Segitiga Tekstur Tanah NRCS yang menjadi acuan konseptual klasifikasi tekstur.',
+    adaptationValue: 'Membantu klasifikasi tekstur tanah secara konsisten dan menjadi rujukan konseptual fallback wilayah CONUS saat SoilGrids timeout.',
+    terraShaftRole: 'Reference Standard untuk klasifikasi tekstur (classifySoilTexture) dan dokumen RAG; nilai tanah runtime berasal dari ISRIC SoilGrids atau fallback regional statis, tanpa API SSURGO langsung.',
+    statusBadge: 'Reference Standard',
     officialUrl: 'https://www.nrcs.usda.gov/resources/data-and-tech/soil-survey-geographic-database-ssurgo'
   }
 ];
 
 export default function NasaChallengeResources() {
+  const { isEn } = useAppI18n();
   const [activeProfile, setActiveProfile] = useState<'all' | 'global-core' | 'indonesia' | 'standard-baseline'>('all');
   const [activeGroup, setActiveGroup] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const domainGroups = [
-    { id: 'all', label: 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
+    { id: 'all', label: isEn ? 'All Domains' : 'Semua Domain', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'soil',
-      label: 'Kondisi Tanah',
+      label: isEn ? 'Soil Conditions' : 'Kondisi Tanah',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'soil').length
     },
     {
       id: 'weather',
-      label: 'Cuaca & Iklim',
+      label: isEn ? 'Weather & Climate' : 'Cuaca & Iklim',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'weather').length
     },
     {
       id: 'crop-land',
-      label: 'Tanaman & Lahan',
+      label: isEn ? 'Crop & Land' : 'Tanaman & Lahan',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'crop-land').length
     },
     {
       id: 'water-topo',
-      label: 'Air & Topografi',
+      label: isEn ? 'Water & Topography' : 'Air & Topografi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'water-topo').length
     },
     {
       id: 'agri-econ',
-      label: 'Kelayakan & Ekonomi',
+      label: isEn ? 'Feasibility & Economics' : 'Kelayakan & Ekonomi',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.domainGroup === 'agri-econ').length
     }
   ];
 
-  const profilePills = [
-    { id: 'all', label: 'Semua (13 Dataset)', count: NASA_CHALLENGE_DATASETS.length },
+  const profilePills: Array<{
+    id: 'all' | 'global-core' | 'indonesia' | 'standard-baseline';
+    label: string;
+    count: number;
+  }> = [
+    { id: 'all', label: isEn ? 'All' : 'Semua', count: NASA_CHALLENGE_DATASETS.length },
     {
       id: 'global-core',
-      label: 'Global Core (Wajib & Aktif)',
+      label: 'Global Core',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'global-core').length
     },
     {
       id: 'indonesia',
-      label: 'Penguatan Indonesia (+ ECOSTRESS, GEDI, BRIN)',
+      label: isEn ? 'Regional & RAG' : 'Regional & RAG',
       count: NASA_CHALLENGE_DATASETS.filter(
         (d) => d.geographicProfile === 'global-core' || d.geographicProfile === 'indonesia-profile'
       ).length
     },
     {
       id: 'standard-baseline',
-      label: 'Standar Kalibrasi (USDA Baseline)',
+      label: isEn ? 'Reference Standards' : 'Standar Acuan',
       count: NASA_CHALLENGE_DATASETS.filter((d) => d.geographicProfile === 'standard-baseline').length
     }
   ];
@@ -398,30 +406,35 @@ export default function NasaChallengeResources() {
 
   const getStatusBadge = (status: ChallengeDataset['statusBadge']) => {
     switch (status) {
-      case 'Active API':
+      case 'Live API':
         return {
-          label: 'ACTIVE API',
-          style: 'bg-[#122822] text-[#2DD4BF] border-[#2DD4BF]/40 font-semibold'
+          label: 'LIVE API',
+          style: 'bg-[#122A2F] text-[#00C2CC] border-[#164E55] font-semibold'
         };
       case 'Indirect API':
         return {
           label: 'INDIRECT PROXY API',
           style: 'bg-[#1A2630] text-[#00C2CC] border-[#00C2CC]/40 font-semibold'
         };
-      case 'Integrated Bio-Model':
+      case 'Static Local Registry':
         return {
-          label: 'INTEGRATED BIO-MODEL',
-          style: 'bg-[#182338] text-[#38BDF8] border-[#38BDF8]/40 font-semibold'
+          label: 'STATIC LOCAL REGISTRY',
+          style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A] font-medium'
         };
-      case 'RAG Knowledge Base':
+      case 'Knowledge Base':
         return {
-          label: 'RAG KNOWLEDGE BASE',
-          style: 'bg-[#291B33] text-[#C084FC] border-[#C084FC]/40 font-semibold'
+          label: 'KNOWLEDGE BASE',
+          style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A] font-medium'
         };
-      case 'Calibrated Reference':
+      case 'Reference Standard':
         return {
-          label: 'CALIBRATED REFERENCE',
-          style: 'bg-[#252528] text-[#D1D5DB] border-[#9CA3AF]/30 font-medium'
+          label: 'REFERENCE STANDARD',
+          style: 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A] font-medium'
+        };
+      case 'Planned Integration':
+        return {
+          label: 'PLANNED INTEGRATION',
+          style: 'bg-[#182338] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
         };
     }
   };
@@ -431,82 +444,38 @@ export default function NasaChallengeResources() {
       case 'global-core':
         return {
           label: 'GLOBAL CORE',
-          style: 'bg-[#163A40] text-[#00C2CC] border-[#00C2CC]/40 font-semibold'
+          style: 'bg-[#121418] text-[#8A949E] border-[#282C34]'
         };
       case 'indonesia-profile':
         return {
-          label: 'INDONESIA FIT',
-          style: 'bg-[#133324] text-[#34D399] border-[#34D399]/40 font-semibold'
+          label: 'REGIONAL & RAG',
+          style: 'bg-[#121418] text-[#8A949E] border-[#282C34]'
         };
       case 'standard-baseline':
         return {
-          label: 'STANDAR ACUAN',
-          style: 'bg-[#252836] text-[#A5B4FC] border-[#A5B4FC]/30'
+          label: 'REFERENCE STANDARD',
+          style: 'bg-[#121418] text-[#8A949E] border-[#282C34]'
         };
-    }
-  };
-
-  const getDomainLabel = (group: DatasetDomainGroup) => {
-    switch (group) {
-      case 'soil':
-        return 'Kondisi Tanah';
-      case 'weather':
-        return 'Cuaca & Iklim';
-      case 'crop-land':
-        return 'Tanaman & Lahan';
-      case 'water-topo':
-        return 'Air & Topografi';
-      case 'agri-econ':
-        return 'Kelayakan & Ekonomi';
     }
   };
 
   return (
     <div className="flex flex-col gap-6 text-[#F1F3F5]">
-      {/* Official Challenge Header Banner */}
-      <div className="p-6 rounded-[4px] bg-gradient-to-r from-[#121721] via-[#161D2A] to-[#121620] border border-[#263347] flex flex-col gap-4 shadow-xl relative overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="px-2.5 py-1 rounded-[3px] bg-[#00C2CC]/10 text-[#00C2CC] border border-[#00C2CC]/30 font-mono text-xs font-semibold uppercase tracking-wider">
-              NASA Space Apps Challenge 2026
-            </span>
-            <span className="text-xs text-[#8A949E] hidden sm:inline">·</span>
-            <span className="text-xs font-mono text-[#8A949E]">Challenge: Adapting Farms with NASA Data</span>
-          </div>
-
-          <a
-            href="https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/?tab=resources"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00C2CC] hover:underline"
-          >
-            <span>Buka Resources Resmi NASA</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Satellite className="w-6 h-6 text-[#00C2CC] shrink-0" />
-            <span>Katalog Sumber Data Observasi Bumi & Ekosistem Terverifikasi</span>
-          </h1>
-          <p className="mt-2 text-sm text-[#9BA3AE] leading-relaxed max-w-4xl">
-            Arsitektur data teroptimasi TerraShaft yang berfokus pada 13 dataset aktif dan terverifikasi untuk adaptasi iklim pertanian:
-            mulai dari telemetri live NASA POWER & ISRIC SoilGrids, observasi perakaran SMAP L4, presipitasi GPM IMERG, indeks multispektral Landsat/Sentinel-2,
-            hingga riset agronomi lahan kering BRIN/Balittanah.
-          </p>
-        </div>
-
-        {/* Verbatim NASA Disclaimer Notice as Required */}
-        <div className="p-3.5 rounded-[4px] bg-[#0A0D13]/80 border border-[#212B3B] text-[11.5px] text-[#7E8B9E] leading-relaxed flex items-start gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-[#8A949E] shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold text-[#A6AFB8]">Official NASA Data Notice: </span>
-            NASA does not endorse any non-U.S. Government entity and is not responsible for information contained on
-            non-U.S. Government websites. For non-U.S. Government websites, participants must comply with any data use
-            parameters of that specific website.
-          </div>
-        </div>
+      {/* Catalog Header Banner */}
+      <div className="p-6 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <Satellite className="w-6 h-6 text-[#00C2CC] shrink-0" />
+          <span>
+            {isEn
+              ? '13 Datasets, References, & Actual System Roles'
+              : '13 Sumber Dataset, Referensi, & Peran Aktualnya di Sistem'}
+          </span>
+        </h1>
+        <p className="text-sm text-[#9BA3AE] leading-relaxed max-w-4xl">
+          {isEn
+            ? 'Transparent mapping of 13 TerraShaft telemetry and reference sources by actual implementation status: Live API (NASA POWER T2M/Radiation/GWETROOT/PRECTOTCORR, ISRIC SoilGrids v2.0, Open-Meteo/SRTM Elevation), Static Local Registry (23 localized regional cultivars), Knowledge Base (ECOSTRESS, GEDI, BRIN RAG), Reference Standard (ERA5/GLDAS, FAO-56/GAEZ, USDA Texture Triangle), and Planned Integration (direct SMAP, GPM/IMERG, Landsat/MODIS, Sentinel-2 raster).'
+            : 'Pemetaan jujur 13 sumber referensi & telemetri TerraShaft berdasarkan status aktual di kode: Live API (NASA POWER T2M/Radiation/GWETROOT/PRECTOTCORR, ISRIC SoilGrids v2.0, Open-Meteo/SRTM Elevation), Static Local Registry (23 kultivar regional terlokalisasi), Knowledge Base (ECOSTRESS, GEDI, BRIN RAG), Reference Standard (ERA5/GLDAS, FAO-56/GAEZ, USDA Texture Triangle), dan Planned Integration (direct SMAP, GPM/IMERG, Landsat/MODIS, Sentinel-2 raster).'}
+        </p>
       </div>
 
       {/* Geographic Profiling & Dataset Optimization Callout */}
@@ -515,23 +484,25 @@ export default function NasaChallengeResources() {
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-[#00C2CC]" />
             <h2 className="text-sm font-semibold text-white tracking-tight">
-              Arsitektur Profil Wilayah: Global Core, Penguatan Indonesia, & Standar Kalibrasi
+              {isEn
+                ? 'Transparent Classification: Live API vs Static Registry, Knowledge Base, & Planned Integration'
+                : 'Klasifikasi Transparan: Live API vs Static Registry, Knowledge Base, & Planned Integration'}
             </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5 bg-[#20242B] p-1 rounded-[3px] border border-[#2C313A]">
+          <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 bg-[#20242B] p-1 rounded-[3px] border border-[#2C313A] shrink-0">
             {profilePills.map((p) => (
               <button
                 key={p.id}
                 type="button"
-                onClick={() => setActiveProfile(p.id as any)}
-                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium transition-all ${
+                onClick={() => setActiveProfile(p.id)}
+                className={`px-2.5 py-1 rounded-[2px] text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
                   activeProfile === p.id
                     ? 'bg-[#00C2CC] text-[#121417] font-semibold shadow-xs'
                     : 'text-[#A6AFB8] hover:text-white'
                 }`}
               >
                 <span>{p.label}</span>
-                <span className={`ml-1 text-[10px] font-mono px-1 py-0.2 rounded-full ${
+                <span className={`ml-1.5 text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
                   activeProfile === p.id ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#16191E] text-[#8A949E]'
                 }`}>
                   {p.count}
@@ -542,31 +513,34 @@ export default function NasaChallengeResources() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
-          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
-            <span className="font-semibold text-[#00C2CC] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#00C2CC]" />
-              1. Global Core (Universal & Aktif)
+          <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#F1F3F5]">
+              {isEn ? '1. Live API & Telemetry Core' : '1. Live API & Telemetry Core'}
             </span>
             <p className="text-[#8A949E]">
-              Direct API: NASA POWER, ISRIC SoilGrids, Sentinel-2, Landsat & MODIS/VIIRS (Planetary Computer). Indirect proxy: SMAP L4 & GPM IMERG (via POWER), SRTM DEM (via Open-Meteo). Referensi kalibrasi: GLDAS/ERA5.
+              {isEn
+                ? 'Active runtime calls: NASA POWER (T2M, Radiation, GWETROOT, PRECTOTCORR), ISRIC SoilGrids v2.0 (0-30 cm), Sentinel-2/Landsat/MODIS NDVI (/api/vegetation-indices via Planetary Computer), and Open-Meteo/SRTM elevation (/api/geocode).'
+                : 'Aktif dipanggil runtime: NASA POWER (T2M, Radiasi, GWETROOT, PRECTOTCORR), ISRIC SoilGrids v2.0 (0-30 cm), NDVI Sentinel-2/Landsat/MODIS (/api/vegetation-indices via Planetary Computer), dan elevasi Open-Meteo/SRTM (/api/geocode).'}
             </p>
           </div>
-          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
-            <span className="font-semibold text-[#34D399] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#34D399]" />
-              2. Penguatan Indonesia
+          <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#F1F3F5]">
+              {isEn ? '2. Static Registry & Knowledge Base' : '2. Static Registry & Knowledge Base'}
             </span>
             <p className="text-[#8A949E]">
-              Global Core ditambah ECOSTRESS (deteksi hotspot suhu & stres air di wilayah semi-arid NTT/Madura), GEDI (kanopi agroforestri), FAO GAEZ, serta riset agronomi BRIN/Balittanah.
+              {isEn
+                ? 'Static registry of 23 local cultivars (ID, US, KE, TZ, UG, IN, BR, AU) with cross-border guardrails and local RAG documents (BRIN/Balittanah, ECOSTRESS, GEDI). Not connected to external seed registry APIs.'
+                : 'Registri statis 23 kultivar lokal (ID, US, KE, TZ, UG, IN, BR, AU) + guardrail lintas batas dan dokumen RAG lokal (BRIN/Balittanah, ECOSTRESS, GEDI). Belum terhubung ke API registri benih resmi eksternal.'}
             </p>
           </div>
-          <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#202735] flex flex-col gap-1.5">
-            <span className="font-semibold text-[#A5B4FC] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#A5B4FC]" />
-              3. Standar Kalibrasi Baku
+          <div className="p-3 rounded-[3px] bg-[#121418] border border-[#242831] flex flex-col gap-1.5">
+            <span className="font-semibold text-[#F1F3F5]">
+              {isEn ? '3. Reference Standards & Planned' : '3. Reference Standards & Planned'}
             </span>
             <p className="text-[#8A949E]">
-              Formula pedotransfer Saxton-Rawls berbasis database USDA SSURGO untuk menghitung AWC tanah dan fallback terkalibrasi CONUS. Dataset regional non-aktif telah dieliminasi.
+              {isEn
+                ? 'USDA Texture Triangle, FAO-56/GAEZ, and GLDAS/ERA5 serve as conceptual/literature standards. No runtime SSURGO or FAO GAEZ raster queries.'
+                : 'Segitiga Tekstur USDA, FAO-56/GAEZ, dan GLDAS/ERA5 berperan sebagai standar konseptual/literatur. Tidak ada query runtime SSURGO maupun raster FAO GAEZ.'}
             </p>
           </div>
         </div>
@@ -604,7 +578,7 @@ export default function NasaChallengeResources() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari dataset, parameter, atau agensi..."
+            placeholder={isEn ? 'Search dataset, parameter, or agency...' : 'Cari dataset, parameter, atau agensi...'}
             className="w-full pl-9 pr-3 py-1.5 rounded-[3px] bg-[#12161E] border border-[#2C313A] text-xs text-[#F1F3F5] placeholder-[#6C757D] focus:border-[#00C2CC] focus:outline-none font-mono"
           />
         </div>
@@ -650,8 +624,8 @@ export default function NasaChallengeResources() {
                 </div>
 
                 {/* Scope Note */}
-                <div className="p-2 rounded-[3px] bg-[#0F131A] border border-[#1F2735] text-[11px] font-mono text-[#00C2CC] flex items-center gap-1.5">
-                  <Globe className="w-3 h-3 shrink-0" />
+                <div className="p-2.5 rounded-[3px] bg-[#121418] border border-[#242831] text-[11px] font-mono text-[#9BA3AE] flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-[#00C2CC] shrink-0" />
                   <span>{item.geographicScopeNote}</span>
                 </div>
 
@@ -661,7 +635,7 @@ export default function NasaChallengeResources() {
                 </p>
 
                 {/* Resolution & Frequency */}
-                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#12161E] p-2.5 rounded-[3px] border border-[#202530]">
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono bg-[#121418] p-2.5 rounded-[3px] border border-[#242831]">
                   <div>
                     <span className="text-[#6C757D] block text-[10px] uppercase tracking-wider">Resolusi Spasial</span>
                     <span className="text-[#D0D7DE] font-semibold">{item.resolution}</span>
@@ -696,12 +670,12 @@ export default function NasaChallengeResources() {
                 </div>
 
                 {/* Integration in TerraShaft */}
-                <div className="p-3 rounded-[3px] bg-[#12161E] border border-[#1F2735] flex flex-col gap-1 text-[11.5px]">
-                  <div className="flex items-center gap-1.5 font-medium text-[#38BDF8]">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#38BDF8]" />
+                <div className="p-3 rounded-[3px] bg-[#20242B]/80 border border-[#282F3A] flex flex-col gap-1 text-[11.5px]">
+                  <div className="flex items-center gap-1.5 font-medium text-[#F1F3F5]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#00C2CC]" />
                     <span>Implementasi di TerraShaft:</span>
                   </div>
-                  <p className="text-[#A6AFB8] leading-relaxed">
+                  <p className="text-[#9BA3AE] leading-relaxed">
                     {item.terraShaftRole}
                   </p>
                 </div>

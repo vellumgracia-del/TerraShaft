@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   Search,
   MapPin,
@@ -17,7 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Droplets,
-  Sparkles,
+  Info,
   ArrowRight,
   X,
   Check
@@ -137,8 +138,10 @@ export default function InteractiveFieldExplorer() {
     soilData,
     plans,
     selectedPathway,
-    isLoadingBioData
+    isLoadingBioData,
+    agroecologicalProfile
   } = useTerraShaftStore();
+  const { t, isEn } = useAppI18n();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -159,7 +162,16 @@ export default function InteractiveFieldExplorer() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchingPlace, setIsSearchingPlace] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    Array<{ displayName: string; shortName: string; lat: number; lon: number }>
+    Array<{
+      displayName: string;
+      shortName: string;
+      lat: number;
+      lon: number;
+      country?: string;
+      countryCode?: string;
+      district?: string;
+      province?: string;
+    }>
   >([]);
 
   // Filter Presets State
@@ -209,27 +221,41 @@ export default function InteractiveFieldExplorer() {
 
   const getAgronomicInsight = () => {
     if (isLoadingBioData) {
-      return 'Menghubungkan ke API telemetri NASA POWER dan ISRIC SoilGrids v2.0...';
+      return isEn
+        ? 'Connecting to NASA POWER & ISRIC SoilGrids v2.0 API telemetry...'
+        : 'Menghubungkan ke API telemetri NASA POWER dan ISRIC SoilGrids v2.0...';
     }
     const isNasaFallback = climateData?.source === 'FALLBACK_CLIMATOLOGY';
     const isSoilFallback = soilData?.source === 'REGIONAL_FALLBACK';
 
     if (isNasaFallback && isSoilFallback) {
-      return 'Mode failover regional: Menggunakan profil agroklimat dan pedologi regional terkalibrasi.';
+      return isEn
+        ? `Regional failover mode (${agroecologicalProfile.country}): calibrated agroclimate & pedotransfer estimate.`
+        : `Mode failover regional (${agroecologicalProfile.country}): profil agroklimat dan pedologi terkalibrasi.`;
     }
     if (!isNasaFallback && isSoilFallback) {
-      return 'Telemetri iklim bersumber dari NASA POWER. Profil tanah menggunakan estimasi pedotransfer regional.';
+      return isEn
+        ? 'Climate telemetry from NASA POWER. Soil profile using regional pedotransfer fallback.'
+        : 'Telemetri iklim bersumber dari NASA POWER. Profil tanah menggunakan estimasi pedotransfer regional.';
     }
     if (isNasaFallback && !isSoilFallback) {
-      return 'Profil tanah bersumber dari ISRIC SoilGrids (0-30cm). Data iklim menggunakan klimatologi regional.';
+      return isEn
+        ? 'Topsoil profile from ISRIC SoilGrids (0-30cm). Climate baseline using regional climatology.'
+        : 'Profil tanah bersumber dari ISRIC SoilGrids (0-30cm). Data iklim menggunakan klimatologi regional.';
     }
     if (isCriticalMoisture) {
-      return 'Cadangan air zona akar defisit kritis (<0.25). Prioritaskan komoditas toleran kekeringan (Sorgum / Orok-orok).';
+      return isEn
+        ? `Critical root-zone moisture (<0.25 GWETROOT) in ${agroecologicalProfile.agroecological_zone}: prioritize drought-tolerant species & localized cultivars.`
+        : `Cadangan air zona akar defisit kritis (<0.25) di ${agroecologicalProfile.agroecological_zone}: prioritaskan spesies tahan kekeringan terlokalisasi.`;
     }
     if (currentPlan && currentPlan.soilBatteryScore > currentPlan.initialBatteryScore) {
-      return `Pola rotasi ${currentPlan.title} memulihkan baterai tanah dari ${currentPlan.initialBatteryScore}% ke ${currentPlan.soilBatteryScore}%.`;
+      return isEn
+        ? `Active ${currentPlan.title} sequence restores Soil Battery from ${currentPlan.initialBatteryScore}% to ${currentPlan.soilBatteryScore}% (${agroecologicalProfile.country_code}).`
+        : `Pola rotasi ${currentPlan.title} memulihkan baterai tanah dari ${currentPlan.initialBatteryScore}% ke ${currentPlan.soilBatteryScore}%.`;
     }
-    return 'Kondisi air tanah memadai untuk budidaya multi-musim terencana.';
+    return isEn
+      ? `Soil moisture adequate for planned 4-season rotation in ${agroecologicalProfile.country}.`
+      : 'Kondisi air tanah memadai untuk budidaya multi-musim terencana.';
   };
 
   // Build Tile Layers
@@ -482,14 +508,33 @@ export default function InteractiveFieldExplorer() {
     shortName: string;
     lat: number;
     lon: number;
+    country?: string;
+    countryCode?: string;
+    district?: string;
+    province?: string;
   }) => {
     setSearchResults([]);
     setSearchQuery(item.shortName);
-    await setLocation(item.lat, item.lon, item.displayName);
+    await setLocation(item.lat, item.lon, item.displayName, undefined, {
+      country: item.country,
+      countryCode: item.countryCode,
+      district: item.district,
+      province: item.province
+    });
   };
 
   const handleSelectPreset = async (preset: PresetItem) => {
-    await setLocation(preset.lat, preset.lon, preset.full, preset.elevation);
+    const presetCountryMap: Record<string, { country: string; countryCode: string }> = {
+      'Machakos (Kenya)': { country: 'Kenya', countryCode: 'KE' },
+      'Central Valley (USA)': { country: 'United States', countryCode: 'US' },
+      'Murray-Darling (Australia)': { country: 'Australia', countryCode: 'AU' },
+      'Petrolina (Brazil)': { country: 'Brazil', countryCode: 'BR' }
+    };
+    const meta =
+      preset.category === 'global'
+        ? presetCountryMap[preset.name]
+        : { country: 'Indonesia', countryCode: 'ID' };
+    await setLocation(preset.lat, preset.lon, preset.full, preset.elevation, meta);
   };
 
   const handleManualCoordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -528,7 +573,7 @@ export default function InteractiveFieldExplorer() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari lokasi, desa, kabupaten, atau koordinat (misal: -10.15, 123.82)..."
+              placeholder={t('header.searchPlaceholder')}
               className="flex-1 bg-transparent text-xs text-[#F1F3F5] placeholder-[#8A949E] outline-none"
             />
             {isSearchingPlace && (
@@ -749,7 +794,7 @@ export default function InteractiveFieldExplorer() {
                 </div>
                 <div className="flex items-baseline gap-1.5 font-mono">
                   <span className="text-xl font-bold text-[#F1F3F5]">{gwetroot.toFixed(2)}</span>
-                  <span className="text-xs text-[#8A949E]">/ 1.00 GWETROOT (NASA SMAP)</span>
+                  <span className="text-xs text-[#8A949E]">/ 1.00 NASA POWER GWETROOT (Model-Assimilated)</span>
                 </div>
               </div>
 
@@ -771,7 +816,7 @@ export default function InteractiveFieldExplorer() {
 
               {/* Agronomic Insight Box */}
               <div className="p-3 bg-[#16191E] border border-[#282C34] rounded-[4px] flex gap-2 items-start">
-                <Sparkles className="w-3.5 h-3.5 text-[#00C2CC] shrink-0 mt-0.5" />
+                <Info className="w-3.5 h-3.5 text-[#00C2CC] shrink-0 mt-0.5" />
                 <p className="text-[11px] text-[#8A949E] leading-relaxed">
                   {getAgronomicInsight()}
                 </p>
@@ -799,45 +844,48 @@ export default function InteractiveFieldExplorer() {
 
         {/* Tab Content 2: ALL LOCATIONS / PRESETS */}
         {activeTab === 'presets' && (
-          <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-3 text-xs">
-            {/* Filter by name input */}
-            <div className="relative">
-              <input
-                type="text"
-                value={presetSearchText}
-                onChange={(e) => setPresetSearchText(e.target.value)}
-                placeholder="Filter by name..."
-                className="w-full px-3 py-1.5 bg-[#20252D] border border-[#282C34] rounded-[3px] text-xs text-[#F1F3F5] placeholder-[#8A949E] outline-none focus:border-[#009DA5]"
-              />
+          <div className="flex-1 min-h-0 flex flex-col text-xs">
+            {/* Fixed Filter Header */}
+            <div className="p-4 pb-2.5 flex flex-col gap-2.5 shrink-0 border-b border-[#242831]">
+              {/* Filter by name input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={presetSearchText}
+                  onChange={(e) => setPresetSearchText(e.target.value)}
+                  placeholder="Filter by name..."
+                  className="w-full px-3 py-1.5 bg-[#20252D] border border-[#282C34] rounded-[3px] text-xs text-[#F1F3F5] placeholder-[#8A949E] outline-none focus:border-[#009DA5]"
+                />
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1 flex-wrap text-[11px] font-mono text-[#8A949E]">
+                {(
+                  [
+                    { id: 'all', label: 'SEMUA' },
+                    { id: 'timor', label: 'TIMOR' },
+                    { id: 'indonesia', label: 'INDONESIA' },
+                    { id: 'global', label: 'GLOBAL' }
+                  ] as const
+                ).map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setPresetFilter(cat.id)}
+                    className={`px-2 py-1 rounded-[3px] transition-colors whitespace-nowrap cursor-pointer ${
+                      presetFilter === cat.id
+                        ? 'bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40 font-semibold'
+                        : 'hover:bg-[#20252D] hover:text-white'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Category Filter Pills (WEEKLY / MONTHLY style in screenshot) */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-mono text-[#8A949E]">
-              {(
-                [
-                  { id: 'all', label: 'SEMUA' },
-                  { id: 'timor', label: 'TIMOR' },
-                  { id: 'indonesia', label: 'INDONESIA' },
-                  { id: 'global', label: 'GLOBAL' }
-                ] as const
-              ).map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setPresetFilter(cat.id)}
-                  className={`px-2 py-0.5 rounded-[3px] transition-colors whitespace-nowrap ${
-                    presetFilter === cat.id
-                      ? 'bg-[#163A40] text-[#00C2CC] border border-[#009DA5]/40 font-semibold'
-                      : 'hover:bg-[#20252D] hover:text-white'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {/* List of Location Cards */}
-            <div className="flex flex-col gap-2 pt-1">
+            {/* Scrollable List of Location Cards */}
+            <div className="p-4 pt-3 flex-1 min-h-0 overflow-y-auto flex flex-col gap-2">
               {filteredPresets.map((preset) => {
                 const isSelected =
                   Math.abs(location.lat - preset.lat) < 0.001 &&
@@ -963,7 +1011,7 @@ export default function InteractiveFieldExplorer() {
                     : 'text-[#C1C7CD] hover:bg-[#20252D] hover:text-white'
                 }`}
               >
-                <span>Satelit Riil & Label</span>
+                <span>Satellite Basemap & Labels</span>
                 {mapType === 'satellite' && <Check className="w-3.5 h-3.5" />}
               </button>
               <button

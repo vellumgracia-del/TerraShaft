@@ -7,24 +7,15 @@ import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import PlanetFooter from '@/components/landing/PlanetFooter';
 import ScrollExpandSection from '@/components/landing/ScrollExpandSection';
+import { useAppI18n } from '@/lib/i18n';
 import {
   ArrowRight,
-  Satellite,
-  Layers,
-  BatteryCharging,
-  Bot,
-  MapPin,
   Compass,
-  ExternalLink,
-  ShieldCheck,
-  ChevronRight,
-  Droplets,
-  Sprout,
-  BarChart3,
-  Globe2
+  ExternalLink
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const { locale, setLocale, isEn } = useAppI18n();
   const [isScrolled, setIsScrolled] = useState(false);
   const isScrolledRef = useRef(false);
   const lenisRef = useRef<Lenis | null>(null);
@@ -86,30 +77,30 @@ export default function LandingPage() {
     {
       name: 'Kupang Timur',
       country: 'Indonesia',
-      climate: 'Semi-Arid Dryland',
-      soil: 'Vertisol Clay 48%',
-      crop: 'Corn · Soybean · Sorghum'
+      climate: isEn ? 'Semi-Arid Dryland' : 'Lahan Kering Semi-Arid',
+      soil: isEn ? 'Vertisol Clay 48%' : 'Lempung Vertisol 48%',
+      crop: isEn ? 'Corn · Soybean · Sorghum' : 'Jagung · Kedelai · Sorgum'
     },
     {
       name: 'Machakos County',
       country: 'Kenya',
-      climate: 'East African Semi-Arid',
-      soil: 'Sandy Clay Loam',
-      crop: 'Drought Sorghum · Cowpea'
+      climate: isEn ? 'East African Semi-Arid' : 'Semi-Arid Afrika Timur',
+      soil: isEn ? 'Sandy Clay Loam' : 'Lempung Liat Berpasir',
+      crop: isEn ? 'Drought Sorghum · Cowpea' : 'Sorgum Tahan Kering · Kacang Tunggak'
     },
     {
       name: 'Central Valley',
-      country: 'California, USA',
-      climate: 'Mediterranean Basin',
-      soil: 'Alluvial Silt Loam',
-      crop: 'Cover Crop · Alfalfa'
+      country: isEn ? 'California, USA' : 'California, AS',
+      climate: isEn ? 'Mediterranean Basin' : 'Cekungan Mediterania',
+      soil: isEn ? 'Alluvial Silt Loam' : 'Lempung Debu Aluvial',
+      crop: isEn ? 'Cover Crop · Alfalfa' : 'Tanaman Penutup · Alfalfa'
     },
     {
       name: 'Murray-Darling',
       country: 'Australia',
-      climate: 'Temperate Arid Basin',
-      soil: 'Red Chromosol',
-      crop: 'Wheat · Chickpea'
+      climate: isEn ? 'Temperate Arid Basin' : 'Cekungan Arid Beriklim Sedang',
+      soil: isEn ? 'Red Chromosol' : 'Kromosol Merah',
+      crop: isEn ? 'Wheat · Chickpea' : 'Gandum · Kacang Arab'
     }
   ];
 
@@ -141,28 +132,28 @@ export default function LandingPage() {
               onClick={(e) => scrollToSection(e, 'capabilities')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Capabilities
+              {isEn ? 'Capabilities' : 'Kapabilitas'}
             </a>
             <a
               href="#science"
               onClick={(e) => scrollToSection(e, 'science')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Science & Data
+              {isEn ? 'Science & Data' : 'Sains & Data'}
             </a>
             <a
               href="#pathways"
               onClick={(e) => scrollToSection(e, 'pathways')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              4-Season Pathways
+              {isEn ? '4-Season Pathways' : 'Jalur 4-Musim'}
             </a>
             <a
               href="#hotspots"
               onClick={(e) => scrollToSection(e, 'hotspots')}
               className="hover:text-white transition-colors cursor-pointer"
             >
-              Global Hotspots
+              {isEn ? 'Global Hotspots' : 'Titik Pantau Global'}
             </a>
             <Link href="/field-advisor" className="hover:text-[#00C2CC] transition-colors">
               Field Advisor AI
@@ -171,11 +162,32 @@ export default function LandingPage() {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          <div className="inline-flex items-center rounded-[4px] bg-[#16191E]/90 border border-[#282C34] p-0.5 text-[11px] font-semibold">
+            <button
+              type="button"
+              onClick={() => setLocale('en')}
+              className={`px-2 py-1 rounded-[3px] transition-colors cursor-pointer ${
+                locale === 'en' ? 'bg-[#00C2CC] text-[#121417]' : 'text-[#A6AFB8] hover:text-white'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocale('id')}
+              className={`px-2 py-1 rounded-[3px] transition-colors cursor-pointer ${
+                locale === 'id' ? 'bg-[#00C2CC] text-[#121417]' : 'text-[#A6AFB8] hover:text-white'
+              }`}
+            >
+              ID
+            </button>
+          </div>
+
           <Link
             href="/login"
             className="text-xs sm:text-[13px] font-medium text-[#C1C7CD] hover:text-white px-3 py-1.5 transition-colors"
           >
-            Sign In
+            {locale === 'en' ? 'Sign In' : 'Masuk'}
           </Link>
 
           <Link
@@ -186,7 +198,7 @@ export default function LandingPage() {
                 : 'px-3 py-1.5 text-[#00C2CC] hover:text-[#33D4DC] bg-transparent'
             }`}
           >
-            <span>Launch Platform</span>
+            <span>{locale === 'en' ? 'Launch Platform' : 'Buka Platform'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -214,15 +226,17 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-[1280px] mx-auto flex flex-col items-center text-center">
           {/* Headline Utama */}
           <h1 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold tracking-tight text-white max-w-5xl leading-[1.12]">
-            See Earth from Space. <br />
+            {isEn ? 'See Earth from Space.' : 'Pantau Bumi dari Orbit.'} <br />
             <span className="aurora-text">
-              Regenerate Soil on the Ground.
+              {isEn ? 'Regenerate Soil on the Ground.' : 'Pulihkan Tanah di Lapangan.'}
             </span>
           </h1>
 
           {/* Subtitle contextualizing orbital satellite telemetry */}
           <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-[#C1C7CD] max-w-3xl leading-relaxed font-normal">
-            Synthesizing daily satellite tile grids, NASA SMAP root-zone soil moisture telemetry, and ISRIC 0–30 cm pedology into climate-adaptive 4-season crop rotation pathways. Detecting moisture stress early to prevent crop failure across semi-arid frontiers.
+            {isEn
+              ? 'Synthesizing NASA POWER agroclimatology (GWETROOT model-assimilated root-zone wetness, PRECTOTCORR precipitation, solar radiation) and ISRIC 0–30 cm pedology into climate-adaptive 4-season crop rotation pathways to detect moisture stress early across semi-arid frontiers.'
+              : 'Menggabungkan agroklimatologi NASA POWER (kelembapan zona akar GWETROOT, curah hujan PRECTOTCORR, radiasi surya) dan pedologi ISRIC 0-30 cm menjadi jalur rotasi tanaman 4-musim adaptif iklim untuk mendeteksi stres air lebih dini di lahan kering semi-arid.'}
           </p>
 
           {/* Action CTAs */}
@@ -231,7 +245,7 @@ export default function LandingPage() {
               href="/overview"
               className="px-6 py-3 rounded-[4px] bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-sm font-semibold transition-all flex items-center gap-2 shadow-lg shadow-[#00C2CC]/25 cursor-pointer"
             >
-              <span>Launch Platform</span>
+              <span>{isEn ? 'Launch Platform' : 'Buka Platform'}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
@@ -240,14 +254,14 @@ export default function LandingPage() {
               className="px-6 py-3 rounded-[4px] bg-[#12161F]/90 hover:bg-[#1A1F26] border border-[#2E3540] hover:border-[#00C2CC]/60 text-sm font-medium text-white transition-all flex items-center gap-2 backdrop-blur-md"
             >
               <Compass className="w-4 h-4 text-[#00C2CC]" />
-              <span>Explore GIS Field Map</span>
+              <span>{isEn ? 'Explore GIS Field Map' : 'Jelajahi Peta Lahan GIS'}</span>
             </Link>
 
             <Link
               href="/data-sources"
               className="px-5 py-3 rounded-[4px] bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-sm font-medium text-[#C1C7CD] hover:text-white transition-colors"
             >
-              Audit Data Provenance
+              {isEn ? 'Audit Data Provenance' : 'Audit Sumber Data'}
             </Link>
           </div>
         </div>
@@ -260,13 +274,15 @@ export default function LandingPage() {
         <div className="max-w-[1280px] mx-auto flex flex-col gap-12">
           <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
             <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-              CORE CAPABILITIES
+              {isEn ? 'CORE CAPABILITIES' : 'KAPABILITAS UTAMA'}
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#F1F3F5]">
-              Space-Grade Telemetry Architecture
+              {isEn ? 'Space-Grade Telemetry Architecture' : 'Arsitektur Telemetri Kelas Satelit'}
             </h2>
             <p className="text-xs sm:text-sm text-[#9BA3AE] mt-3 leading-relaxed">
-              Bridging orbital satellite constellations, international pedotransfer models, and agronomic AI grounded in peer-reviewed scientific SOPs.
+              {isEn
+                ? 'Bridging orbital satellite constellations, international pedotransfer models, and agronomic AI grounded in peer-reviewed scientific SOPs.'
+                : 'Menghubungkan konstelasi satelit orbit, model pedotransfer internasional, dan AI agronomi berbasis SOP ilmiah yang terverifikasi.'}
             </p>
           </div>
 
@@ -288,10 +304,12 @@ export default function LandingPage() {
               {/* Card Body */}
               <div className="p-5 flex flex-col flex-1">
                 <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
-                  NASA Earth Telemetry
+                  {isEn ? 'NASA Earth Telemetry' : 'Telemetri Bumi NASA'}
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Live NASA POWER agroclimatology (SMAP L4 GWETROOT, GPM-derived precipitation, CERES irradiance) paired with Sentinel-2, Landsat &amp; MODIS NDVI via Planetary Computer.
+                  {isEn
+                    ? 'NASA POWER live agroclimatology (GWETROOT root-zone wetness, PRECTOTCORR precipitation, T2M, solar irradiance) paired with Sentinel-2, Landsat & MODIS NDVI via Planetary Computer.'
+                    : 'Agroklimatologi langsung NASA POWER (kelembapan zona akar GWETROOT, curah hujan PRECTOTCORR, suhu T2M, iradiansi surya) dipadukan dengan NDVI Sentinel-2, Landsat & MODIS via Planetary Computer.'}
                 </p>
               </div>
             </div>
@@ -313,10 +331,12 @@ export default function LandingPage() {
               {/* Card Body */}
               <div className="p-5 flex flex-col flex-1">
                 <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
-                  ISRIC Soil Physics (0-30cm)
+                  {isEn ? 'ISRIC Soil Physics (0-30cm)' : 'Fisika Tanah ISRIC (0-30 cm)'}
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Sand-silt-clay texture grading, Soil Organic Carbon (SOC), pH H2O, CEC, and bulk density calibrated by Wageningen University.
+                  {isEn
+                    ? 'Sand-silt-clay texture grading, Soil Organic Carbon (SOC), pH H2O, CEC, and bulk density calibrated by Wageningen University.'
+                    : 'Gradasi tekstur pasir-debu-liat, Karbon Organik Tanah (SOC), pH H2O, KTK, dan kerapatan massa yang dikalibrasi oleh Wageningen University.'}
                 </p>
               </div>
             </div>
@@ -338,10 +358,12 @@ export default function LandingPage() {
               {/* Card Body */}
               <div className="p-5 flex flex-col flex-1">
                 <h3 className="text-base font-semibold text-[#F1F3F5] group-hover:text-white transition-colors">
-                  The Soil Battery Engine
+                  {isEn ? 'The Soil Battery Engine' : 'Mesin Baterai Tanah'}
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Intuitive Soil Battery dynamic: Monoculture drains soil reserves (-20%/season), while legumes and cover crops actively recharge fertility (+15%).
+                  {isEn
+                    ? 'Intuitive Soil Battery dynamic: Monoculture drains soil reserves (-20%/season), while legumes and cover crops actively recharge fertility (+15%).'
+                    : 'Dinamika Baterai Tanah yang intuitif: monokultur menguras cadangan tanah (-20%/musim), sedangkan legum dan tanaman penutup mengisi ulang kesuburan (+15%).'}
                 </p>
               </div>
             </div>
@@ -366,7 +388,9 @@ export default function LandingPage() {
                   Field Advisor AI (RAG)
                 </h3>
                 <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                  Intelligent agronomic advisory grounded in real-time land telemetry and 11 verified benchmarks from BRIN, Balittanah, and FAO-56 standards.
+                  {isEn
+                    ? 'Intelligent agronomic advisory grounded in real-time land telemetry and 11 verified benchmarks from BRIN, Balittanah, and FAO-56 standards.'
+                    : 'Konsultasi agronomi cerdas berbasis telemetri lahan real-time dan 11 tolok ukur terverifikasi dari BRIN, Balittanah, serta standar FAO-56.'}
                 </p>
               </div>
             </div>
@@ -380,12 +404,16 @@ export default function LandingPage() {
           {/* Top Headline & Description */}
           <div className="max-w-4xl">
             <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-3">
-              SCIENCE & DATA BENCHMARKS
+              {isEn ? 'SCIENCE & DATA BENCHMARKS' : 'TOLOK UKUR SAINS & DATA'}
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#F1F3F5] leading-snug">
-              <span className="text-white">Scientific precision at planetary scale.</span>{' '}
+              <span className="text-white">
+                {isEn ? 'Scientific precision at planetary scale.' : 'Presisi ilmiah pada skala planet.'}
+              </span>{' '}
               <span className="text-[#9BA3AE] font-normal">
-                Evaluating every land coordinate across 1,296 rotation permutations, 250-meter soil profiles, and satellite moisture indices to eliminate crop failure.
+                {isEn
+                  ? 'Evaluating every land coordinate across 1,296 rotation permutations, 250-meter soil profiles, and satellite moisture indices to eliminate crop failure.'
+                  : 'Mengevaluasi setiap koordinat lahan melintasi 1.296 permutasi rotasi, profil tanah 250 meter, dan indeks kelembapan satelit untuk menekan risiko gagal panen.'}
               </span>
             </h2>
           </div>
@@ -409,7 +437,7 @@ export default function LandingPage() {
                 1,296
               </span>
               <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
-                4-Season Permutations
+                {isEn ? '4-Season Permutations' : 'Permutasi 4-Musim'}
               </span>
             </div>
 
@@ -418,7 +446,7 @@ export default function LandingPage() {
                 250m
               </span>
               <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
-                Soil Physics Resolution
+                {isEn ? 'Soil Physics Resolution' : 'Resolusi Fisika Tanah'}
               </span>
             </div>
 
@@ -427,7 +455,7 @@ export default function LandingPage() {
                 +160 kg
               </span>
               <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
-                Natural N Fixation / Ha
+                {isEn ? 'Natural N Fixation / Ha' : 'Fiksasi N Alami / Ha'}
               </span>
             </div>
 
@@ -436,7 +464,7 @@ export default function LandingPage() {
                 40%-60%
               </span>
               <span className="text-xs sm:text-sm font-medium text-[#C1C7CD] mt-2">
-                Water Conservation
+                {isEn ? 'Water Conservation' : 'Konservasi Air'}
               </span>
             </div>
           </div>
@@ -452,13 +480,15 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-                GLOBAL COVERAGE
+                {isEn ? 'GLOBAL COVERAGE' : 'CAKUPAN GLOBAL'}
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#F1F3F5]">
-                Deployable Anywhere on Earth
+                {isEn ? 'Deployable Anywhere on Earth' : 'Siap Diterapkan di Mana Saja di Bumi'}
               </h2>
               <p className="text-xs sm:text-sm text-[#9BA3AE] mt-2">
-                NASA and ISRIC satellite telemetry covers global terrestrial coordinates from -90° to +90° latitude.
+                {isEn
+                  ? 'NASA and ISRIC satellite telemetry covers global terrestrial coordinates from -90° to +90° latitude.'
+                  : 'Telemetri satelit NASA dan ISRIC mencakup koordinat daratan global dari lintang -90° hingga +90°.'}
               </p>
             </div>
 
@@ -466,7 +496,7 @@ export default function LandingPage() {
               href="/field-map"
               className="inline-flex items-center gap-1.5 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-semibold"
             >
-              <span>Explore Global Satellite Map</span>
+              <span>{isEn ? 'Explore Global Satellite Map' : 'Jelajahi Peta Satelit Global'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -518,13 +548,13 @@ export default function LandingPage() {
                   </div>
                   <div className="mt-3 flex flex-col gap-1 text-[11px] text-[#A6AFB8]">
                     <div>
-                      <span className="text-[#6C757D]">Climate:</span> {h.climate}
+                      <span className="text-[#6C757D]">{isEn ? 'Climate:' : 'Iklim:'}</span> {h.climate}
                     </div>
                     <div>
-                      <span className="text-[#6C757D]">Soil:</span> {h.soil}
+                      <span className="text-[#6C757D]">{isEn ? 'Soil:' : 'Tanah:'}</span> {h.soil}
                     </div>
                     <div>
-                      <span className="text-[#6C757D]">Rotation:</span> {h.crop}
+                      <span className="text-[#6C757D]">{isEn ? 'Rotation:' : 'Rotasi:'}</span> {h.crop}
                     </div>
                   </div>
                 </div>
@@ -532,7 +562,7 @@ export default function LandingPage() {
                   href="/field-map"
                   className="mt-4 pt-3 border-t border-[#242831] text-[11px] text-[#00C2CC] hover:underline flex items-center justify-between"
                 >
-                  <span>Explore AOI</span>
+                  <span>{isEn ? 'Explore AOI' : 'Jelajahi AOI'}</span>
                   <ExternalLink className="w-3 h-3" />
                 </Link>
               </div>

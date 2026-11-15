@@ -31,5 +31,6 @@ export interface LocationCoordinates {
   placeName: string;
   district?: string;
   province?: string;
+  country?: string;
+  countryCode?: string; // ISO-3166 alpha-2 e.g. "ID", "US", "KE"
 }
-

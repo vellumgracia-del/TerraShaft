@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
 import {
   BatteryCharging,
   ArrowUpRight,
@@ -25,6 +26,7 @@ interface SoilBatteryCardProps {
 
 export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardProps) {
   const { plans, selectedPathway, soilData, climateData } = useTerraShaftStore();
+  const { isEn } = useAppI18n();
 
   const currentPlan = plans ? plans[selectedPathway] : null;
 
@@ -61,11 +63,13 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
               <BatteryCharging className="w-4 h-4" />
             </span>
             <h2 className="text-base font-medium text-[#F1F3F5] tracking-tight">
-              Baterai Tanah (Soil Battery Screening Score)
+              {isEn ? 'Soil Bio-Battery Screening Score' : 'Baterai Tanah (Soil Battery Screening Score)'}
             </h2>
           </div>
           <p className="text-xs text-[#8A949E] mt-0.5">
-            Model proyeksi kapasitas kesuburan tanah melalui pergiliran tanaman regeneratif
+            {isEn
+              ? 'Projected soil organic regeneration & hydraulic reserve across 4-season adaptive cycling'
+              : 'Model proyeksi kapasitas kesuburan tanah melalui pergiliran tanaman regeneratif'}
           </p>
         </div>
 
@@ -75,7 +79,7 @@ export default function SoilBatteryCard({ onExploreRotation }: SoilBatteryCardPr
             onClick={onExploreRotation}
             className="text-xs font-mono text-[#00C2CC] hover:underline self-start sm:self-auto"
           >
-            Lihat Detail Rotasi &rarr;
+            {isEn ? 'Explore 4-Season Rotation' : 'Lihat Detail Rotasi'} &rarr;
           </button>
         )}
       </div>

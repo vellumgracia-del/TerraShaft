@@ -10,8 +10,8 @@ function buildReadmeMarkdown(lang: "id" | "en"): string {
 
   return `<div align="center">
 
-[![Bahasa Indonesia](${t("badgeId")})](./README.md)
-[![English](${t("badgeEn")})](./README.en.md)
+[![English](${t("badgeEn")})](./README.md)
+[![Bahasa Indonesia](${t("badgeId")})](./README.id.md)
 
 </div>
 
@@ -39,8 +39,8 @@ ${t("sectionsBody")}
 
 async function main() {
   await i18next.init({
-    lng: "id",
-    fallbackLng: "id",
+    lng: "en",
+    fallbackLng: "en",
     ns: ["readme"],
     defaultNS: "readme",
     interpolation: {
@@ -49,13 +49,13 @@ async function main() {
     resources: readmeResources,
   });
 
-  const mdId = buildReadmeMarkdown("id");
   const mdEn = buildReadmeMarkdown("en");
+  const mdId = buildReadmeMarkdown("id");
 
-  fs.writeFileSync(path.join(ROOT_DIR, "README.md"), mdId, "utf8");
-  fs.writeFileSync(path.join(ROOT_DIR, "README.en.md"), mdEn, "utf8");
+  fs.writeFileSync(path.join(ROOT_DIR, "README.md"), mdEn, "utf8");
+  fs.writeFileSync(path.join(ROOT_DIR, "README.id.md"), mdId, "utf8");
 
-  console.log("✅ [i18next] Generated README.md (Bahasa Indonesia) and README.en.md (English).");
+  console.log("✅ [i18next] Generated README.md (English default) and README.id.md (Bahasa Indonesia).");
 }
 
 main().catch((err) => {

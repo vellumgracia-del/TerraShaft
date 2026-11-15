@@ -18,6 +18,8 @@ export interface AppEnvConfig {
   appName: string;
   defaultLocation: string;
   geminiApiKey: string;
+  deepseekApiKey: string;
+  deepseekModel: string;
 }
 
 const DEFAULT_NASA_POWER_BASE = 'https://power.larc.nasa.gov/api';
@@ -78,6 +80,8 @@ export function getAppEnv(): AppEnvConfig {
     earthObservationTimeoutMs,
     appName,
     defaultLocation,
-    geminiApiKey: process.env.GEMINI_API_KEY?.trim() || ''
+    geminiApiKey: process.env.GEMINI_API_KEY?.trim() || '',
+    deepseekApiKey: process.env.DEEPSEEK_API_KEY?.trim() || '',
+    deepseekModel: process.env.DEEPSEEK_MODEL?.trim() || 'deepseek-flash'
   };
 }

@@ -110,9 +110,9 @@ export function getNasaSmapDisplayStatus(prov?: TerraShaftProvenance): SourceDis
     case 'loading':
       return {
         shortLabel: 'Memuat kelembapan...',
-        longLabel: 'Memuat estimasi kelembapan zona akar...',
-        sourceLabel: 'SMAP L4 GWETROOT',
-        detailText: 'Mengambil estimasi kelembapan tanah zona akar...',
+        longLabel: 'Memuat indikator NASA POWER GWETROOT (model-assimilated)...',
+        sourceLabel: 'NASA POWER GWETROOT (Model)',
+        detailText: 'Mengambil estimasi kelembapan tanah zona akar via NASA POWER...',
         tone: 'neutral',
         isOfficialApiResponse: false,
         isFieldObservation: false
@@ -121,9 +121,9 @@ export function getNasaSmapDisplayStatus(prov?: TerraShaftProvenance): SourceDis
     case 'cached':
       return {
         shortLabel: 'SMAP L4 (Model)',
-        longLabel: 'SMAP L4 · Model-assimilated root-zone moisture estimate',
-        sourceLabel: 'SMAP L4 GWETROOT (0–100 cm)',
-        detailText: 'GWETROOT merupakan estimasi kelembapan zona akar berbasis model dan asimilasi observasi satelit NASA, bukan pembacaan sensor in-situ di petak lahan.',
+        longLabel: 'NASA POWER GWETROOT · Model-assimilated root-zone wetness indicator (no direct SMAP API)',
+        sourceLabel: 'NASA POWER GWETROOT (0–100 cm, model-assimilated)',
+        detailText: 'GWETROOT dari NASA POWER merupakan indikator kelembapan zona akar model-assimilated (bukan direct SMAP API dan bukan pembacaan sensor in-situ di petak lahan).',
         tone: 'success',
         isOfficialApiResponse: true,
         isFieldObservation: false
@@ -131,8 +131,8 @@ export function getNasaSmapDisplayStatus(prov?: TerraShaftProvenance): SourceDis
     case 'demo':
       return {
         shortLabel: 'Model demo estimate',
-        longLabel: 'Simulasi Kelembapan Akar (Demo)',
-        sourceLabel: 'SMAP L4 (Simulasi Demo)',
+        longLabel: 'Simulasi Kelembapan Akar GWETROOT (Demo)',
+        sourceLabel: 'GWETROOT (Simulasi Demo)',
         detailText: 'Estimasi kelembapan disimulasikan untuk keperluan demonstrasi.',
         tone: 'info',
         isOfficialApiResponse: false,
@@ -142,9 +142,9 @@ export function getNasaSmapDisplayStatus(prov?: TerraShaftProvenance): SourceDis
     default:
       return {
         shortLabel: 'Regional model estimate',
-        longLabel: 'SMAP-compatible regional fallback estimate',
+        longLabel: 'GWETROOT-compatible regional fallback estimate',
         sourceLabel: 'Model Hidrologi Regional',
-        detailText: 'Estimasi kelembapan zona perakaran berbasis model regional terkalibrasi Nusa Tenggara.',
+        detailText: 'Estimasi kelembapan zona perakaran berbasis model regional terkalibrasi.',
         tone: 'warning',
         isOfficialApiResponse: false,
         isFieldObservation: false

@@ -4,8 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { useAppI18n } from '@/lib/i18n';
 
 export default function ScrollExpandSection() {
+  const { isEn } = useAppI18n();
   const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -143,13 +145,15 @@ export default function ScrollExpandSection() {
               {/* Header */}
               <div className="max-w-2xl text-left">
                 <div className="text-xs font-mono uppercase tracking-wider text-[#00C2CC] mb-2">
-                  3 OPTIMIZATION PATHWAYS
+                  {isEn ? '3 OPTIMIZATION PATHWAYS' : '3 JALUR OPTIMASI'}
                 </div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#F1F3F5] tracking-tight">
-                  Choose Strategy Based on Farm Priorities
+                  {isEn ? 'Choose Strategy Based on Farm Priorities' : 'Pilih Strategi Berdasarkan Prioritas Lahan'}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#9BA3AE] mt-2 leading-relaxed">
-                  The engine computes balanced trade-offs between cash profitability, soil battery longevity, and El Niño drought resilience.
+                  {isEn
+                    ? 'The engine computes balanced trade-offs between cash profitability, soil battery longevity, and El Niño drought resilience.'
+                    : 'Mesin menghitung keseimbangan antara profitabilitas tunai, ketahanan baterai tanah, dan daya tahan kekeringan El Nino.'}
                 </p>
               </div>
 
@@ -159,22 +163,28 @@ export default function ScrollExpandSection() {
                 <div className="p-6 rounded-[8px] bg-[#10141A]/90 border border-[#282C34] hover:border-[#00C2CC]/40 transition-all flex flex-col justify-between shadow-xl">
                   <div>
                     <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
-                      Pathway A
+                      {isEn ? 'Pathway A' : 'Jalur A'}
                     </div>
                     <h3 className="text-lg font-semibold text-[#F1F3F5] mt-1">
-                      Max Soil Regeneration
+                      {isEn ? 'Max Soil Regeneration' : 'Regenerasi Tanah Maksimal'}
                     </h3>
                     <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                      Restores degraded soil and breaks plow pans using deep-taproot cover crops (Sunn Hemp) and high-efficiency nitrogen-fixing legumes.
+                      {isEn
+                        ? 'Restores degraded soil and breaks plow pans using deep-taproot cover crops (Sunn Hemp) and high-efficiency nitrogen-fixing legumes.'
+                        : 'Memulihkan tanah terdegradasi dan memecah lapisan padas dengan tanaman penutup berakar tunggang dalam (Orok-orok) serta legum penambat nitrogen.'}
                     </p>
                     <div className="mt-4 pt-4 border-t border-[#282C34]/60 flex flex-col gap-2.5 text-xs text-[#C1C7CD]">
                       <div className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-[1px] bg-[#00C2CC] shrink-0 mt-1.5" />
-                        <span className="leading-snug">Fully recharged soil battery (+25% to +35%)</span>
+                        <span className="leading-snug">
+                          {isEn ? 'Fully recharged soil battery (+25% to +35%)' : 'Pengisian ulang baterai tanah penuh (+25% hingga +35%)'}
+                        </span>
                       </div>
                       <div className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-[1px] bg-[#00C2CC] shrink-0 mt-1.5" />
-                        <span className="leading-snug">Deep biomass injection and plow pan remediation</span>
+                        <span className="leading-snug">
+                          {isEn ? 'Deep biomass injection and plow pan remediation' : 'Injeksi biomassa dalam dan perbaikan lapisan padas'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -182,7 +192,7 @@ export default function ScrollExpandSection() {
                     href="/rotation-planner"
                     className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1 group"
                   >
-                    <span>Explore Pathway A Simulation</span>
+                    <span>{isEn ? 'Explore Pathway A Simulation' : 'Jelajahi Simulasi Jalur A'}</span>
                     <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -190,26 +200,32 @@ export default function ScrollExpandSection() {
                 {/* Pathway B */}
                 <div className="p-6 rounded-[8px] bg-[#10141A]/95 border border-[#00C2CC]/60 flex flex-col justify-between relative shadow-2xl shadow-[#00C2CC]/10">
                   <div className="absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] border border-[#164E55]">
-                    DRYLAND RECOMMENDATION
+                    {isEn ? 'DRYLAND RECOMMENDATION' : 'REKOMENDASI LAHAN KERING'}
                   </div>
                   <div>
                     <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
-                      Pathway B
+                      {isEn ? 'Pathway B' : 'Jalur B'}
                     </div>
                     <h3 className="text-lg font-semibold text-[#F1F3F5] mt-1">
-                      Drought Resilience
+                      {isEn ? 'Drought Resilience' : 'Ketahanan Kekeringan'}
                     </h3>
                     <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                      Fortified against prolonged dry spells. Blocks water-intensive crops during peak drought, prioritizing grain sorghum and drought-tolerant legumes.
+                      {isEn
+                        ? 'Fortified against prolonged dry spells. Blocks water-intensive crops during peak drought, prioritizing grain sorghum and drought-tolerant legumes.'
+                        : 'Diperkuat untuk menghadapi kemarau panjang. Menghindari tanaman boros air saat puncak kekeringan, memprioritaskan sorgum biji dan legum tahan kering.'}
                     </p>
                     <div className="mt-4 pt-4 border-t border-[#00C2CC]/20 flex flex-col gap-2.5 text-xs text-[#C1C7CD]">
                       <div className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-[1px] bg-[#00C2CC] shrink-0 mt-1.5" />
-                        <span className="leading-snug">Zero crop failure risk (safe water deficit thresholds)</span>
+                        <span className="leading-snug">
+                          {isEn ? 'Zero crop failure risk (safe water deficit thresholds)' : 'Risiko gagal panen minimal (ambang defisit air aman)'}
+                        </span>
                       </div>
                       <div className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-[1px] bg-[#00C2CC] shrink-0 mt-1.5" />
-                        <span className="leading-snug">Up to 60% water savings versus monoculture</span>
+                        <span className="leading-snug">
+                          {isEn ? 'Up to 60% water savings versus monoculture' : 'Hemat air hingga 60% dibanding monokultur'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -217,7 +233,7 @@ export default function ScrollExpandSection() {
                     href="/rotation-planner"
                     className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1 group"
                   >
-                    <span>Explore Pathway B Simulation</span>
+                    <span>{isEn ? 'Explore Pathway B Simulation' : 'Jelajahi Simulasi Jalur B'}</span>
                     <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -226,22 +242,28 @@ export default function ScrollExpandSection() {
                 <div className="p-6 rounded-[8px] bg-[#10141A]/90 border border-[#282C34] hover:border-[#00C2CC]/40 transition-all flex flex-col justify-between shadow-xl">
                   <div>
                     <div className="text-xs font-mono font-semibold text-[#00C2CC] uppercase tracking-wider">
-                      Pathway C
+                      {isEn ? 'Pathway C' : 'Jalur C'}
                     </div>
                     <h3 className="text-lg font-semibold text-[#F1F3F5] mt-1">
-                      Cash-Flow Optimized
+                      {isEn ? 'Cash-Flow Optimized' : 'Optimasi Arus Kas'}
                     </h3>
                     <p className="text-xs text-[#9BA3AE] mt-2 leading-relaxed">
-                      Maximizes seasonal farmer cash revenue while keeping cumulative water deficit within safe tolerance limits to safeguard yields.
+                      {isEn
+                        ? 'Maximizes seasonal farmer cash revenue while keeping cumulative water deficit within safe tolerance limits to safeguard yields.'
+                        : 'Memaksimalkan pendapatan tunai musiman petani sambil menjaga defisit air kumulatif tetap dalam batas toleransi aman untuk melindungi hasil panen.'}
                     </p>
                     <div className="mt-4 pt-4 border-t border-[#282C34]/60 flex flex-col gap-2.5 text-xs text-[#C1C7CD]">
                       <div className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-[1px] bg-[#00C2CC] shrink-0 mt-1.5" />
-                        <span className="leading-snug">Highest economic profitability index</span>
+                        <span className="leading-snug">
+                          {isEn ? 'Highest economic profitability index' : 'Indeks profitabilitas ekonomi tertinggi'}
+                        </span>
                       </div>
                       <div className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-[1px] bg-[#00C2CC] shrink-0 mt-1.5" />
-                        <span className="leading-snug">Strategic rotation of high-market-value crops</span>
+                        <span className="leading-snug">
+                          {isEn ? 'Strategic rotation of high-market-value crops' : 'Rotasi strategis komoditas bernilai pasar tinggi'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -249,7 +271,7 @@ export default function ScrollExpandSection() {
                     href="/rotation-planner"
                     className="mt-6 text-xs text-[#00C2CC] hover:text-[#33D4DC] font-medium flex items-center gap-1 group"
                   >
-                    <span>Explore Pathway C Simulation</span>
+                    <span>{isEn ? 'Explore Pathway C Simulation' : 'Jelajahi Simulasi Jalur C'}</span>
                     <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -267,7 +289,7 @@ export default function ScrollExpandSection() {
           }}
         >
           <h2 className="text-3xl sm:text-[clamp(1.75rem,4.2vw,4.5rem)] font-black text-white tracking-tight leading-none text-center whitespace-normal sm:whitespace-nowrap drop-shadow-[0_15px_35px_rgba(0,0,0,0.9)] max-w-[90vw]">
-            Observe. Simulate. Harvest.
+            {isEn ? 'Observe. Simulate. Harvest.' : 'Amati. Simulasikan. Panen.'}
           </h2>
 
           {/* Scroll indicator hint at bottom of viewport */}
@@ -275,7 +297,7 @@ export default function ScrollExpandSection() {
             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-[11px] font-mono tracking-widest text-[#8A949E] transition-opacity duration-300"
             style={{ opacity: scrollHintOpacity }}
           >
-            <span>SCROLL</span>
+            <span>{isEn ? 'SCROLL' : 'GULIR'}</span>
             <ChevronDown className="w-3.5 h-3.5 animate-bounce text-[#00C2CC]" />
           </div>
         </div>

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
+import { useAppI18n } from '@/lib/i18n';
+import { saveApiKey, getApiKeyStatus, clearApiKey, StoredKeyStatus } from '@/lib/keyVault';
 import {
   User,
   Sliders,
@@ -20,9 +21,9 @@ import {
   Satellite,
   Layers,
   Sparkles,
-  ShieldCheck,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Languages
 } from 'lucide-react';
 
 type TabKey = 'profile' | 'preferences' | 'integrations' | 'security';
@@ -64,17 +65,21 @@ export default function SettingsPage() {
     toggleFieldMode,
     selectedPathway,
     setSelectedPathway,
-    priorities,
     setPriorityPreset
   } = useTerraShaftStore();
+  const { t, locale, setLocale, isEn } = useAppI18n();
 
   const [activeTab, setActiveTab] = useState<TabKey>('profile');
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Gemini API Key state
+  // AI API Key state (never re-populate saved plaintext key into input)
   const [geminiKey, setGeminiKey] = useState('');
-  const [showKey, setShowKey] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<StoredKeyStatus>({
+    hasKey: false,
+    provider: 'unknown',
+    maskedHint: ''
+  });
 
   // Password state
   const [currPassword, setCurrPassword] = useState('');
@@ -83,14 +88,16 @@ export default function SettingsPage() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('terrashaft_user_profile');
-      if (saved) setProfile(JSON.parse(saved));
-      const savedKey = localStorage.getItem('terrashaft_gemini_key');
-      if (savedKey) setGeminiKey(savedKey);
-    } catch {
-      // ignore
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = localStorage.getItem('terrashaft_user_profile');
+        if (saved) setProfile(JSON.parse(saved));
+        setKeyStatus(getApiKeyStatus());
+      } catch {
+        // ignore
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const triggerToast = (msg: string) => {
@@ -108,13 +115,30 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveApiKey = () => {
+  const handleSaveApiKey = async () => {
     try {
-      localStorage.setItem('terrashaft_gemini_key', geminiKey.trim());
-      triggerToast('Kunci Gemini API berhasil diperbarui.');
+      const nextStatus = await saveApiKey(geminiKey);
+      setKeyStatus(nextStatus);
+      setGeminiKey('');
+      triggerToast(
+        nextStatus.hasKey
+          ? isEn
+            ? 'AI API key encrypted and saved.'
+            : 'Kunci AI API berhasil dienkripsi dan disimpan.'
+          : isEn
+          ? 'API key cleared.'
+          : 'Kunci AI API dihapus.'
+      );
     } catch {
-      triggerToast('Gagal menyimpan kunci API.');
+      triggerToast(isEn ? 'Failed to save API key.' : 'Gagal menyimpan kunci API.');
     }
+  };
+
+  const handleClearApiKey = () => {
+    clearApiKey();
+    setKeyStatus({ hasKey: false, provider: 'unknown', maskedHint: '' });
+    setGeminiKey('');
+    triggerToast(isEn ? 'Stored API key removed.' : 'Kunci AI API yang tersimpan telah dihapus.');
   };
 
   const handleClearCache = () => {
@@ -154,10 +178,10 @@ export default function SettingsPage() {
           <span>TerraShaft Platform · Preferences</span>
         </div>
         <h1 className="text-xl lg:text-2xl font-semibold text-[#F1F3F5] tracking-tight">
-          Pengaturan Umum & Profil
+          {t('settings.title')}
         </h1>
         <p className="text-xs text-[#9BA3AE]">
-          Kelola profil penyuluh, preferensi wilayah kerja lahan, integrasi telemetri satelit, dan keamanan akun.
+          {t('settings.subtitle')}
         </p>
       </div>
 
@@ -176,11 +200,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'profile'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'profile'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <User className="w-4 h-4 shrink-0" />
             <span>Profil Pengguna</span>
@@ -189,11 +212,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('preferences')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'preferences'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'preferences'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <Sliders className="w-4 h-4 shrink-0" />
             <span>Preferensi Sistem</span>
@@ -202,11 +224,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('integrations')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'integrations'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'integrations'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <Radio className="w-4 h-4 shrink-0" />
             <span>Integrasi Satelit & AI</span>
@@ -215,11 +236,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('security')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${
-              activeTab === 'security'
-                ? 'bg-[#163A40] text-[#00C2CC]'
-                : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
-            }`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-xs font-medium transition-colors text-left shrink-0 ${activeTab === 'security'
+              ? 'bg-[#163A40] text-[#00C2CC]'
+              : 'text-[#C1C7CD] hover:bg-[#1F242B] hover:text-white'
+              }`}
           >
             <Lock className="w-4 h-4 shrink-0" />
             <span>Keamanan & Sesi</span>
@@ -246,15 +266,15 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-[#F1F3F5]">{profile.name}</h3>
                   <p className="text-xs text-[#8A949E]">{profile.role}</p>
-                  <span className="inline-block mt-1 text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#064E3B] text-[#34D399] border border-[#047857]">
-                    Akun Terverifikasi
-                  </span>
+                  <p className="text-[11px] font-mono text-[#00C2CC] mt-1">
+                    {isEn ? 'Verified Account' : 'Akun Terverifikasi'}
+                  </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Nama Lengkap</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Full Name' : 'Nama Lengkap'}</label>
                   <input
                     type="text"
                     value={profile.name}
@@ -265,7 +285,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Alamat Email</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Email Address' : 'Alamat Email'}</label>
                   <input
                     type="email"
                     value={profile.email}
@@ -276,7 +296,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Jabatan / Peran</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Role / Position' : 'Jabatan / Peran'}</label>
                   <input
                     type="text"
                     value={profile.role}
@@ -286,7 +306,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Dinas / Institusi</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Department / Institution' : 'Dinas / Institusi'}</label>
                   <input
                     type="text"
                     value={profile.organization}
@@ -296,7 +316,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Wilayah Kerja Binaan</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Operational Region' : 'Wilayah Kerja Binaan'}</label>
                   <input
                     type="text"
                     value={profile.district}
@@ -306,7 +326,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-[#A6AFB8] mb-1 font-medium">Catatan / Bio Lapangan</label>
+                  <label className="block text-[#A6AFB8] mb-1 font-medium">{isEn ? 'Field Bio / Notes' : 'Catatan / Bio Lapangan'}</label>
                   <textarea
                     rows={3}
                     value={profile.bio}
@@ -322,7 +342,7 @@ export default function SettingsPage() {
                   className="px-4 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] font-semibold text-xs rounded-[4px] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Simpan Perubahan Profil</span>
+                  <span>{isEn ? 'Save Profile Changes' : 'Simpan Perubahan Profil'}</span>
                 </button>
               </div>
             </form>
@@ -332,10 +352,55 @@ export default function SettingsPage() {
           {activeTab === 'preferences' && (
             <div className="flex flex-col gap-5">
               <div className="border-b border-[#282C34] pb-3">
-                <h2 className="text-sm font-semibold text-[#F1F3F5]">Preferensi Workbench & Lahan</h2>
+                <h2 className="text-sm font-semibold text-[#F1F3F5]">
+                  {isEn ? 'Workspace & Field Preferences' : 'Preferensi Workbench & Lahan'}
+                </h2>
                 <p className="text-xs text-[#9BA3AE]">
-                  Atur lokasi default, mode kontras tinggi saat di sawah, dan jalur optimasi bawaan.
+                  {isEn
+                    ? 'Configure display language, default AOI coordinates, outdoor contrast, and optimization pathway.'
+                    : 'Atur bahasa tampilan, lokasi default, mode kontras tinggi saat di sawah, dan jalur optimasi bawaan.'}
                 </p>
+              </div>
+
+              {/* Language Switcher (UI Only - Does NOT modify calculations) */}
+              <div className="p-4 bg-[#121418] rounded-[6px] border border-[#242831] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs font-semibold text-[#F1F3F5] flex items-center gap-1.5">
+                    <Languages className="w-4 h-4 text-[#00C2CC]" />
+                    <span>{t('settings.languageCardTitle')}</span>
+                  </div>
+                  <p className="text-[11px] text-[#8A949E] mt-0.5">
+                    {t('settings.languageCardDesc')}
+                  </p>
+                </div>
+                <div className="inline-flex items-center rounded-[5px] bg-[#16191E] border border-[#2C313A] p-0.5 text-xs font-semibold shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocale('en');
+                      triggerToast('Language switched to English (calculations unchanged)');
+                    }}
+                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${locale === 'en'
+                      ? 'bg-[#00C2CC] text-[#121417]'
+                      : 'text-[#C1C7CD] hover:text-white'
+                      }`}
+                  >
+                    English (EN)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocale('id');
+                      triggerToast('Bahasa diubah ke Indonesia (kalkulasi tetap sama)');
+                    }}
+                    className={`px-3 py-1.5 rounded-[4px] transition-colors cursor-pointer ${locale === 'id'
+                      ? 'bg-[#00C2CC] text-[#121417]'
+                      : 'text-[#C1C7CD] hover:text-white'
+                      }`}
+                  >
+                    Indonesia (ID)
+                  </button>
+                </div>
               </div>
 
               {/* Lokasi Default AOI */}
@@ -380,11 +445,10 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={toggleFieldMode}
-                  className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-colors cursor-pointer ${
-                    isFieldMode
-                      ? 'bg-[#163A40] text-[#00C2CC] border border-[#00C2CC]'
-                      : 'bg-[#1A1F26] text-[#A6AFB8] border border-[#2E3540]'
-                  }`}
+                  className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-colors cursor-pointer ${isFieldMode
+                    ? 'bg-[#163A40] text-[#00C2CC] border border-[#00C2CC]'
+                    : 'bg-[#1A1F26] text-[#A6AFB8] border border-[#2E3540]'
+                    }`}
                 >
                   {isFieldMode ? 'Aktif' : 'Non-Aktif'}
                 </button>
@@ -408,11 +472,10 @@ export default function SettingsPage() {
                         setSelectedPathway(p.id as 'A' | 'B' | 'C');
                         triggerToast(`Jalur bawaan disetel ke ${p.name}`);
                       }}
-                      className={`p-3 rounded-[4px] border text-left transition-colors cursor-pointer ${
-                        selectedPathway === p.id
-                          ? 'bg-[#163A40] border-[#00C2CC] text-[#F1F3F5]'
-                          : 'bg-[#121418] border-[#242831] text-[#A6AFB8] hover:border-[#2C313A]'
-                      }`}
+                      className={`p-3 rounded-[4px] border text-left transition-colors cursor-pointer ${selectedPathway === p.id
+                        ? 'bg-[#163A40] border-[#00C2CC] text-[#F1F3F5]'
+                        : 'bg-[#121418] border-[#242831] text-[#A6AFB8] hover:border-[#2C313A]'
+                        }`}
                     >
                       <div className="text-xs font-semibold text-[#00C2CC]">{p.name}</div>
                       <div className="text-[11px] mt-0.5">{p.desc}</div>
@@ -479,7 +542,7 @@ export default function SettingsPage() {
                     <Satellite className="w-4 h-4 text-[#00C2CC]" />
                     <div>
                       <div className="text-xs font-semibold text-[#F1F3F5]">NASA POWER API</div>
-                      <div className="text-[11px] text-[#8A949E]">SMAP, GPM IMERG, CERES</div>
+                      <div className="text-[11px] text-[#8A949E]">T2M, Solar Radiation, GWETROOT, PRECTOTCORR</div>
                     </div>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#064E3B] text-[#34D399] border border-[#047857]">
@@ -507,40 +570,62 @@ export default function SettingsPage() {
                   <div>
                     <div className="text-xs font-semibold text-[#F1F3F5] flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-[#00C2CC]" />
-                      <span>Google Gemini API Key (Field Advisor AI)</span>
+                      <span>AI API Key - DeepSeek / Gemini (Field Advisor AI)</span>
                     </div>
                     <p className="text-[11px] text-[#8A949E] mt-0.5">
-                      Opsional. Jika diisi, Field Advisor AI dapat menjawab konsultasi bebas secara generatif selain dokumen acuan baku.
+                      Opsional. Mendukung kunci DeepSeek (sk-...) atau Google Gemini (AIzaSy...) agar Field Advisor AI dapat menjawab konsultasi bebas berbasis RAG.
                     </p>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC]">
-                    {geminiKey ? 'KEY TERPASANG' : 'MODE DETERMINISTIK'}
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-[3px] bg-[#163A40] text-[#00C2CC] shrink-0">
+                    {keyStatus.hasKey
+                      ? keyStatus.provider === 'deepseek'
+                        ? 'DEEPSEEK TERPASANG'
+                        : 'GEMINI TERPASANG'
+                      : 'SERVER / DETERMINISTIK'}
                   </span>
                 </div>
+
+                {keyStatus.hasKey && (
+                  <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-[4px] bg-[#16191E] border border-[#242831] text-[11px]">
+                    <span className="font-mono text-[#C1C7CD]">
+                      {isEn ? 'Stored key:' : 'Kunci tersimpan:'}{' '}
+                      <span className="text-[#00C2CC]">{keyStatus.maskedHint}</span>{' '}
+                      <span className="text-[#8A949E]">(AES-GCM)</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearApiKey}
+                      className="text-[#F87171] hover:underline font-medium cursor-pointer shrink-0"
+                    >
+                      {isEn ? 'Remove' : 'Hapus'}
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
                     <input
-                      type={showKey ? 'text' : 'password'}
+                      type="password"
                       value={geminiKey}
+                      autoComplete="off"
                       onChange={(e) => setGeminiKey(e.target.value)}
-                      placeholder="Masukkan AIzaSy... (atau atur via GEMINI_API_KEY di .env.local)"
-                      className="w-full bg-[#16191E] border border-[#282C34] focus:border-[#00C2CC] rounded-[4px] px-3 py-2 pr-9 text-xs text-[#F1F3F5] outline-none font-mono"
+                      placeholder={
+                        keyStatus.hasKey
+                          ? isEn
+                            ? 'Enter a new key to replace...'
+                            : 'Masukkan API key baru untuk mengganti...'
+                          : 'Masukkan sk-... (DeepSeek) atau AIzaSy... (Gemini)'
+                      }
+                      className="w-full bg-[#16191E] border border-[#282C34] focus:border-[#00C2CC] rounded-[4px] px-3 py-2 text-xs text-[#F1F3F5] outline-none font-mono"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowKey(!showKey)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8A949E] hover:text-[#F1F3F5]"
-                    >
-                      {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
                   </div>
                   <button
                     type="button"
                     onClick={handleSaveApiKey}
-                    className="px-3.5 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] text-[#121417] text-xs font-semibold rounded-[4px] transition-colors"
+                    disabled={!geminiKey.trim()}
+                    className="px-3.5 py-2 bg-[#00C2CC] hover:bg-[#33D4DC] disabled:opacity-50 text-[#121417] text-xs font-semibold rounded-[4px] transition-colors cursor-pointer"
                   >
-                    Simpan
+                    {isEn ? 'Save' : 'Simpan'}
                   </button>
                 </div>
               </div>

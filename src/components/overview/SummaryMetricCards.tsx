@@ -2,12 +2,13 @@
 
 import React from 'react';
 import { useTerraShaftStore } from '@/store/useTerraShaftStore';
-import { Info } from 'lucide-react';
+import { useAppI18n, localizeCropName } from '@/lib/i18n';
 import { formatMm, formatNumber, getWaterStatusDetails } from '@/lib/formatters';
 import { getNasaSmapDisplayStatus } from '@/lib/provenance';
 
 export default function SummaryMetricCards() {
   const { climateData, soilData, plans, selectedPathway, provenance, isLoadingBioData } = useTerraShaftStore();
+  const { locale, isEn } = useAppI18n();
   const smapStatus = getNasaSmapDisplayStatus(provenance);
   const currentPlan = plans ? plans[selectedPathway] : null;
 
@@ -15,7 +16,9 @@ export default function SummaryMetricCards() {
   const gwetroot = climateData?.rootZoneSoilMoisture ?? 0.38;
   const isCriticalMoisture = gwetroot < 0.25;
   const isWatchMoisture = gwetroot >= 0.25 && gwetroot < 0.45;
-  const moistureStatus = isCriticalMoisture ? 'Defisit Kritis' : isWatchMoisture ? 'Waspada' : 'Memadai';
+  const moistureStatus = isEn
+    ? isCriticalMoisture ? 'Critical Deficit' : isWatchMoisture ? 'Watch' : 'Adequate'
+    : isCriticalMoisture ? 'Defisit Kritis' : isWatchMoisture ? 'Waspada' : 'Memadai';
   const moistureDot = isCriticalMoisture
     ? 'bg-[#FB7185]'
     : isWatchMoisture
@@ -37,24 +40,21 @@ export default function SummaryMetricCards() {
   if (currentPlan && currentPlan.seasons) {
     maxDeficit = Math.max(...currentPlan.seasons.map((s) => s.waterDeficit_mm), 0);
   }
-  const waterDetails = getWaterStatusDetails(maxDeficit);
+  const waterDetails = getWaterStatusDetails(maxDeficit, locale);
 
   // 5. Recommended Crop (Season 1)
   const season1Crop = currentPlan?.seasons?.[0]?.crop;
-  const season1Name = season1Crop?.name ?? 'Jagung Hibrida';
-  const season1Variety = season1Crop?.recommended_variety ?? 'Bisi-18 / Pioneer';
+  const season1Name = season1Crop ? localizeCropName(season1Crop, locale) : isEn ? 'Maize (Corn)' : 'Jagung Hibrida';
+  const season1Variety = season1Crop?.recommended_variety ?? (isEn ? 'Pending localization' : 'Menunggu lokalisasi');
   const season1Water = season1Crop?.water_requirement_mm ?? 450;
 
   return (
-    <div className="bg-[#20242B] border border-[#2C313A] rounded-[4px] overflow-hidden text-[#F1F3F5]">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[#2C313A]">
+    <div className="bg-[#2C313A] border border-[#2C313A] rounded-[4px] overflow-hidden text-[#F1F3F5]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px">
         {/* 1. Kelembapan Zona Akar */}
-        <div className="p-4 flex flex-col justify-between gap-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Root-Zone Wetness (SMAP)</span>
-            <span title={smapStatus.detailText}>
-              <Info className="w-3.5 h-3.5 text-[#6E7781]" />
-            </span>
+        <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E]" title={smapStatus.detailText}>
+            <span className="whitespace-nowrap">{isEn ? 'Root-Zone Wetness (GWETROOT)' : 'Kelembapan Zona Akar (GWETROOT)'}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
@@ -67,22 +67,23 @@ export default function SummaryMetricCards() {
             <div
               className={`h-full transition-all duration-500 rounded-full ${moistureDot}`}
               style={{ width: `${Math.min(Math.max(gwetroot * 100, 5), 100)}%` }}
-              title={`SMAP L4 GWETROOT: ${formatNumber(gwetroot, 2)}`}
+              title={`NASA POWER GWETROOT (model-assimilated): ${formatNumber(gwetroot, 2)}`}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-0.5">
-            <span className="inline-flex items-center gap-1.5 text-[#C1C7CD]">
-              <span className={`w-1.5 h-1.5 rounded-full ${moistureDot}`} />
-              <span>{isLoadingBioData ? 'Syncing...' : moistureStatus}</span>
+          <div className="flex items-center justify-between gap-2 text-[11px] text-[#8A949E] pt-0.5 whitespace-nowrap">
+            <span className="text-[#C1C7CD]">
+              {isLoadingBioData ? 'Syncing...' : moistureStatus}
             </span>
-            <span className="font-mono">{smapStatus.shortLabel}</span>
+            <span className="font-mono" title={smapStatus.longLabel}>
+              {smapStatus.isOfficialApiResponse ? 'NASA POWER GWETROOT (Model)' : smapStatus.shortLabel}
+            </span>
           </div>
         </div>
 
         {/* 2. Baterai Tanah */}
-        <div className="p-4 flex flex-col justify-between gap-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Soil Battery Projection</span>
+        <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
+            <span>{isEn ? 'Soil Battery Projection' : 'Proyeksi Baterai Tanah'}</span>
             <span className="font-mono text-[11px] text-[#8A949E]">0-30cm</span>
           </div>
           <div className="flex items-baseline gap-2">
@@ -104,18 +105,18 @@ export default function SummaryMetricCards() {
               style={{ width: `${Math.min(Math.max(finalBattery, 5), 100)}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-0.5">
-            <span>Base: {initialBattery}%</span>
-            <span className="font-mono text-[#E06C75]" title="Jika monokultur terus menerus">
-              Monokultur: 10%
+          <div className="flex items-center justify-between gap-2 text-[11px] text-[#8A949E] pt-0.5 whitespace-nowrap">
+            <span>{isEn ? 'Base:' : 'Basis:'} {initialBattery}%</span>
+            <span className="font-mono text-[#E06C75]" title={isEn ? 'Continuous monoculture baseline' : 'Jika monokultur terus menerus'}>
+              {isEn ? 'Monoculture: 10%' : 'Monokultur: 10%'}
             </span>
           </div>
         </div>
 
         {/* 3. Kapasitas Air Tanah (ISRIC SoilGrids) */}
-        <div className="p-4 flex flex-col justify-between gap-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Available Water (AWC)</span>
+        <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
+            <span>{isEn ? 'Available Water (AWC)' : 'Air Tersedia (AWC)'}</span>
             <span className="font-mono text-[11px] text-[#8A949E]">ISRIC v2.0</span>
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -124,36 +125,36 @@ export default function SummaryMetricCards() {
             </span>
             <span className="text-xs font-mono text-[#8A949E]">mm</span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
-            <span className="truncate max-w-[140px] text-[#C1C7CD]" title={soilData?.textureClass}>
+          <div className="flex items-center justify-between gap-2 text-[11px] text-[#8A949E] pt-1 whitespace-nowrap">
+            <span className="truncate text-[#C1C7CD]" title={soilData?.textureClass}>
               {textureLabel}
             </span>
-            <span className="font-mono">SOC {soilData?.soc ?? 1.2}%</span>
+            <span className="font-mono shrink-0">SOC {soilData?.soc ?? 1.2}%</span>
           </div>
         </div>
 
         {/* 4. Defisit Air Puncak */}
-        <div className="p-4 flex flex-col justify-between gap-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Peak Seasonal Deficit</span>
-            <span className="font-mono text-[11px] text-[#8A949E]">ETc vs Rain</span>
+        <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5">
+          <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
+            <span>{isEn ? 'Peak Seasonal Deficit' : 'Defisit Air Puncak'}</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">{isEn ? 'ETc vs Rain' : 'ETc vs Hujan'}</span>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-semibold font-mono text-[#F1F3F5] tabular-nums">
               {formatMm(maxDeficit)}
             </span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-1">
+          <div className="flex items-center justify-between gap-2 text-[11px] text-[#8A949E] pt-1 whitespace-nowrap">
             <span className="text-[#C1C7CD]">{waterDetails.label}</span>
-            <span className="font-mono">Limit 100mm</span>
+            <span className="font-mono">{isEn ? 'Limit 100mm' : 'Batas 100mm'}</span>
           </div>
         </div>
 
         {/* 5. Komoditas Musim 1 */}
-        <div className="p-4 flex flex-col justify-between gap-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Primary Season Crop</span>
-            <span className="font-mono text-[11px] text-[#8A949E]">Musim 1</span>
+        <div className="bg-[#20242B] p-4 flex flex-col justify-between gap-2.5 sm:col-span-2 lg:col-span-2">
+          <div className="flex items-center justify-between gap-2 text-xs text-[#8A949E] whitespace-nowrap">
+            <span>{isEn ? 'Primary Season Crop' : 'Komoditas Musim 1'}</span>
+            <span className="font-mono text-[11px] text-[#8A949E]">{isEn ? 'Season 1' : 'Musim 1'}</span>
           </div>
           <div className="text-base font-semibold text-[#F1F3F5] truncate" title={season1Name}>
             {season1Name}
