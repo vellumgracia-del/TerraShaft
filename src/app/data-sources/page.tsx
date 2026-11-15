@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import DataSourceProvenanceCard from '@/components/provenance/DataSourceProvenanceCard';
 import NasaChallengeResources from '@/components/provenance/NasaChallengeResources';
-import { Satellite, Database, Activity } from 'lucide-react';
+import { Database, Activity } from 'lucide-react';
 
 export default function DataSourcesPage() {
   const [activeTab, setActiveTab] = useState<'catalog' | 'live-status'>('catalog');
@@ -22,11 +22,11 @@ export default function DataSourcesPage() {
           }`}
         >
           <Database className="w-3.5 h-3.5" />
-          <span>Katalog 13 Dataset Terintegrasi & Terverifikasi</span>
+          <span>13 Sumber Dataset, Referensi & Peran Sistem</span>
           <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
             activeTab === 'catalog' ? 'bg-[#121417]/20 text-[#121417]' : 'bg-[#20242B] text-[#8A949E]'
           }`}>
-            13 Terverifikasi (Global Core + Penguatan Indonesia)
+            Live API · Static Registry · Knowledge Base · Planned
           </span>
         </button>
 

@@ -55,7 +55,7 @@ export default function SummaryMetricCards() {
         {/* 1. Kelembapan Zona Akar */}
         <div className="p-4 flex flex-col justify-between gap-2.5">
           <div className="flex items-center justify-between text-xs text-[#8A949E]">
-            <span>Root-Zone Wetness (SMAP)</span>
+            <span>Root-Zone Wetness (GWETROOT)</span>
             <span title={smapStatus.detailText}>
               <Info className="w-3.5 h-3.5 text-[#6E7781]" />
             </span>
@@ -71,7 +71,7 @@ export default function SummaryMetricCards() {
             <div
               className={`h-full transition-all duration-500 rounded-full ${moistureDot}`}
               style={{ width: `${Math.min(Math.max(gwetroot * 100, 5), 100)}%` }}
-              title={`SMAP L4 GWETROOT: ${formatNumber(gwetroot, 2)}`}
+              title={`NASA POWER GWETROOT (model-assimilated): ${formatNumber(gwetroot, 2)}`}
             />
           </div>
           <div className="flex items-center justify-between text-[11px] text-[#8A949E] pt-0.5">

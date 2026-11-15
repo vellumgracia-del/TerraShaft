@@ -107,15 +107,14 @@ export default function DataSourceProvenanceCard() {
             <span className="text-[13px] font-medium text-[#F1F3F5]">
               Iklim & Atmosfer (NASA POWER)
             </span>
-            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${
-              nasaProv?.mode === 'live'
-                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
-                : nasaProv?.mode === 'cached'
+            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${nasaProv?.mode === 'live'
+              ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
+              : nasaProv?.mode === 'cached'
                 ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
                 : nasaProv?.mode === 'fallback'
-                ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
-                : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
-            }`}>
+                  ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
+                  : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
+              }`}>
               {nasaLabel}
             </span>
           </div>
@@ -163,15 +162,14 @@ export default function DataSourceProvenanceCard() {
             <span className="text-[13px] font-medium text-[#F1F3F5]">
               Fisika Tanah (ISRIC SoilGrids)
             </span>
-            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${
-              soilProv?.mode === 'live'
-                ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
-                : soilProv?.mode === 'cached'
+            <span className={`px-2 py-0.5 rounded-[3px] border font-mono text-[10.5px] ${soilProv?.mode === 'live'
+              ? 'bg-[#163A40] text-[#00C2CC] border-[#009DA5]/40 font-semibold'
+              : soilProv?.mode === 'cached'
                 ? 'bg-[#172535] text-[#38BDF8] border-[#38BDF8]/40 font-medium'
                 : soilProv?.mode === 'fallback'
-                ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
-                : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
-            }`}>
+                  ? 'bg-[#2B2319] text-[#FBBF24] border-[#FBBF24]/40 font-medium'
+                  : 'bg-[#20242B] text-[#C1C7CD] border-[#2C313A]'
+              }`}>
               {soilLabel}
             </span>
           </div>
@@ -230,10 +228,10 @@ export default function DataSourceProvenanceCard() {
         <div className="p-4 rounded-[4px] bg-[#16191E] border border-[#2C313A] flex flex-col gap-2 text-xs text-[#9BA3AE]">
           <span className="font-medium text-[#F1F3F5]">Instrumen Asimilasi Satelit & Model:</span>
           <ul className="list-disc pl-5 space-y-1 text-[#8A949E] font-mono text-[11.5px]">
-            <li><strong>NASA SMAP (Soil Moisture Active Passive):</strong> Level-4 Model-Assimilated Root-Zone Soil Wetness (0-100cm).</li>
-            <li><strong>NASA POWER Precipitation:</strong> NASA-derived precipitation estimate via NASA POWER daily PRECTOTCORR.</li>
-            <li><strong>NASA CERES & MERRA-2:</strong> Solar Surface Radiation & Evapotranspiration Hargreaves-Samani via NASA POWER.</li>
-            <li><strong>ISRIC SoilGrids 250m v2.0:</strong> Pedotransfer Sand, Clay, Silt, C-Organic, pH, dan CEC (atau profil regional terkalibrasi saat failover).</li>
+            <li><strong>NASA POWER GWETROOT:</strong> Model-assimilated root-zone wetness indicator (0–100 cm) via NASA POWER API (no direct SMAP API route).</li>
+            <li><strong>NASA POWER PRECTOTCORR:</strong> Corrected daily/monthly precipitation parameter via NASA POWER API (no direct GPM/IMERG API route).</li>
+            <li><strong>NASA POWER Agroclimatology:</strong> Daily T2M (min/max/mean) and ALLSKY_SFC_SW_DWN solar irradiance for Hargreaves-Samani ET0.</li>
+            <li><strong>ISRIC SoilGrids 250m v2.0:</strong> 0–30 cm depth-weighted Sand, Clay, Silt, SOC, pH, and CEC via REST API (or calibrated regional failover).</li>
           </ul>
         </div>
       )}
